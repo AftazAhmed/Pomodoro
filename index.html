@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Pomodoro Tree — Rain + Numbered Grid</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
+      --text:#0b1a33; --dim:#4a6894;
+
+      --leaf-dark:#166534; --leaf-light:#86efac; --leaf-stroke:#0b3d22;
+      --trunk-brown:#4e342e;
+
+      --canopy-stroke-idle:#065f46;
+
+      --canopy-white:#ffffff;
+      --canopy-fill-green:#7ddf8c;
+
+      --sky1:#cfe8ff; --sky2:#8ec5ff;
+      --grass1:#bfeec7; --grass2:#8edaa0;
+
+      --radius-lg:18px; --shadow:0 10px 28px rgba(30,70,140,.1);
+
+      --btn-text:#ffffff;
+      --btn-primary:#2563eb;
+      --btn-primary-hover:#1e40af;
+      --btn-success:#16a34a;
+      --btn-success-hover:#0f6a33;
+      --btn-danger:#ef4444;
+      --btn-danger-hover:#b91c1c;
+      --btn-neutral:#334155;
+      --btn-neutral-hover:#1f2937;
+      --btn-focus:#0ea5e9;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .wrap{ max-width:1140px; margin:0 auto; padding:20px 16px 120px; }
+    header,.stats,.chip,.timerCard,.controls,.settings,.treePanel,.tabs,.tab,.panelCard,.gridWrap,.gridHead,.grid,.bottomAuth { display:flex; align-items:center; }
+
+    header{ justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    h1{ margin:0; font-size:22px; }
+    .brand{ gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); }
+
+    .stats{ gap:10px; flex-wrap:wrap; }
+    .chip{ gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#dim; }
+
+    .timerCard{ margin:16px auto 12px; max-width:760px; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
+    .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
+    .controls{ gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
+
+    button{
+      border:none; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;
+      color:#fff; background:var(--btn-neutral);
+      box-shadow:0 1px 0 rgba(0,0,0,.06), 0 6px 14px rgba(15,23,42,.14);
+      transition:background-color .18s ease, transform .08s ease, box-shadow .18s ease;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    button:hover{ background:var(--btn-neutral-hover); }
+    button:active{ transform:translateY(1px); }
+    button:focus-visible{ outline:3px solid var(--btn-focus); outline-offset:2px; }
+    .controls #startBtn{ background:var(--btn-success); }
+    .controls #startBtn:hover{ background:var(--btn-success-hover); }
+    .controls #resetBtn{ background:var(--btn-danger); }
+    .controls #resetBtn:hover{ background:var(--btn-danger-hover); }
+    #lptSetBtn{ background:var(--btn-primary); }
+    #lptSetBtn:hover{ background:var(--btn-primary-hover); }
+
+    .settings{ gap:12px; margin-top:10px; flex-wrap:wrap; justify-content:center; color:var(--dim); }
+    input[type=range][readonly]{ pointer-events:none; }
+    .numWrap{ display:flex; align-items:center; gap:8px; }
+    .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
+
+    .treePanel{ margin:14px auto; max-width:760px; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
+    .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
+    .sky{ position:absolute; inset:0; background:linear-gradient(180deg,var(--sky1) 0%, var(--sky2) 62%, var(--grass1) 62%, var(--grass2) 100%); }
+
+    .percentLabel{
+      position:absolute; left:14px; bottom:8px;
+      font: 900 108px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75);
+      pointer-events:none; letter-spacing:1.5px;
+    }
+
+    @keyframes canopyBlink { 0%,100%{ stroke: var(--canopy-stroke-idle);} 50%{ stroke: #000; } }
+    @keyframes leafBlink { 0%,100%{ fill: var(--leaf-dark);} 50%{ fill: var(--leaf-light);} }
+    .blink-canopy{ animation: canopyBlink 900ms linear infinite; }
+    .blink-leaf{ animation: leafBlink 900ms linear infinite; }
+    .leaf-number{ font: 800 13px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:#ffffff; text-anchor:middle; dominant-baseline:middle; }
+
+    /* Rain (thick drizzle) */
+    .rain{ position:absolute; inset:0; pointer-events:none; display:none; }
+    .rain .drop{
+      position:absolute; top:-12px; width:3px; height:14px;
+      background:rgba(14,42,112,.45); border-radius:2px;
+      animation:rainFall 0.8s linear infinite;
+    }
+    .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
+    @keyframes rainFall{ to{ transform:translateY(620px); } }
+
+    .tabsWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
+    .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); }
+    .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:var(--dim); }
+    .tab.active{ color:var(--text); background:linear-gradient(180deg,#e6f1ff,#ffffff); }
+    .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; }
+
+    .gridWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; flex-direction:column; }
+    .gridHead{ justify-content:space-between; gap:8px; color:var(--dim); width:100%; }
+    .grid{ display:grid; gap:10px; grid-template-columns:repeat(13, minmax(0, 1fr)); width:100%; margin-top:10px; }
+    @media (max-width:980px){ .grid{ grid-template-columns:repeat(8, minmax(0, 1fr)); } }
+    .cell{
+      position:relative;
+      aspect-ratio:1/1; border-radius:14px; background:#f3f8ff; border:1px dashed #c8d8ee; color:#4e6ea0;
+      display:flex; align-items:center; justify-content:center; font-weight:800; overflow:hidden;
+    }
+    .num{
+      position:relative; z-index:1;
+      font-size:18px; color:#4e6ea0;
+    }
+    .icon{
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      font-size:26px; z-index:2;
+      pointer-events:none;
+    }
+    .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
+    .cell.dead{ background:linear-gradient(180deg,#fff0f3,#ffffff); border:2px solid #ef4444; color:#7a1e2a; }
+
+    .bottomAuth{ margin:18px auto 0; max-width:760px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; }
+    .bottomAuth input{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand"><span style="font-weight:800;">🌳</span><h1>Pomodoro Tree</h1></div>
+      <div class="stats">
+        <div class="chip" id="todayChip"><strong>Today</strong>: 0 leaves</div>
+        <div class="chip" id="leavesChip">Leaves: 0</div>
+        <div class="chip" id="treesChip">Trees: 0 / 52</div>
+        <div class="chip" id="weekChip">Week: 0 leaves</div>
+        <div class="chip" id="ruleChip">Leaves/Tree: 9</div>
+        <div class="chip" id="planChip">Plan: Free</div>
+      </div>
+    </header>
+
+    <section class="timerCard">
+      <div class="time" id="clock">25:00</div>
+      <div class="controls">
+        <button id="startBtn">Start 25:00</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+      <div class="settings">
+        <div class="numWrap">
+          <label for="lptInput"><strong>Leaves per tree</strong></label>
+          <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
+          <button id="lptSetBtn">Set</button>
+          <span id="lockHint" style="color:var(--dim)">Editable once per ISO week</span>
+        </div>
+        <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
+        <span id="lptVal">9</span>
+      </div>
+    </section>
+
+    <section class="treePanel">
+      <h3 style="margin:0 0 8px 0; text-align:center;">Current Tree</h3>
+      <div class="treeBox">
+        <div class="sky"></div>
+
+        <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
+          <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round">
+            <g transform="translate(120 460) scale(1.0)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(200 468) scale(0.85)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(280 462) scale(1.05)"><path d="M0 0 C 5 -12, 5 -24, 5 -34"/><path d="M5 -26 C 14 -34, 20 -34, 24 -30"/><path d="M5 -22 C -3 -30, -10 -30, -15 -26"/></g>
+            <g transform="translate(360 470) scale(0.9)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 10 -28, 16 -28, 20 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(440 465) scale(0.95)"><path d="M0 0 C 4 -11, 4 -22, 4 -31"/><path d="M4 -24 C 12 -31, 18 -31, 22 -27"/><path d="M4 -20 C -3 -27, -9 -27, -13 -23"/></g>
+          </g>
+        </svg>
+
+        <div id="percentLabel" class="percentLabel">0%</div>
+
+        <!-- Rain layer -->
+        <div id="rainLayer" class="rain"></div>
+
+        <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible">
+          <defs>
+            <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="1" stdDeviation="1.0" flood-color="#000" flood-opacity="0.15" />
+            </filter>
+
+            <mask id="fillMask" maskUnits="userSpaceOnUse" x="100" y="150" width="380" height="220">
+              <rect fill="#000" x="100" y="150" width="380" height="220"/>
+              <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
+            </mask>
+          </defs>
+
+          <g id="canopyGroup" transform="translate(280 280) scale(1,1.2) translate(-280 -280)">
+            <path id="canopyWhite" d="
+              M 130 210
+              C 160 172, 205 158, 235 172
+              C 255 152, 275 150, 295 165
+              C 315 150, 335 152, 345 172
+              C 365 158, 410 170, 430 210
+              C 446 236, 454 260, 430 284
+              C 405 306, 360 314, 340 304
+              C 312 322, 248 322, 220 304
+              C 195 314, 150 306, 130 284
+              C 110 262, 112 232, 130 210 Z"
+              fill="var(--canopy-white)"/>
+            <path id="canopyFillGreen" d="
+              M 130 210
+              C 160 172, 205 158, 235 172
+              C 255 152, 275 150, 295 165
+              C 315 150, 335 152, 345 172
+              C 365 158, 410 170, 430 210
+              C 446 236, 454 260, 430 284
+              C 405 306, 360 314, 340 304
+              C 312 322, 248 322, 220 304
+              C 195 314, 150 306, 130 284
+              C 110 262, 112 232, 130 210 Z"
+              fill="var(--canopy-fill-green)" mask="url(#fillMask)"/>
+            <path id="canopyOutline" d="
+              M 130 210
+              C 160 172, 205 158, 235 172
+              C 255 152, 275 150, 295 165
+              C 315 150, 335 152, 345 172
+              C 365 158, 410 170, 430 210
+              C 446 236, 454 260, 430 284
+              C 405 306, 360 314, 340 304
+              C 312 322, 248 322, 220 304
+              C 195 314, 150 306, 130 284
+              C 110 262, 112 232, 130 210 Z"
+              fill="transparent" stroke="var(--canopy-stroke-idle)" stroke-width="3" />
+
+            <path d="M 280 380 C 280 350, 280 320, 280 284" fill="none" stroke="var(--trunk-brown)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M 280 284 C 270 270, 258 255, 248 238" fill="none" stroke="var(--trunk-brown)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M 280 284 C 290 270, 302 255, 312 238" fill="none" stroke="var(--trunk-brown)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+
+            <g id="leafLayer" filter="url(#leafShadow)"></g>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <section class="tabsWrap">
+      <div class="tabs">
+        <div class="tab active" data-tab="hoursPanel">Pomodoro Hours</div>
+        <div class="tab" data-tab="gardenPanel">Garden</div>
+        <div class="tab" data-tab="subPanel">Subscription</div>
+        <div class="tab" data-tab="syncPanel">Sync</div>
+      </div>
+
+      <div id="hoursPanel" class="panelCard" style="display:flex;">
+        <div class="chip" id="hoursTotal">Total: 0 hrs 0 mins</div>
+        <div class="chip" id="hoursToday">Today: 0 hrs 0 mins</div>
+      </div>
+
+      <div id="gardenPanel" class="panelCard">
+        <div>Garden view placeholder</div>
+      </div>
+
+      <div id="subPanel" class="panelCard">
+        <div id="subStatus">Plan: Free — 4 weeks cap. Unlock remaining 48 weeks for $1/year.</div>
+        <button id="subBtn">Unlock 48 weeks — $1</button>
+      </div>
+
+      <div id="syncPanel" class="panelCard">
+        <div id="authState">Signed out</div>
+        <input type="email" id="emailInput" placeholder="email@example.com" />
+        <button id="sendLinkBtn">Send sign-in link</button>
+        <button id="signOutBtn">Sign out</button>
+      </div>
+    </section>
+
+    <section class="gridWrap">
+      <div class="gridHead">
+        <div class="chip">Completed Trees</div>
+        <div class="chip" id="gridCount">0 / 52</div>
+      </div>
+      <div class="grid" id="treeGrid"></div>
+    </section>
+
+    <div class="bottomAuth">
+      <input type="email" id="emailInputBottom" placeholder="email@example.com" />
+      <button id="sendLinkBtnBottom">Sign in</button>
+      <button id="signOutBtnBottom">Sign out</button>
+    </div>
+  </div>
+
+  <script type="module">
+    const KEY='pomodoroTree_Rain_NumberedGrid_V1';
+    const load=()=>JSON.parse(localStorage.getItem(KEY)||'{}');
+    const save=(s)=>localStorage.setItem(KEY, JSON.stringify(s));
+
+    // ISO week helpers
+    Date.prototype.getWeek=function(){var d=new Date(this.getTime());d.setHours(0,0,0,0);d.setDate(d.getDate()+3-(d.getDay()+6)%7);var w1=new Date(d.getFullYear(),0,4);return 1+Math.round(((d-w1)/86400000-3+(w1.getDay()+6)%7)/7);};
+    Date.prototype.getWeekYear=function(){var d=new Date(this.getTime());d.setDate(d.getDate()+3-(d.getDay()+6)%7);return d.getFullYear();};
+
+    const DEFAULT_STATE={
+      leavesPerTree:9, placed:0, secondsLeft:1500, running:false, // 25 minutes
+      leavesTotal:0, leavesToday:0, weeklyLeaves:0,
+      focusSecondsTotal:0, focusSecondsToday:0,
+      grid:[], // left-first, newest at index 0: {week,year,live,ts}
+      subActive:false, plan:'Free',
+      week:undefined, year:undefined,
+      weeklyComplete:false,
+      weeklyTargetLocked:false, weeklyTargetSetValue:9,
+      freeWeeksCap:4 // new: free plan allows 4 weeks
+    };
+
+    let S=Object.assign({}, DEFAULT_STATE, load());
+
+    const svgns='http://www.w3.org/2000/svg';
+    const el=id=>document.getElementById(id);
+
+    const canopy=el('canopyOutline'),
+          leafLayer=el('leafLayer'),
+          fillRect=el('fillRect'),
+          percentLabel=el('percentLabel'),
+          rainLayer=el('rainLayer');
+
+    const lptInput=el('lptInput'), lptRange=el('lptRange'), lptVal=el('lptVal'), lockHint=el('lockHint'), lptSetBtn=el('lptSetBtn');
+
+    const LEAF_SECONDS=1500; // 25 minutes = 1500 seconds
+
+    // Rollover week bookkeeping
+    function unshiftWeekToGrid(week, year, live){
+      S.grid.unshift({week,year,live,ts:Date.now()}); // newest on left
+      if(S.grid.length>52) S.grid.pop();
+      save(S);
+    }
+
+    function freePlanLimitReached(){
+      if(S.subActive) return false;
+      // Count distinct weeks recorded (completed or not), plus current week in progress
+      const distinct = new Set(S.grid.map(e=>`${e.year}-W${e.week}`));
+      if(S.week!==undefined && S.year!==undefined) distinct.add(`${S.year}-W${S.week}`);
+      return distinct.size >= (S.freeWeeksCap||4);
+    }
+
+    function rolloverWeekIfNeeded(){
+      const now=new Date(); const wk=now.getWeek(), yr=now.getWeekYear();
+      if(S.week===undefined || S.year===undefined){ S.week=wk; S.year=yr; save(S); return; }
+      if(S.week!==wk || S.year!==yr){
+        const completed = (S.placed>=S.leavesPerTree && S.leavesPerTree>0);
+        unshiftWeekToGrid(S.week, S.year, completed);
+        S.week=wk; S.year=yr;
+        S.weeklyLeaves=0; S.leavesToday=0; S.focusSecondsToday=0;
+        S.weeklyComplete=false;
+        S.weeklyTargetLocked=false;
+        S.weeklyTargetSetValue=S.leavesPerTree;
+        S.placed=0; S.secondsLeft=LEAF_SECONDS;
+        leafLayer.innerHTML='';
+        save(S);
+      }
+    }
+
+    // Leaves
+    const baseAnchors=[{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}];
+    function anchorForIndex(i){
+      if(i<baseAnchors.length) return baseAnchors[i];
+      const k=i-baseAnchors.length+1, a=k*137.508*Math.PI/180, r=30+0.9*Math.sqrt(k)*8, cx=280, cy=260;
+      return {x:cx+r*Math.cos(a), y:cy+r*Math.sin(a)*0.7};
+    }
+    function createLeafG(n){
+      const g=document.createElementNS(svgns,'g'); g.setAttribute('filter','url(#leafShadow)');
+      const p=document.createElementNS(svgns,'path');
+      p.setAttribute('d','M 0 -16 C 10 -10, 12 0, 0 14 C -12 0, -10 -10, 0 -16 Z');
+      p.setAttribute('fill','var(--leaf-dark)');
+      p.setAttribute('stroke','var(--leaf-stroke)');
+      p.setAttribute('stroke-width','1.2');
+      const t=document.createElementNS(svgns,'text'); t.setAttribute('class','leaf-number'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.textContent=String(n);
+      g.appendChild(p); g.appendChild(t); return g;
+    }
+    function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
+
+    // Fill via mask
+    const CANOPY_BOTTOM=316;
+    const FILL_OVERSCAN=165;
+    function setFillPercent(pct){
+      const p=Math.max(0, Math.min(100, Number(pct)||0));
+      const targetH=FILL_OVERSCAN*(p/100);
+      const targetY=CANOPY_BOTTOM-targetH;
+      fillRect.setAttribute('x','110'); fillRect.setAttribute('width','360');
+      fillRect.setAttribute('y', String(targetY)); fillRect.setAttribute('height', String(targetH));
+      percentLabel.textContent = Math.round(p)+'%';
+    }
+    function percentFromState(){ const denom=Math.max(1, S.leavesPerTree|0); return (S.placed/denom)*100; }
+    function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
+
+    function renderLeavesFromState(){
+      leafLayer.innerHTML='';
+      for(let i=0;i<S.placed;i++){
+        const g=createLeafG(i+1); placeLeaf(g, anchorForIndex(i)); leafLayer.appendChild(g);
+      }
+    }
+
+    // Rain (thick drizzle)
+    function makeRain(densityNear=200, densityFar=150){
+      rainLayer.innerHTML='';
+      const rect=rainLayer.getBoundingClientRect();
+      const w=rect.width||560;
+      const mk=(n, cls='')=>{
+        for(let i=0;i<n;i++){
+          const d=document.createElement('div'); d.className='drop'+cls;
+          d.style.left=(Math.random()*w)+'px';
+          d.style.animationDelay=(Math.random()*0.9)+'s';
+          d.style.animationDuration=(cls? (1.0+Math.random()*0.9)+'s' : (0.6+Math.random()*0.6)+'s');
+          rainLayer.appendChild(d);
+        }
+      };
+      mk(densityNear,''); mk(densityFar,' far');
+    }
+    function showRain(on){
+      rainLayer.style.display=on?'block':'none';
+      if(on && rainLayer.childElementCount===0){ makeRain(); }
+    }
+
+    let interval=null;
+    function setRunning(on){
+      S.running=on;
+      if(canopy) canopy.classList.toggle('blink-canopy', !!on);
+      const cur=leafLayer.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
+      el('startBtn').textContent = on ? 'Running…' : 'Start 25:00';
+      el('startBtn').disabled = !!on;
+      showRain(!!on);
+    }
+    function format(sec){
+      const m=String(Math.floor(sec/60)).padStart(2,'0');
+      const s=String(sec%60).padStart(2,'0');
+      return `${m}:${s}`;
+    }
+
+    // Free plan enforcement and grid
+    function buildGrid(){
+      const grid=el('treeGrid'); grid.innerHTML='';
+      for(let i=0;i<52;i++){
+        const cell=document.createElement('div'); cell.className='cell';
+        const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
+        const icon=document.createElement('div'); icon.className='icon';
+
+        const entry=S.grid[i]; // left-first
+        if(entry){
+          icon.textContent = entry.live ? '🌳' : '';
+          if(entry.live){ cell.classList.add('live'); }
+        }else{
+          icon.textContent = '';
+        }
+
+        cell.appendChild(num);
+        cell.appendChild(icon);
+        grid.appendChild(cell);
+      }
+      el('gridCount').textContent=`${Math.min(S.grid.length, 52)} / 52`;
+    }
+
+    function renderHUD(){
+      el('clock').textContent=format(S.secondsLeft);
+      el('leavesChip').textContent=`Leaves: ${S.leavesTotal}`;
+      el('todayChip').textContent=`Today: ${S.leavesToday} leaves`;
+      el('weekChip').textContent=`Week: ${S.weeklyLeaves} leaves`;
+      el('ruleChip').textContent=`Leaves/Tree: ${S.leavesPerTree}`;
+      const totalH=Math.floor(S.focusSecondsTotal/3600), totalM=Math.floor((S.focusSecondsTotal%3600)/60);
+      const todayH=Math.floor(S.focusSecondsToday/3600), todayM=Math.floor((S.focusSecondsToday%3600)/60);
+      el('hoursTotal').textContent=`Total: ${totalH} hrs ${totalM} mins`;
+      el('hoursToday').textContent=`Today: ${todayH} hrs ${todayM} mins`;
+      buildGrid();
+      el('treesChip').textContent=`Trees: ${Math.min(S.grid.length, 52)} / 52`;
+      el('planChip').textContent=`Plan: ${S.subActive?'Paid':'Free'}`;
+      el('subStatus').textContent = S.subActive
+        ? 'Plan: Paid — up to 52 weeks of trees unlocked.'
+        : 'Plan: Free — 4 weeks cap. Unlock remaining 48 weeks for $1/year.';
+      const subBtn=el('subBtn'); if(subBtn){ subBtn.textContent = S.subActive ? 'Active' : 'Unlock 48 weeks — $1'; subBtn.disabled=!!S.subActive; }
+      lptVal.textContent=String(S.leavesPerTree);
+      lptRange.value = S.leavesPerTree;
+      lptInput.disabled = !!S.weeklyTargetLocked;
+      el('lptSetBtn').disabled = !!S.weeklyTargetLocked;
+      lockHint.textContent = S.weeklyTargetLocked
+        ? `Target locked for ISO Week ${S.week}-${S.year} at ${S.weeklyTargetSetValue}`
+        : 'Editable once per ISO week';
+      applyProgress();
+      save(S);
+    }
+
+    function startOneMinute(){
+      rolloverWeekIfNeeded();
+      if(interval) return;
+
+      if(!S.subActive && freePlanLimitReached()){
+        alert('Free plan allows 4 weeks. Unlock remaining 48 weeks for $1 to continue tracking weekly trees.');
+        return;
+      }
+
+      if(S.weeklyComplete){
+        alert('Weekly tree complete. Timer will run but no new leaves/trees until next ISO week.');
+      }
+
+      // Forming leaf appears only after Start
+      if(!S.weeklyComplete && S.placed < S.leavesPerTree){
+        const idx=S.placed;
+        const g=createLeafG(idx+1); placeLeaf(g, anchorForIndex(idx)); leafLayer.appendChild(g);
+      }
+
+      S.secondsLeft=LEAF_SECONDS; setRunning(true); renderHUD();
+      interval=setInterval(()=>{
+        S.secondsLeft--; el('clock').textContent=format(S.secondsLeft);
+        if(S.secondsLeft<=0){
+          clearInterval(interval); interval=null;
+
+          if(S.weeklyComplete){
+            setRunning(false);
+            showRain(false);
+            S.secondsLeft=LEAF_SECONDS; el('clock').textContent=format(S.secondsLeft);
+            save(S); return;
+          }
+
+          const cur=leafLayer.lastElementChild;
+          if(cur){ cur.querySelector('path').classList.remove('blink-leaf'); }
+
+          S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
+          S.focusSecondsTotal+=LEAF_SECONDS; S.focusSecondsToday+=LEAF_SECONDS;
+
+          applyProgress();
+          setRunning(false);
+          showRain(false);
+          renderHUD();
+
+          if(S.placed===S.leavesPerTree){
+            S.weeklyComplete=true;
+            // Insert tree at first grid cell
+            unshiftWeekToGrid(S.week, S.year, true);
+            renderHUD();
+          }else{
+            // Next forming leaf only on next Start
+            S.secondsLeft=LEAF_SECONDS; el('clock').textContent=format(S.secondsLeft);
+            save(S);
+          }
+        }
+      },1000);
+    }
+
+    function resetTimer(){
+      if(interval){ clearInterval(interval); interval=null; }
+      setRunning(false);
+      showRain(false);
+      // Remove current forming leaf so it reappears only on next Start
+      const cur=leafLayer.lastElementChild;
+      if(cur){
+        const idx=(Number(cur.querySelector('text')?.textContent)||0)-1;
+        if(idx===S.placed){ leafLayer.removeChild(cur); }
+      }
+      S.secondsLeft=LEAF_SECONDS; renderHUD();
+    }
+
+    function setupTabs(){
+      document.querySelectorAll('.tab').forEach(t=>{
+        t.addEventListener('click',()=>{
+          document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+          t.classList.add('active');
+          document.querySelectorAll('.panelCard').forEach(p=>p.style.display='none');
+          el(t.dataset.tab).style.display='flex';
+        });
+      });
+    }
+
+    function wireLPTControls(){
+      lptInput.addEventListener('input', ()=>{
+        const v = Math.max(1, Math.min(200, Number(lptInput.value)||1));
+        lptVal.textContent = String(v);
+      });
+      lptSetBtn.addEventListener('click', ()=>{
+        rolloverWeekIfNeeded();
+        if(S.weeklyTargetLocked) return;
+        const v = Math.max(1, Math.min(200, Number(lptInput.value)||1));
+        S.leavesPerTree = v;
+        S.weeklyTargetLocked = true;
+        S.weeklyTargetSetValue = v;
+        S.placed = 0;
+        S.weeklyLeaves = 0;
+        S.secondsLeft = LEAF_SECONDS;
+        leafLayer.innerHTML = '';
+        applyProgress();
+        renderHUD();
+      });
+    }
+
+    function wireSubscription(){
+      const btn=el('subBtn');
+      if(!btn) return;
+      btn.addEventListener('click', ()=>{
+        if(S.subActive) return;
+        // Simulate $1 unlock success
+        S.subActive = true;
+        S.plan = 'Paid';
+        renderHUD();
+      });
+    }
+
+    // Boot
+    rolloverWeekIfNeeded();
+
+    // Initialize mask rect
+    fillRect.setAttribute('x','110'); fillRect.setAttribute('width','360');
+    fillRect.setAttribute('y','316'); fillRect.setAttribute('height','0');
+
+    // Do not pre-place forming leaf; appears only after Start
+    renderLeavesFromState();
+    applyProgress();
+    renderHUD();
+    setupTabs();
+    wireLPTControls();
+    wireSubscription();
+
+    document.getElementById('startBtn').addEventListener('click', startOneMinute);
+    document.getElementById('resetBtn').addEventListener('click', resetTimer);
+  </script>
+</body>
+</html>
