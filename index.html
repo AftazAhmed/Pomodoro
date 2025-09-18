@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — 25‑Minute Focus Timer with Rain, Weekly Tree Grid, and ISO Week Tracking</title>
+  <title>Pomodoro Tree — 25‑Minute Focus Timer with Rain, Weekly Tree Grid, Garden, and ISO Week Tracking</title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -20,7 +20,6 @@
       --grass1:#bfeec7; --grass2:#8edaa0;
       --canopy-base-1:#a3e3b5;
       --canopy-base-2:#7fce9d;
-
       --canopy-fill-green:#3aa85f;
 
       --radius-lg:18px; --shadow:0 10px 28px rgba(30,70,140,.1);
@@ -40,10 +39,18 @@
       --progress-red:#ef4444;
       --track-bg:#e6efff;
 
-      /* Sizing tokens */
-      --xy-font: 37.8px;  /* 30% smaller than 54px */
-      --info-font: 12px;  /* compact info chips */
-      --info-line: 1.25;  /* line height for two-line block */
+      --xy-font: 37.8px;
+      --info-font: 12px;
+      --info-line: 1.25;
+
+      /* Garden */
+      --soil1:#7a4e2e;
+      --soil2:#5a3a22;
+      --soil3:#8b5a3a;
+      --pit:#6b442a;
+      --pit-stroke:#3d2618;
+      --sprout:#2e7d32;
+      --tree-emoji-size:26px;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
@@ -83,17 +90,16 @@
     .numWrap{ display:flex; align-items:center; gap:8px; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
 
-    /* Two-line info block sits above slider; fixed height to avoid shifts */
     .estWrap{
       margin-top:6px; color:#0b1a33; font-weight:700;
       font-size:var(--info-font); line-height:var(--info-line);
       text-align:center;
       min-height: calc(2 * var(--info-font) * var(--info-line));
       display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center;
-      order:-1; /* move before slider in flex flow */
+      order:-1;
       width:100%;
     }
-    .miniNote{ color:var(--dim); font-weight:700; }
+    .miniNote{ color:#4a6894; font-weight:700; }
 
     .progressWrap{ display:flex; align-items:center; gap:10px; }
     #lptRange{
@@ -117,7 +123,6 @@
       color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75);
       pointer-events:none; letter-spacing:1.5px; z-index:2;
     }
-    /* x/y label reduced by 30% */
     .xyLabel{
       position:absolute; left:16px; top:14px;
       font: 900 var(--xy-font)/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -145,12 +150,12 @@
 
     .tabsWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
     .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); }
-    .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#dim; }
-    .tab.active{ color:var(--text); background:linear-gradient(180deg,#e6f1ff,#ffffff); }
+    .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
+    .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
     .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; }
 
     .gridWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; flex-direction:column; }
-    .gridHead{ justify-content:space-between; gap:8px; color:#dim; width:100%; }
+    .gridHead{ justify-content:space-between; gap:8px; color:#4a6894; width:100%; }
     .grid{ display:grid; gap:10px; grid-template-columns:repeat(13, minmax(0, 1fr)); width:100%; margin-top:10px; }
     @media (max-width:980px){ .grid{ grid-template-columns:repeat(8, minmax(0, 1fr)); } }
     .cell{
@@ -165,6 +170,54 @@
 
     .bottomAuth{ margin:18px auto 0; max-width:760px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; }
     .bottomAuth input{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); }
+
+    /* Garden view styles */
+    .gardenWrap{ width:100%; display:flex; flex-direction:column; gap:10px; }
+    .gardenLegend{ display:flex; gap:10px; align-items:center; color:#4a6894; font-weight:700; flex-wrap:wrap; }
+    .gardenLegend .box{ width:18px; height:18px; border-radius:4px; border:1px solid #2b1a10; }
+    .box.soil{ background:linear-gradient(180deg,var(--soil1),var(--soil2)); }
+    .box.pit{ background:var(--pit); }
+    .box.tree{ background:linear-gradient(180deg,#e9fff1,#ffffff); border-color:#14563a; }
+    .gardenField{
+      position:relative;
+      width:100%;
+      border-radius:16px;
+      border:2px solid #2b1a10;
+      background:
+        radial-gradient(20px 12px at 20% 30%, rgba(255,255,255,0.08), transparent 60%),
+        radial-gradient(18px 10px at 70% 60%, rgba(0,0,0,0.08), transparent 60%),
+        linear-gradient(180deg,var(--soil3),var(--soil2) 40%,var(--soil1));
+      padding:14px;
+      box-shadow: inset 0 6px 18px rgba(0,0,0,.25);
+    }
+    .gardenGrid{
+      display:grid;
+      grid-template-columns:repeat(13, minmax(0, 1fr));
+      gap:10px;
+    }
+    @media (max-width:980px){
+      .gardenGrid{ grid-template-columns:repeat(8, minmax(0, 1fr)); }
+    }
+    .plot{
+      position:relative; aspect-ratio:1/1; border-radius:12px;
+      background: linear-gradient(180deg,#6e452a,#59361f);
+      border:1px solid var(--pit-stroke);
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-weight:800; overflow:hidden;
+      box-shadow: inset 0 8px 14px rgba(0,0,0,.25), inset 0 -6px 10px rgba(255,255,255,.05);
+    }
+    .plot .seedling{
+      width:14px; height:14px; border-radius:2px; background:#2b1a10; position:absolute; bottom:10px;
+      box-shadow:0 -10px 0 2px var(--sprout);
+      opacity:.65;
+    }
+    .plot.tree{
+      background:linear-gradient(180deg,#e9fff1,#ffffff);
+      border:2px solid #16a34a; color:#14563a;
+    }
+    .plot.tree .emoji{
+      font-size:var(--tree-emoji-size); filter: drop-shadow(0 2px 2px rgba(0,0,0,.2));
+    }
   </style>
 </head>
 <body>
@@ -191,7 +244,6 @@
           <span id="lockHint" style="color:var(--dim)">Editable once per ISO week</span>
         </div>
 
-        <!-- LPT note moved above slider -->
         <div class="estWrap">
           <div class="miniNote" id="lptNote">LPT = No. of 25 min sessions per week</div>
           <div id="weeklyHours">Weekly hours = 3 hrs 45 mins (as per LPT)</div>
@@ -209,9 +261,7 @@
       <div class="treeBox">
         <div class="sky"></div>
 
-        <!-- big % bottom-left -->
         <div id="percentLabel" class="percentLabel">0%</div>
-        <!-- x/y top-left reduced -->
         <div id="xyLabel" class="xyLabel">0/9 of leaves completed</div>
 
         <div id="rainLayer" class="rain"></div>
@@ -286,7 +336,16 @@
       </div>
 
       <div id="gardenPanel" class="panelCard">
-        <div>Garden view placeholder</div>
+        <div class="gardenWrap" style="width:100%;">
+          <div class="gardenLegend">
+            <div class="box soil"></div><span>Soil bed</span>
+            <div class="box pit"></div><span>Empty plot</span>
+            <div class="box tree"></div><span>Planted tree (weekly complete)</span>
+          </div>
+          <div class="gardenField">
+            <div id="gardenGrid" class="gardenGrid"></div>
+          </div>
+        </div>
       </div>
 
       <div id="subPanel" class="panelCard">
@@ -353,6 +412,24 @@
     const weeklyHoursEl=el('weeklyHours'), lptNoteEl=el('lptNote');
 
     const LEAF_SECONDS=1500; // 25 minutes per leaf
+
+    // Alarm: Web Audio unlocked on first Start click
+    let audioCtx=null;
+    function initAudioCtx(){ if(!audioCtx){ const AC=window.AudioContext||window.webkitAudioContext; if(AC){ audioCtx=new AC(); if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); } } } } // [Autoplay]
+    function playBeep(){
+      if(!audioCtx) return;
+      const t=audioCtx.currentTime;
+      const osc=audioCtx.createOscillator();
+      const gain=audioCtx.createGain();
+      osc.type='sine';
+      osc.frequency.setValueAtTime(880, t);
+      gain.gain.setValueAtTime(0.0008, t);
+      gain.gain.exponentialRampToValueAtTime(0.2, t+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t+0.45);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t+0.5);
+    }
 
     function unshiftWeekToGrid(week, year, live){
       S.grid.unshift({week,year,live,ts:Date.now()});
@@ -442,22 +519,6 @@
       if(on && rainLayer.childElementCount===0){ makeRain(); }
     }
 
-    let interval=null;
-    function setRunning(on){
-      S.running=on;
-      const canopyOutline = document.getElementById('canopyOutline');
-      if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
-      const cur=leafLayer.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
-      document.getElementById('startBtn').textContent = on ? 'Running…' : 'Start 25:00';
-      document.getElementById('startBtn').disabled = !!on;
-      showRain(!!on);
-    }
-    function format(sec){
-      const m=String(Math.floor(sec/60)).padStart(2,'0');
-      const s=String(sec%60).padStart(2,'0');
-      return `${m}:${s}`;
-    }
-
     function buildGrid(){
       const grid=document.getElementById('treeGrid'); grid.innerHTML='';
       for(let i=0;i<52;i++){
@@ -476,6 +537,25 @@
         grid.appendChild(cell);
       }
       document.getElementById('gridCount').textContent=`${Math.min(S.grid.length, 52)} / 52`;
+    }
+
+    function buildGarden(){
+      const field=document.getElementById('gardenGrid');
+      if(!field) return;
+      field.innerHTML='';
+      for(let i=0;i<52;i++){
+        const plot=document.createElement('div');
+        plot.className='plot';
+        const entry=S.grid[i];
+        if(entry && entry.live){
+          plot.classList.add('tree');
+          const em=document.createElement('div'); em.className='emoji'; em.textContent='🌳';
+          plot.appendChild(em);
+        }else{
+          const seed=document.createElement('div'); seed.className='seedling'; plot.appendChild(seed);
+        }
+        field.appendChild(plot);
+      }
     }
 
     function updateWeeklyHours(){
@@ -500,17 +580,34 @@
       document.getElementById('todayChip').textContent=`Today: ${S.leavesToday} leaves`;
       document.getElementById('weekChip').textContent=`Week: ${S.weeklyLeaves} leaves`;
       buildGrid();
+      buildGarden();
       lptVal.textContent=String(S.leavesPerTree);
       lptInput.value = S.leavesPerTree;
       document.getElementById('lptSetBtn').disabled = !!S.weeklyTargetLocked;
       lptInput.disabled = !!S.weeklyTargetLocked;
-      lockHint.textContent = S.weeklyTargetLocked
+      document.getElementById('lockHint').textContent = S.weeklyTargetLocked
         ? `Target locked for ISO Week ${S.week}-${S.year} at ${S.weeklyTargetSetValue}`
         : 'Editable once per ISO week';
       applyProgress();
       updateWeeklyHours();
       paintProgressUI();
       save(S);
+    }
+
+    let interval=null;
+    function setRunning(on){
+      S.running=on;
+      const canopyOutline = document.getElementById('canopyOutline');
+      if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
+      const cur=leafLayer.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
+      document.getElementById('startBtn').textContent = on ? 'Running…' : 'Start 25:00';
+      document.getElementById('startBtn').disabled = !!on;
+      showRain(!!on);
+    }
+    function format(sec){
+      const m=String(Math.floor(sec/60)).padStart(2,'0');
+      const s=String(sec%60).padStart(2,'0');
+      return `${m}:${s}`;
     }
 
     function startSessionWallClock(){
@@ -544,6 +641,9 @@
       function onSessionComplete(){
         document.removeEventListener('visibilitychange', onVisibility);
 
+        // Play alarm beep at session end
+        playBeep();
+
         if(S.weeklyComplete){
           setRunning(false);
           showRain(false);
@@ -562,17 +662,16 @@
         applyProgress();
         setRunning(false);
         showRain(false);
-        renderHUD();
 
         if(S.placed===S.leavesPerTree){
           S.weeklyComplete=true;
           unshiftWeekToGrid(S.week, S.year, true);
-          renderHUD();
         }else{
           S.secondsLeft=LEAF_SECONDS;
           document.getElementById('clock').textContent=format(S.secondsLeft);
           save(S);
         }
+        renderHUD();
       }
     }
 
@@ -580,7 +679,14 @@
       rolloverWeekIfNeeded();
       if(interval) return;
 
-      if(!S.subActive && freePlanLimitReached()){
+      // Unlock audio on first Start click
+      initAudioCtx();
+
+      if(!S.subActive && (()=>{
+        const distinct = new Set(S.grid.map(e=>`${e.year}-W${e.week}`));
+        if(S.week!==undefined && S.year!==undefined) distinct.add(`${S.year}-W${S.week}`);
+        return distinct.size >= (S.freeWeeksCap||4);
+      })()){
         alert('Free plan allows 4 weeks. Unlock remaining 48 weeks for $1 to continue tracking weekly trees.');
         return;
       }
