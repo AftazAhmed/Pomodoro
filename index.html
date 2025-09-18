@@ -16,11 +16,16 @@
 
       --canopy-stroke-idle:#065f46;
 
-      --canopy-white:#ffffff;
+      /* Animated fill for progress (unchanged) */
       --canopy-fill-green:#7ddf8c;
 
+      /* Grass palette (reference) */
       --sky1:#cfe8ff; --sky2:#8ec5ff;
       --grass1:#bfeec7; --grass2:#8edaa0;
+
+      /* Base canopy one shade darker than grass: slightly deeper cool green */
+      --canopy-base-1:#a3e3b5; /* darker than grass1 #bfeec7 */
+      --canopy-base-2:#7fce9d; /* close to but subtly deeper than grass2 #8edaa0 */
 
       --radius-lg:18px; --shadow:0 10px 28px rgba(30,70,140,.1);
 
@@ -34,6 +39,10 @@
       --btn-neutral:#334155;
       --btn-neutral-hover:#1f2937;
       --btn-focus:#0ea5e9;
+
+      --progress-green:#16a34a;
+      --progress-red:#ef4444;
+      --track-bg:#e6efff;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
@@ -44,7 +53,6 @@
     h1{ margin:0; font-size:22px; }
     .brand{ gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); }
 
-    /* Only Today + Week counters kept */
     .stats{ gap:10px; flex-wrap:wrap; }
     .chip{ gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#dim; }
 
@@ -76,6 +84,18 @@
 
     .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; }
 
+    .progressWrap{ display:flex; align-items:center; gap:10px; }
+    #lptRange{
+      -webkit-appearance:none; appearance:none; width:260px; height:12px; border-radius:999px; overflow:hidden;
+      background:var(--track-bg);
+      border:1px solid var(--line);
+    }
+    #lptRange::-webkit-slider-thumb{ -webkit-appearance:none; width:0; height:0; border:none; box-shadow:none; background:transparent; }
+    #lptRange::-moz-range-thumb{ width:0; height:0; border:none; box-shadow:none; background:transparent; }
+    #lptRange::-ms-thumb{ width:0; height:0; border:none; box-shadow:none; background:transparent; }
+    #lptRange::-webkit-slider-runnable-track{ height:12px; border-radius:999px; background:transparent; }
+    #lptRange::-moz-range-track{ height:12px; border-radius:999px; background:transparent; }
+
     .treePanel{ margin:14px auto; max-width:760px; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
     .sky{ position:absolute; inset:0; background:linear-gradient(180deg,var(--sky1) 0%, var(--sky2) 62%, var(--grass1) 62%, var(--grass2) 100%); }
@@ -84,8 +104,13 @@
       position:absolute; left:14px; bottom:8px;
       font: 900 108px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75);
-      pointer-events:none; letter-spacing:1.5px;
-      z-index:2;
+      pointer-events:none; letter-spacing:1.5px; z-index:2;
+    }
+    .xyLabel{
+      position:absolute; left:16px; top:14px;
+      font: 900 54px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65);
+      pointer-events:none; letter-spacing:1px; z-index:2;
     }
 
     @keyframes canopyBlink { 0%,100%{ stroke: var(--canopy-stroke-idle);} 50%{ stroke: #000; } }
@@ -94,11 +119,9 @@
     .blink-leaf{ animation: leafBlink 900ms linear infinite; }
     .leaf-number{ font: 800 13px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:#ffffff; text-anchor:middle; dominant-baseline:middle; }
 
-    /* Rain on top */
     .treeBox{ position:relative; }
     .rain{
-      position:absolute; inset:0; pointer-events:none; display:none;
-      z-index:9999;
+      position:absolute; inset:0; pointer-events:none; display:none; z-index:9999;
     }
     .rain .drop{
       position:absolute; top:-12px; width:3px; height:14px;
@@ -155,8 +178,12 @@
           <button id="lptSetBtn">Set</button>
           <span id="lockHint" style="color:var(--dim)">Editable once per ISO week</span>
         </div>
-        <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
-        <span id="lptVal">9</span>
+
+        <div class="progressWrap">
+          <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
+          <span id="lptVal">9</span>
+        </div>
+
         <div class="estWrap" id="weeklyHours">Weekly hours = 3 hrs 45 mins (as per LPT)</div>
       </div>
     </section>
@@ -167,18 +194,60 @@
         <div class="sky"></div>
 
         <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
+          <!-- Dense saplings across all grass bands (62%-100% height) -->
           <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round">
-            <g transform="translate(120 460) scale(1.0)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(200 468) scale(0.85)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
-            <g transform="translate(280 462) scale(1.05)"><path d="M0 0 C 5 -12, 5 -24, 5 -34"/><path d="M5 -26 C 14 -34, 20 -34, 24 -30"/><path d="M5 -22 C -3 -30, -10 -30, -15 -26"/></g>
-            <g transform="translate(360 470) scale(0.9)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 10 -28, 16 -28, 20 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
-            <g transform="translate(440 465) scale(0.95)"><path d="M0 0 C 4 -11, 4 -22, 4 -31"/><path d="M4 -24 C 12 -31, 18 -31, 22 -27"/><path d="M4 -20 C -3 -27, -9 -27, -13 -23"/></g>
+            <!-- Row 1 (near horizon) -->
+            <g transform="translate(20 420) scale(0.8)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(70 422) scale(0.82)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(120 420) scale(0.84)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(170 422) scale(0.8)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(220 420) scale(0.84)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(270 422) scale(0.82)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(320 420) scale(0.8)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(370 422) scale(0.84)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(420 420) scale(0.82)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+            <g transform="translate(470 422) scale(0.8)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
+
+            <!-- Row 2 -->
+            <g transform="translate(40 445) scale(0.9)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
+            <g transform="translate(90 447) scale(0.92)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
+            <g transform="translate(140 445) scale(0.9)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
+            <g transform="translate(190 447) scale(0.92)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
+            <g transform="translate(240 445) scale(0.9)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
+            <g transform="translate(290 447) scale(0.92)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
+            <g transform="translate(340 445) scale(0.9)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
+            <g transform="translate(390 447) scale(0.92)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
+            <g transform="translate(440 445) scale(0.9)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
+            <g transform="translate(490 447) scale(0.92)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
+
+            <!-- Row 3 -->
+            <g transform="translate(20 470) scale(1.0)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(70 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(120 470) scale(1.04)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(170 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(220 470) scale(1.0)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(270 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(320 470) scale(1.04)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(370 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(420 470) scale(1.0)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(470 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+
+            <!-- Row 4 (front) -->
+            <g transform="translate(30 500) scale(1.12)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
+            <g transform="translate(90 502) scale(1.08)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(150 504) scale(1.14)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
+            <g transform="translate(210 506) scale(1.1)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(270 508) scale(1.16)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
+            <g transform="translate(330 506) scale(1.12)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
+            <g transform="translate(390 504) scale(1.14)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
+            <g transform="translate(450 502) scale(1.08)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
+            <g transform="translate(510 500) scale(1.12)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
           </g>
         </svg>
 
         <div id="percentLabel" class="percentLabel">0%</div>
+        <div id="xyLabel" class="xyLabel">0/9 of leaves completed</div>
 
-        <!-- Rain layer -->
         <div id="rainLayer" class="rain"></div>
 
         <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible">
@@ -191,6 +260,12 @@
               <rect fill="#000" x="100" y="150" width="380" height="220"/>
               <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
             </mask>
+
+            <!-- Base canopy one-shade-darker-than-grass -->
+            <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="var(--canopy-base-1)" />
+              <stop offset="100%" stop-color="var(--canopy-base-2)" />
+            </linearGradient>
           </defs>
 
           <g id="canopyGroup" transform="translate(280 280) scale(1,1.2) translate(-280 -280)">
@@ -205,7 +280,7 @@
               C 312 322, 248 322, 220 304
               C 195 314, 150 306, 130 284
               C 110 262, 112 232, 130 210 Z"
-              fill="var(--canopy-white)"/>
+              fill="url(#canopyBaseDarker)"/>
             <path id="canopyFillGreen" d="
               M 130 210
               C 160 172, 205 158, 235 172
@@ -316,6 +391,7 @@
           leafLayer=el('leafLayer'),
           fillRect=el('fillRect'),
           percentLabel=el('percentLabel'),
+          xyLabel=el('xyLabel'),
           rainLayer=el('rainLayer');
 
     const lptInput=el('lptInput'), lptRange=el('lptRange'), lptVal=el('lptVal'), lockHint=el('lockHint'), lptSetBtn=el('lptSetBtn');
@@ -417,8 +493,8 @@
       const canopyOutline = document.getElementById('canopyOutline');
       if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
       const cur=leafLayer.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
-      el('startBtn').textContent = on ? 'Running…' : 'Start 25:00';
-      el('startBtn').disabled = !!on;
+      document.getElementById('startBtn').textContent = on ? 'Running…' : 'Start 25:00';
+      document.getElementById('startBtn').disabled = !!on;
       showRain(!!on);
     }
     function format(sec){
@@ -428,7 +504,7 @@
     }
 
     function buildGrid(){
-      const grid=el('treeGrid'); grid.innerHTML='';
+      const grid=document.getElementById('treeGrid'); grid.innerHTML='';
       for(let i=0;i<52;i++){
         const cell=document.createElement('div'); cell.className='cell';
         const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
@@ -444,7 +520,7 @@
         cell.appendChild(icon);
         grid.appendChild(cell);
       }
-      el('gridCount').textContent=`${Math.min(S.grid.length, 52)} / 52`;
+      document.getElementById('gridCount').textContent=`${Math.min(S.grid.length, 52)} / 52`;
     }
 
     function updateWeeklyHours(){
@@ -455,25 +531,32 @@
       weeklyHoursEl.textContent = label;
     }
 
+    function paintProgressUI(){
+      const total = Math.max(1, Number(S.leavesPerTree)||1);
+      const done = Math.max(0, Math.min(S.placed, total));
+      const pct = (done/total)*100;
+      lptRange.style.background = `linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
+      xyLabel.textContent = `${done}/${total} of leaves completed`;
+    }
+
     function renderHUD(){
-      el('clock').textContent=format(S.secondsLeft);
-      el('todayChip').textContent=`Today: ${S.leavesToday} leaves`;
-      el('weekChip').textContent=`Week: ${S.weeklyLeaves} leaves`;
+      document.getElementById('clock').textContent=format(S.secondsLeft);
+      document.getElementById('todayChip').textContent=`Today: ${S.leavesToday} leaves`;
+      document.getElementById('weekChip').textContent=`Week: ${S.weeklyLeaves} leaves`;
       buildGrid();
       lptVal.textContent=String(S.leavesPerTree);
-      lptRange.value = S.leavesPerTree;
       lptInput.value = S.leavesPerTree;
-      el('lptSetBtn').disabled = !!S.weeklyTargetLocked;
+      document.getElementById('lptSetBtn').disabled = !!S.weeklyTargetLocked;
       lptInput.disabled = !!S.weeklyTargetLocked;
       lockHint.textContent = S.weeklyTargetLocked
         ? `Target locked for ISO Week ${S.week}-${S.year} at ${S.weeklyTargetSetValue}`
         : 'Editable once per ISO week';
       applyProgress();
       updateWeeklyHours();
+      paintProgressUI();
       save(S);
     }
 
-    // Wall-clock timer to avoid drift from background throttling
     function startSessionWallClock(){
       const targetEpoch = Date.now() + (S.secondsLeft * 1000);
 
@@ -481,7 +564,8 @@
         const remainingMs = Math.max(0, targetEpoch - Date.now());
         const remainingSec = Math.ceil(remainingMs / 1000);
         S.secondsLeft = remainingSec;
-        el('clock').textContent = format(S.secondsLeft);
+        document.getElementById('clock').textContent = format(S.secondsLeft);
+        paintProgressUI();
 
         if (remainingMs <= 0) {
           clearInterval(interval); interval = null;
@@ -508,7 +592,7 @@
           setRunning(false);
           showRain(false);
           S.secondsLeft = LEAF_SECONDS;
-          el('clock').textContent = format(S.secondsLeft);
+          document.getElementById('clock').textContent = format(S.secondsLeft);
           save(S);
           return;
         }
@@ -530,7 +614,7 @@
           renderHUD();
         }else{
           S.secondsLeft=LEAF_SECONDS;
-          el('clock').textContent=format(S.secondsLeft);
+          document.getElementById('clock').textContent=format(S.secondsLeft);
           save(S);
         }
       }
@@ -579,7 +663,7 @@
           document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
           t.classList.add('active');
           document.querySelectorAll('.panelCard').forEach(p=>p.style.display='none');
-          el(t.dataset.tab).style.display='flex';
+          document.getElementById(t.dataset.tab).style.display='flex';
         });
       });
     }
@@ -608,8 +692,6 @@
         applyProgress();
 
         lptVal.textContent = String(S.leavesPerTree);
-        lptRange.value = S.leavesPerTree;
-        lptInput.value = S.leavesPerTree;
         renderHUD();
       });
     }
@@ -623,7 +705,7 @@
     }
 
     function wireSubscription(){
-      const btn=el('subBtn');
+      const btn=document.getElementById('subBtn');
       if(!btn) return;
       btn.addEventListener('click', ()=>{
         if(S.subActive) return;
@@ -633,12 +715,11 @@
       });
     }
 
-    // Boot
     rolloverWeekIfNeeded();
 
-    // Initialize mask rect
-    fillRect.setAttribute('x','110'); fillRect.setAttribute('width','360');
-    fillRect.setAttribute('y','316'); fillRect.setAttribute('height','0');
+    const fillRectEl = document.getElementById('fillRect');
+    fillRectEl.setAttribute('x','110'); fillRectEl.setAttribute('width','360');
+    fillRectEl.setAttribute('y','316'); fillRectEl.setAttribute('height','0');
 
     renderLeavesFromState();
     applyProgress();
