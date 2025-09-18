@@ -16,14 +16,12 @@
 
       --canopy-stroke-idle:#065f46;
 
-      /* Base canopy: one shade darker than grass (kept) */
       --sky1:#cfe8ff; --sky2:#8ec5ff;
       --grass1:#bfeec7; --grass2:#8edaa0;
-      --canopy-base-1:#a3e3b5; /* darker than grass1 */
-      --canopy-base-2:#7fce9d; /* darker than grass2 */
+      --canopy-base-1:#a3e3b5;
+      --canopy-base-2:#7fce9d;
 
-      /* Animated progress fill MUST be darker than base canopy */
-      --canopy-fill-green:#3aa85f; /* darker than base2 (#7fce9d) for clear contrast */
+      --canopy-fill-green:#3aa85f;
 
       --radius-lg:18px; --shadow:0 10px 28px rgba(30,70,140,.1);
 
@@ -41,6 +39,11 @@
       --progress-green:#16a34a;
       --progress-red:#ef4444;
       --track-bg:#e6efff;
+
+      /* Sizing tokens */
+      --xy-font: 37.8px;  /* 30% smaller than 54px */
+      --info-font: 12px;  /* compact info chips */
+      --info-line: 1.25;  /* line height for two-line block */
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
@@ -80,7 +83,17 @@
     .numWrap{ display:flex; align-items:center; gap:8px; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
 
-    .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; }
+    /* Two-line info block sits above slider; fixed height to avoid shifts */
+    .estWrap{
+      margin-top:6px; color:#0b1a33; font-weight:700;
+      font-size:var(--info-font); line-height:var(--info-line);
+      text-align:center;
+      min-height: calc(2 * var(--info-font) * var(--info-line));
+      display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center;
+      order:-1; /* move before slider in flex flow */
+      width:100%;
+    }
+    .miniNote{ color:var(--dim); font-weight:700; }
 
     .progressWrap{ display:flex; align-items:center; gap:10px; }
     #lptRange{
@@ -104,9 +117,10 @@
       color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75);
       pointer-events:none; letter-spacing:1.5px; z-index:2;
     }
+    /* x/y label reduced by 30% */
     .xyLabel{
       position:absolute; left:16px; top:14px;
-      font: 900 54px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font: 900 var(--xy-font)/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65);
       pointer-events:none; letter-spacing:1px; z-index:2;
     }
@@ -177,12 +191,16 @@
           <span id="lockHint" style="color:var(--dim)">Editable once per ISO week</span>
         </div>
 
+        <!-- LPT note moved above slider -->
+        <div class="estWrap">
+          <div class="miniNote" id="lptNote">LPT = No. of 25 min sessions per week</div>
+          <div id="weeklyHours">Weekly hours = 3 hrs 45 mins (as per LPT)</div>
+        </div>
+
         <div class="progressWrap">
           <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
           <span id="lptVal">9</span>
         </div>
-
-        <div class="estWrap" id="weeklyHours">Weekly hours = 3 hrs 45 mins (as per LPT)</div>
       </div>
     </section>
 
@@ -191,8 +209,14 @@
       <div class="treeBox">
         <div class="sky"></div>
 
+        <!-- big % bottom-left -->
+        <div id="percentLabel" class="percentLabel">0%</div>
+        <!-- x/y top-left reduced -->
+        <div id="xyLabel" class="xyLabel">0/9 of leaves completed</div>
+
+        <div id="rainLayer" class="rain"></div>
+
         <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
-          <!-- Keep previously expanded saplings -->
           <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round">
             <g transform="translate(20 420) scale(0.8)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
             <g transform="translate(70 422) scale(0.82)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
@@ -215,34 +239,8 @@
             <g transform="translate(390 447) scale(0.92)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
             <g transform="translate(440 445) scale(0.9)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
             <g transform="translate(490 447) scale(0.92)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
-
-            <g transform="translate(20 470) scale(1.0)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(70 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(120 470) scale(1.04)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(170 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(220 470) scale(1.0)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(270 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(320 470) scale(1.04)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(370 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(420 470) scale(1.0)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(470 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-
-            <g transform="translate(30 500) scale(1.12)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
-            <g transform="translate(90 502) scale(1.08)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(150 504) scale(1.14)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
-            <g transform="translate(210 506) scale(1.1)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(270 508) scale(1.16)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
-            <g transform="translate(330 506) scale(1.12)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
-            <g transform="translate(390 504) scale(1.14)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
-            <g transform="translate(450 502) scale(1.08)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
-            <g transform="translate(510 500) scale(1.12)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
           </g>
         </svg>
-
-        <div id="percentLabel" class="percentLabel">0%</div>
-        <div id="xyLabel" class="xyLabel">0/9 of leaves completed</div>
-
-        <div id="rainLayer" class="rain"></div>
 
         <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible">
           <defs>
@@ -255,7 +253,6 @@
               <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
             </mask>
 
-            <!-- Base canopy gradient (unchanged) -->
             <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="var(--canopy-base-1)" />
               <stop offset="100%" stop-color="var(--canopy-base-2)" />
@@ -263,47 +260,12 @@
           </defs>
 
           <g id="canopyGroup" transform="translate(280 280) scale(1,1.2) translate(-280 -280)">
-            <path id="canopyWhite" d="
-              M 130 210
-              C 160 172, 205 158, 235 172
-              C 255 152, 275 150, 295 165
-              C 315 150, 335 152, 345 172
-              C 365 158, 410 170, 430 210
-              C 446 236, 454 260, 430 284
-              C 405 306, 360 314, 340 304
-              C 312 322, 248 322, 220 304
-              C 195 314, 150 306, 130 284
-              C 110 262, 112 232, 130 210 Z"
-              fill="url(#canopyBaseDarker)"/>
-            <path id="canopyFillGreen" d="
-              M 130 210
-              C 160 172, 205 158, 235 172
-              C 255 152, 275 150, 295 165
-              C 315 150, 335 152, 345 172
-              C 365 158, 410 170, 430 210
-              C 446 236, 454 260, 430 284
-              C 405 306, 360 314, 340 304
-              C 312 322, 248 322, 220 304
-              C 195 314, 150 306, 130 284
-              C 110 262, 112 232, 130 210 Z"
-              fill="var(--canopy-fill-green)" mask="url(#fillMask)"/>
-            <path id="canopyOutline" d="
-              M 130 210
-              C 160 172, 205 158, 235 172
-              C 255 152, 275 150, 295 165
-              C 315 150, 335 152, 345 172
-              C 365 158, 410 170, 430 210
-              C 446 236, 454 260, 430 284
-              C 405 306, 360 314, 340 304
-              C 312 322, 248 322, 220 304
-              C 195 314, 150 306, 130 284
-              C 110 262, 112 232, 130 210 Z"
-              fill="transparent" stroke="var(--canopy-stroke-idle)" stroke-width="3" />
-
+            <path id="canopyWhite" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="url(#canopyBaseDarker)"/>
+            <path id="canopyFillGreen" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="var(--canopy-fill-green)" mask="url(#fillMask)"/>
+            <path id="canopyOutline" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="transparent" stroke="var(--canopy-stroke-idle)" stroke-width="3" />
             <path d="M 280 380 C 280 350, 280 320, 280 284" fill="none" stroke="var(--trunk-brown)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
             <path d="M 280 284 C 270 270, 258 255, 248 238" fill="none" stroke="var(--trunk-brown)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
             <path d="M 280 284 C 290 270, 302 255, 312 238" fill="none" stroke="var(--trunk-brown)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
-
             <g id="leafLayer" filter="url(#leafShadow)"></g>
           </g>
         </svg>
@@ -381,15 +343,14 @@
     const svgns='http://www.w3.org/2000/svg';
     const el=id=>document.getElementById(id);
 
-    const canopy=el('canopyOutline'),
-          leafLayer=el('leafLayer'),
+    const leafLayer=el('leafLayer'),
           fillRect=el('fillRect'),
           percentLabel=el('percentLabel'),
           xyLabel=el('xyLabel'),
           rainLayer=el('rainLayer');
 
     const lptInput=el('lptInput'), lptRange=el('lptRange'), lptVal=el('lptVal'), lockHint=el('lockHint'), lptSetBtn=el('lptSetBtn');
-    const weeklyHoursEl=el('weeklyHours');
+    const weeklyHoursEl=el('weeklyHours'), lptNoteEl=el('lptNote');
 
     const LEAF_SECONDS=1500; // 25 minutes per leaf
 
@@ -523,6 +484,7 @@
       const m = Math.round((hours - h)*60);
       const label = `Weekly hours = ${h} hrs ${m} mins (as per LPT)`;
       weeklyHoursEl.textContent = label;
+      lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
     }
 
     function paintProgressUI(){
@@ -696,6 +658,7 @@
       const h = Math.floor(hours);
       const m = Math.round((hours - h)*60);
       weeklyHoursEl.textContent = `Weekly hours = ${h} hrs ${m} mins (as per LPT)`;
+      lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
     }
 
     function wireSubscription(){
@@ -709,6 +672,7 @@
       });
     }
 
+    // init
     rolloverWeekIfNeeded();
 
     const fillRectEl = document.getElementById('fillRect');
