@@ -16,16 +16,14 @@
 
       --canopy-stroke-idle:#065f46;
 
-      /* Animated fill for progress (unchanged) */
-      --canopy-fill-green:#7ddf8c;
-
-      /* Grass palette (reference) */
+      /* Base canopy: one shade darker than grass (kept) */
       --sky1:#cfe8ff; --sky2:#8ec5ff;
       --grass1:#bfeec7; --grass2:#8edaa0;
+      --canopy-base-1:#a3e3b5; /* darker than grass1 */
+      --canopy-base-2:#7fce9d; /* darker than grass2 */
 
-      /* Base canopy one shade darker than grass: slightly deeper cool green */
-      --canopy-base-1:#a3e3b5; /* darker than grass1 #bfeec7 */
-      --canopy-base-2:#7fce9d; /* close to but subtly deeper than grass2 #8edaa0 */
+      /* Animated progress fill MUST be darker than base canopy */
+      --canopy-fill-green:#3aa85f; /* darker than base2 (#7fce9d) for clear contrast */
 
       --radius-lg:18px; --shadow:0 10px 28px rgba(30,70,140,.1);
 
@@ -138,7 +136,7 @@
     .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; }
 
     .gridWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; flex-direction:column; }
-    .gridHead{ justify-content:space-between; gap:8px; color:var(--dim); width:100%; }
+    .gridHead{ justify-content:space-between; gap:8px; color:#dim; width:100%; }
     .grid{ display:grid; gap:10px; grid-template-columns:repeat(13, minmax(0, 1fr)); width:100%; margin-top:10px; }
     @media (max-width:980px){ .grid{ grid-template-columns:repeat(8, minmax(0, 1fr)); } }
     .cell{
@@ -194,9 +192,8 @@
         <div class="sky"></div>
 
         <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
-          <!-- Dense saplings across all grass bands (62%-100% height) -->
+          <!-- Keep previously expanded saplings -->
           <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round">
-            <!-- Row 1 (near horizon) -->
             <g transform="translate(20 420) scale(0.8)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
             <g transform="translate(70 422) scale(0.82)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
             <g transform="translate(120 420) scale(0.84)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
@@ -208,7 +205,6 @@
             <g transform="translate(420 420) scale(0.82)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
             <g transform="translate(470 422) scale(0.8)"><path d="M0 0 C 3 -10, 3 -20, 3 -28"/><path d="M3 -22 C 9 -28, 15 -28, 19 -24"/><path d="M3 -18 C -3 -24, -9 -24, -12 -20"/></g>
 
-            <!-- Row 2 -->
             <g transform="translate(40 445) scale(0.9)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
             <g transform="translate(90 447) scale(0.92)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
             <g transform="translate(140 445) scale(0.9)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
@@ -220,7 +216,6 @@
             <g transform="translate(440 445) scale(0.9)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
             <g transform="translate(490 447) scale(0.92)"><path d="M0 0 C 3 -11, 3 -22, 3 -30"/><path d="M3 -24 C 10 -30, 16 -30, 20 -26"/><path d="M3 -20 C -3 -26, -9 -26, -12 -22"/></g>
 
-            <!-- Row 3 -->
             <g transform="translate(20 470) scale(1.0)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
             <g transform="translate(70 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
             <g transform="translate(120 470) scale(1.04)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
@@ -232,7 +227,6 @@
             <g transform="translate(420 470) scale(1.0)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
             <g transform="translate(470 472) scale(1.02)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
 
-            <!-- Row 4 (front) -->
             <g transform="translate(30 500) scale(1.12)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
             <g transform="translate(90 502) scale(1.08)"><path d="M0 0 C 4 -12, 4 -24, 4 -34"/><path d="M4 -26 C 12 -34, 18 -34, 22 -30"/><path d="M4 -22 C -4 -30, -10 -30, -14 -26"/></g>
             <g transform="translate(150 504) scale(1.14)"><path d="M0 0 C 5 -13, 5 -26, 5 -36"/><path d="M5 -28 C 14 -36, 20 -36, 24 -32"/><path d="M5 -24 C -4 -32, -10 -32, -14 -28"/></g>
@@ -261,7 +255,7 @@
               <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
             </mask>
 
-            <!-- Base canopy one-shade-darker-than-grass -->
+            <!-- Base canopy gradient (unchanged) -->
             <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stop-color="var(--canopy-base-1)" />
               <stop offset="100%" stop-color="var(--canopy-base-2)" />
