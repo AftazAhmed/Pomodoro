@@ -20,7 +20,9 @@
       --btn-danger:#ef4444; --btn-danger-hover:#b91c1c;
       --btn-neutral:#334155; --btn-neutral-hover:#1f2937; --btn-focus:#0ea5e9;
       --progress-green:#16a34a; --progress-red:#ef4444; --track-bg:#e6efff;
-      --xy-font: 37.8px; --info-font: 12px; --info-line: 1.25;
+      --xy-font: 28.35px; /* reduced by 25% from 37.8px */
+      --info-font: 9px;   /* reduced by ~25% for sky chips */
+      --info-line: 1.25;
       --soil1:#8a6a47; --soil2:#6f5539; --soil3:#a17d56; --tree-emoji-size:26px;
     }
     *{ box-sizing:border-box; }
@@ -61,21 +63,11 @@
     .numWrap{ display:flex; align-items:center; gap:8px; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
 
-    .estWrap{
-      margin-top:6px; color:#0b1a33; font-weight:700;
-      font-size:var(--info-font); line-height:var(--info-line);
-      text-align:center;
-      min-height: calc(2 * var(--info-font) * var(--info-line));
-      display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center;
-      order:-1; width:100%;
-    }
+    .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; font-size:var(--info-font); line-height:var(--info-line); text-align:center; min-height: calc(2 * var(--info-font) * var(--info-line)); display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; order:-1; width:100%; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
     .progressWrap{ display:flex; align-items:center; gap:10px; }
-    #lptRange{
-      -webkit-appearance:none; appearance:none; width:260px; height:12px; border-radius:999px; overflow:hidden;
-      background:var(--track-bg); border:1px solid var(--line);
-    }
+    #lptRange{ -webkit-appearance:none; appearance:none; width:260px; height:12px; border-radius:999px; overflow:hidden; background:var(--track-bg); border:1px solid var(--line); }
     #lptRange::-webkit-slider-thumb{ -webkit-appearance:none; width:0; height:0; border:none; background:transparent; }
     #lptRange::-moz-range-thumb{ width:0; height:0; border:none; background:transparent; }
     #lptRange::-ms-thumb{ width:0; height:0; border:none; background:transparent; }
@@ -86,8 +78,9 @@
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
     .sky{ position:absolute; inset:0; background:linear-gradient(180deg,var(--sky1) 0%, var(--sky2) 62%, var(--grass1) 62%, var(--grass2) 100%); }
 
-    .percentLabel{ position:absolute; left:14px; bottom:8px; font: 900 108px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; }
+    .percentLabel{ position:absolute; left:14px; bottom:8px; font: 900 81px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; }
     .xyLabel{ position:absolute; left:16px; top:14px; font: 900 var(--xy-font)/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
+    .todaySky{ position:absolute; left:16px; top:52px; font: 800 calc(var(--xy-font) * 0.75)/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
     @keyframes canopyBlink { 0%,100%{ stroke: var(--canopy-stroke-idle);} 50%{ stroke: #000; } }
     @keyframes leafBlink { 0%,100%{ fill: var(--leaf-dark);} 50%{ fill: var(--leaf-light);} }
@@ -125,9 +118,8 @@
       <div class="brand"><span style="font-weight:800;">🌳</span><h1>Pomodoro Tree</h1></div>
       <div class="modeTag">Mode: <span id="modeName">Study</span></div>
       <div class="stats">
-        <div class="chip" id="todayChip"><strong>Pomodoro hours (week)</strong>: 0 hrs 0 mins</div>
-        <div class="chip" id="todayLeavesChip">Leaves (today) = 0 (0 mins)</div>
-        <div class="chip" id="totalTimeChip"><strong>Pomodoro hours (overall)</strong>: 0 hrs 0 mins</div>
+        <div class="chip" id="todayChip"><strong>Pomodoro hrs (week)</strong>: 0 hrs 0 mins</div>
+        <div class="chip" id="totalTimeChip"><strong>Pomodoro hrs (overall)</strong>: 0 hrs 0 mins</div>
       </div>
     </header>
 
@@ -149,7 +141,6 @@
           <div class="miniNote" id="lptNote">LPT = No. of 25 min sessions per week</div>
         </div>
 
-        <!-- Slider then weekly target placed BELOW Set button -->
         <div class="progressWrap" id="progressBlock" style="order:2;">
           <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
           <span id="lptVal">9</span>
@@ -164,6 +155,7 @@
         <div class="sky"></div>
         <div id="percentLabel" class="percentLabel">0%</div>
         <div id="xyLabel" class="xyLabel">0/9 of leaves completed</div>
+        <div id="todaySky" class="todaySky">Leaves (today) = 0 (0 mins)</div>
         <div id="rainLayer" class="rain"></div>
 
         <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
@@ -231,7 +223,7 @@
   </div>
 
   <script>
-    const KEY='pomodoroTree_SingleMode_25min_V1';
+    const KEY='pomodoroTree_SingleMode_25min_V2';
     const svgns='http://www.w3.org/2000/svg';
     const LEAF_SECONDS=1500; // 25 minutes
 
@@ -264,7 +256,6 @@
     const weeklyTargetEl=el('weeklyTarget'), lptNoteEl=el('lptNote');
 
     const todayChip=el('todayChip');
-    const todayLeavesChip=el('todayLeavesChip');
     const totalTimeChip=el('totalTimeChip');
 
     const percentLabel=document.querySelector('.percentLabel');
@@ -273,6 +264,7 @@
     const treeGrid=el('treeGrid'); const gridCount=el('gridCount');
     const leafLayer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
     const fillRect=document.getElementById('fillRect');
+    const todaySky=el('todaySky');
 
     // Tabs behavior
     const tabsContainer=document.querySelector('.tabs');
@@ -374,6 +366,37 @@
       }
     }
 
+    // Build 21 saplings in 3 rows on the grass
+    function buildSaplings(){
+      const g=document.getElementById('saplings');
+      if(!g) return;
+      g.innerHTML='';
+      const cols=7, rows=3;
+      const startX=30, endX=530;
+      const grassYStart=560*0.62 + 20; // slightly below grass line
+      const rowGap=28;
+      for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+          const x = startX + c * ((endX - startX)/(cols-1));
+          const y = grassYStart + r*rowGap;
+          const spr = document.createElementNS(svgns,'path');
+          // simple sapling: stem + two small leaves
+          const d = `
+            M ${x} ${y} l 0 -14
+            m 0 -8 c -6 -2, -10 -6, -12 -10 c 6 2, 12 2, 18 0
+            m -6 10 c 6 -2, 10 -6, 12 -10 c -6 2, -12 2, -18 0
+          `;
+          spr.setAttribute('d', d.trim());
+          spr.setAttribute('stroke','#2f6f3a');
+          spr.setAttribute('stroke-width','2');
+          spr.setAttribute('fill','none');
+          spr.setAttribute('stroke-linecap','round');
+          spr.setAttribute('stroke-linejoin','round');
+          g.appendChild(spr);
+        }
+      }
+    }
+
     function buildGrid(){
       treeGrid.innerHTML='';
       for(let i=0;i<52;i++){
@@ -404,10 +427,10 @@
 
     function renderTotals(){
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
-      todayChip.innerHTML = `<strong>Pomodoro hours (week)</strong>: ${w.h} hrs ${w.m} mins`;
-      totalTimeChip.innerHTML = `<strong>Pomodoro hours (overall)</strong>: ${o.h} hrs ${o.m} mins`;
+      todayChip.innerHTML = `<strong>Pomodoro hrs (week)</strong>: ${w.h} hrs ${w.m} mins`;
+      totalTimeChip.innerHTML = `<strong>Pomodoro hrs (overall)</strong>: ${o.h} hrs ${o.m} mins`;
       const minsToday = minutesForLeaves(S.leavesToday||0);
-      todayLeavesChip.textContent = `Leaves (today) = ${S.leavesToday||0} (${minsToday} mins)`;
+      todaySky.textContent = `Leaves (today) = ${S.leavesToday||0} (${minsToday} mins)`;
     }
 
     function paintProgressUI(){
@@ -438,6 +461,7 @@
     function renderHUD(){
       clockEl.textContent = String(format(S.secondsLeft));
       buildGrid();
+      buildSaplings();
       lptVal.textContent=String(S.leavesPerTree);
       lptInput.value = S.leavesPerTree;
       lptSetBtn.disabled = !!S.weeklyTargetLocked;
