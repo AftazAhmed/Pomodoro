@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Focus Timer with Yearly Totals and Garden</title>
+  <title>Pomodoro Tree — Focus Timer with Weekly and Overall Totals</title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -97,18 +97,8 @@
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
     .sky{ position:absolute; inset:0; background:linear-gradient(180deg,var(--sky1) 0%, var(--sky2) 62%, var(--grass1) 62%, var(--grass2) 100%); }
 
-    .percentLabel{
-      position:absolute; left:14px; bottom:8px;
-      font: 900 108px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75);
-      pointer-events:none; letter-spacing:1.5px; z-index:2;
-    }
-    .xyLabel{
-      position:absolute; left:16px; top:14px;
-      font: 900 var(--xy-font)/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65);
-      pointer-events:none; letter-spacing:1px; z-index:2;
-    }
+    .percentLabel{ position:absolute; left:14px; bottom:8px; font: 900 108px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; }
+    .xyLabel{ position:absolute; left:16px; top:14px; font: 900 var(--xy-font)/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
 
     @keyframes canopyBlink { 0%,100%{ stroke: var(--canopy-stroke-idle);} 50%{ stroke: #000; } }
     @keyframes leafBlink { 0%,100%{ fill: var(--leaf-dark);} 50%{ fill: var(--leaf-light);} }
@@ -175,9 +165,9 @@
     <header>
       <div class="brand"><span style="font-weight:800;">🌳</span><h1>Pomodoro Tree</h1></div>
       <div class="stats">
-        <div class="chip" id="todayChip"><strong>Today</strong>: 0 leaves</div>
+        <div class="chip" id="todayChip"><strong>Total (week)</strong>: 0 hrs 0 mins</div>
         <div class="chip" id="weekChip">Week: 0 leaves</div>
-        <div class="chip" id="totalTimeChip">Total: 0 hrs 0 mins</div>
+        <div class="chip" id="totalTimeChip"><strong>Total (overall)</strong>: 0 hrs 0 mins</div>
       </div>
     </header>
 
@@ -197,7 +187,7 @@
 
         <div class="estWrap">
           <div class="miniNote" id="lptNote">LPT = No. of 25 min sessions per week</div>
-          <div id="weeklyHours">Weekly hours = 3 hrs 45 mins (as per LPT)</div>
+          <div id="weeklyTarget">Weekly target = 3 hrs 45 mins (as per LPT)</div>
         </div>
 
         <div class="progressWrap">
@@ -211,29 +201,19 @@
       <h3 style="margin:0 0 8px 0; text-align:center;">Current Tree</h3>
       <div class="treeBox">
         <div class="sky"></div>
-
         <div id="percentLabel" class="percentLabel">0%</div>
         <div id="xyLabel" class="xyLabel">0/9 of leaves completed</div>
-
         <div id="rainLayer" class="rain"></div>
 
         <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
-          <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round">
-            <!-- sapling lines kept as before or can be removed -->
-          </g>
+          <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
         </svg>
 
         <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible">
           <defs>
             <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="1.0" flood-color="#000" flood-opacity="0.15" /></filter>
-            <mask id="fillMask" maskUnits="userSpaceOnUse" x="100" y="150" width="380" height="220">
-              <rect fill="#000" x="100" y="150" width="380" height="220"/>
-              <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
-            </mask>
-            <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="var(--canopy-base-1)" />
-              <stop offset="100%" stop-color="var(--canopy-base-2)" />
-            </linearGradient>
+            <mask id="fillMask" maskUnits="userSpaceOnUse" x="100" y="150" width="380" height="220"><rect fill="#000" x="100" y="150" width="380" height="220"/><rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/></mask>
+            <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="var(--canopy-base-1)" /><stop offset="100%" stop-color="var(--canopy-base-2)" /></linearGradient>
           </defs>
 
           <g id="canopyGroup" transform="translate(280 280) scale(1,1.2) translate(-280 -280)">
@@ -258,7 +238,7 @@
       </div>
 
       <div id="hoursPanel" class="panelCard" style="display:flex;">
-        <div class="chip" id="totalTimePanel">Total: 0 hrs 0 mins</div>
+        <div class="chip" id="totalTimePanel"><strong>Total (overall)</strong>: 0 hrs 0 mins</div>
       </div>
 
       <div id="gardenPanel" class="panelCard">
@@ -309,8 +289,8 @@
     const DEFAULT_STATE={
       leavesPerTree:9, placed:0, secondsLeft:1500, running:false,
       leavesTotal:0, leavesToday:0, weeklyLeaves:0,
-      focusSecondsTotal:0, focusSecondsToday:0,
-      totalFocusSeconds:0,
+      weeklyFocusSeconds:0,          // resets each ISO week
+      totalFocusSeconds:0,           // accumulates overall
       grid:[],
       subActive:false, plan:'Free',
       week:undefined, year:undefined,
@@ -331,34 +311,67 @@
           rainLayer=el('rainLayer');
 
     const lptInput=el('lptInput'), lptRange=el('lptRange'), lptVal=el('lptVal'), lockHint=el('lockHint'), lptSetBtn=el('lptSetBtn');
-    const weeklyHoursEl=el('weeklyHours'), lptNoteEl=el('lptNote');
+    const weeklyTargetEl=el('weeklyTarget'), lptNoteEl=el('lptNote');
+
+    const todayChip=el('todayChip'), weekChip=el('weekChip');
     const totalTimeChip=el('totalTimeChip'), totalTimePanel=el('totalTimePanel');
 
-    const LEAF_SECONDS=1500; // 25 minutes per leaf
+    const LEAF_SECONDS=1500;
 
-    // Alarm: create + resume on user gesture (Start click), else beep will be blocked
+    // Alarm: loud 10s ring (square+saw) with tremolo
     let audioCtx=null;
     function ensureAudioUnlocked(){
       const AC=window.AudioContext||window.webkitAudioContext;
       if(!AC) return;
       if(!audioCtx){ audioCtx=new AC(); }
-      if(audioCtx.state==='suspended'){
-        audioCtx.resume().catch(()=>{ /* ignore */ });
-      }
+      if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); }
     }
-    function playBeep(){
-      if(!audioCtx) return;
-      if(audioCtx.state==='suspended'){ return; } // not unlocked yet
-      const t=audioCtx.currentTime;
-      const osc=audioCtx.createOscillator();
-      const gain=audioCtx.createGain();
-      osc.type='sine';
-      osc.frequency.setValueAtTime(880, t);
-      gain.gain.setValueAtTime(0.0008, t);
-      gain.gain.exponentialRampToValueAtTime(0.2, t+0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t+0.45);
-      osc.connect(gain).connect(audioCtx.destination);
-      osc.start(t); osc.stop(t+0.5);
+    function playAlarm10s(){
+      if(!audioCtx || audioCtx.state==='suspended') return;
+
+      const now = audioCtx.currentTime;
+
+      // Master gain with strong envelope (loud)
+      const master = audioCtx.createGain();
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.linearRampToValueAtTime(0.85, now + 0.03);
+      master.gain.setValueAtTime(0.85, now + 9.7);
+      master.gain.linearRampToValueAtTime(0.0001, now + 10.0);
+      master.connect(audioCtx.destination);
+
+      // Square tone (main)
+      const oscA = audioCtx.createOscillator();
+      oscA.type='square';
+      oscA.frequency.setValueAtTime(880, now);
+
+      // Saw tone (body)
+      const oscB = audioCtx.createOscillator();
+      oscB.type='sawtooth';
+      oscB.frequency.setValueAtTime(440, now);
+
+      // Light siren sweep on A
+      oscA.frequency.linearRampToValueAtTime(660, now + 0.5);
+      oscA.frequency.linearRampToValueAtTime(880, now + 1.0);
+
+      // Tremolo for urgency
+      const trem = audioCtx.createOscillator();
+      trem.type='sine';
+      trem.frequency.setValueAtTime(6, now);
+      const tremGain = audioCtx.createGain();
+      tremGain.gain.setValueAtTime(0.5, now);
+      trem.connect(tremGain);
+      tremGain.connect(master.gain);
+
+      oscA.connect(master);
+      oscB.connect(master);
+
+      trem.start(now);
+      oscA.start(now);
+      oscB.start(now);
+
+      oscA.stop(now + 10.1);
+      oscB.stop(now + 10.1);
+      trem.stop(now + 10.1);
     }
 
     function unshiftWeekToGrid(week, year, live){
@@ -381,7 +394,8 @@
         const completed = (S.placed>=S.leavesPerTree && S.leavesPerTree>0);
         unshiftWeekToGrid(S.week, S.year, completed);
         S.week=wk; S.year=yr;
-        S.weeklyLeaves=0; S.leavesToday=0; S.focusSecondsToday=0;
+        S.weeklyLeaves=0; S.leavesToday=0;
+        S.weeklyFocusSeconds=0;
         S.weeklyComplete=false;
         S.weeklyTargetLocked=false;
         S.weeklyTargetSetValue=S.leavesPerTree;
@@ -409,8 +423,7 @@
     }
     function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
 
-    const CANOPY_BOTTOM=316;
-    const FILL_OVERSCAN=165;
+    const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
     function setFillPercent(pct){
       const p=Math.max(0, Math.min(100, Number(pct)||0));
       const targetH=FILL_OVERSCAN*(p/100);
@@ -482,21 +495,20 @@
       }
     }
 
-    function updateWeeklyHours(){
+    function updateWeeklyTarget(){
       const hours = (S.leavesPerTree * (LEAF_SECONDS/3600));
       const h = Math.floor(hours);
       const m = Math.round((hours - h)*60);
-      weeklyHoursEl.textContent = `Weekly hours = ${h} hrs ${m} mins (as per LPT)`;
+      weeklyTargetEl.textContent = `Weekly target = ${h} hrs ${m} mins (as per LPT)`;
       lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
     }
 
-    function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
-    function formatTotalsLabel(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return `Total: ${h} hrs ${m} mins`; }
-
+    function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
     function renderTotals(){
-      const label = formatTotalsLabel(S.totalFocusSeconds||0);
-      totalTimeChip.textContent = label;
-      totalTimePanel.textContent = label;
+      const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
+      todayChip.innerHTML = `<strong>Total (week)</strong>: ${w.h} hrs ${w.m} mins`;
+      totalTimeChip.innerHTML = `<strong>Total (overall)</strong>: ${o.h} hrs ${o.m} mins`;
+      totalTimePanel.innerHTML = `<strong>Total (overall)</strong>: ${o.h} hrs ${o.m} mins`;
     }
 
     function paintProgressUI(){
@@ -508,20 +520,19 @@
     }
 
     function renderHUD(){
-      document.getElementById('clock').textContent=format(S.secondsLeft);
-      document.getElementById('todayChip').textContent=`Today: ${S.leavesToday} leaves`;
-      document.getElementById('weekChip').textContent=`Week: ${S.weeklyLeaves} leaves`;
+      document.getElementById('clock').textContent = String(format(S.secondsLeft));
+      weekChip.textContent=`Week: ${S.weeklyLeaves} leaves`;
       buildGrid();
       buildGarden();
       lptVal.textContent=String(S.leavesPerTree);
       lptInput.value = S.leavesPerTree;
-      document.getElementById('lptSetBtn').disabled = !!S.weeklyTargetLocked;
+      lptSetBtn.disabled = !!S.weeklyTargetLocked;
       lptInput.disabled = !!S.weeklyTargetLocked;
       lockHint.textContent = S.weeklyTargetLocked
         ? `Target locked for ISO Week ${S.week}-${S.year} at ${S.weeklyTargetSetValue}`
         : 'Editable once per ISO week';
       applyProgress();
-      updateWeeklyHours();
+      updateWeeklyTarget();
       paintProgressUI();
       renderTotals();
       save(S);
@@ -538,25 +549,26 @@
       showRain(!!on);
     }
 
+    function format(sec){
+      const m=String(Math.floor(sec/60)).padStart(2,'0');
+      const s=String(sec%60).padStart(2,'0');
+      return `${m}:${s}`;
+    }
+
     function startSessionWallClock(){
       const targetEpoch = Date.now() + (S.secondsLeft * 1000);
 
-      function tick() {
+      const tick = ()=>{
         const remainingMs = Math.max(0, targetEpoch - Date.now());
-        const remainingSec = Math.ceil(remainingMs / 1000);
-        S.secondsLeft = remainingSec;
+        S.secondsLeft = Math.ceil(remainingMs / 1000);
         document.getElementById('clock').textContent = format(S.secondsLeft);
         paintProgressUI();
-
         if (remainingMs <= 0) {
           clearInterval(interval); interval = null;
           onSessionComplete();
         }
-      }
-
-      function onVisibility() {
-        if (document.visibilityState === 'visible' && interval) tick();
-      }
+      };
+      const onVisibility=()=>{ if(document.visibilityState==='visible' && interval) tick(); };
 
       setRunning(true);
       renderHUD();
@@ -567,13 +579,15 @@
       function onSessionComplete(){
         document.removeEventListener('visibilitychange', onVisibility);
 
-        // Play alarm if unlocked
-        playBeep();
+        // Loud 10s alarm
+        playAlarm10s();
 
-        // Update counters
+        // Update totals
+        S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
+        S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
+
+        // Update leaves
         S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
-        S.focusSecondsTotal+=LEAF_SECONDS; S.focusSecondsToday+=LEAF_SECONDS;
-        S.totalFocusSeconds = (S.totalFocusSeconds||0) + LEAF_SECONDS;
 
         applyProgress();
         setRunning(false);
@@ -587,6 +601,7 @@
           document.getElementById('clock').textContent=format(S.secondsLeft);
           save(S);
         }
+
         renderHUD();
       }
     }
@@ -595,8 +610,7 @@
       rolloverWeekIfNeeded();
       if(interval) return;
 
-      // Unlock audio strictly on this user gesture (Start click)
-      ensureAudioUnlocked();
+      ensureAudioUnlocked(); // unlock audio on user gesture
 
       if(!S.subActive && (()=>{
         const distinct = new Set(S.grid.map(e=>`${e.year}-W${e.week}`));
@@ -652,7 +666,7 @@
       lptInput.addEventListener('input', ()=>{
         const v = clamp(lptInput.value);
         lptVal.textContent = String(v);
-        updateWeeklyHoursPreview(v);
+        updateWeeklyTargetPreview(v);
       });
 
       lptSetBtn.addEventListener('click', ()=>{
@@ -674,12 +688,12 @@
       });
     }
 
-    function updateWeeklyHoursPreview(nextLPT){
+    function updateWeeklyTargetPreview(nextLPT){
       const v = Math.max(1, Math.min(200, Number(nextLPT)||1));
       const hours = (v * (LEAF_SECONDS/3600));
       const h = Math.floor(hours);
       const m = Math.round((hours - h)*60);
-      weeklyHoursEl.textContent = `Weekly hours = ${h} hrs ${m} mins (as per LPT)`;
+      weeklyTargetEl.textContent = `Weekly target = ${h} hrs ${m} mins (as per LPT)`;
       lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
     }
 
