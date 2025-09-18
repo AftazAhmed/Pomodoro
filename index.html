@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Rain + Numbered Grid</title>
+  <title>Pomodoro Tree — 25‑Minute Focus Timer with Rain, Weekly Tree Grid, and ISO Week Tracking</title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -74,7 +74,7 @@
     .numWrap{ display:flex; align-items:center; gap:8px; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
 
-    .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; } /* weekly hours line */
+    .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; }
 
     .treePanel{ margin:14px auto; max-width:760px; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
@@ -85,7 +85,7 @@
       font: 900 108px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75);
       pointer-events:none; letter-spacing:1.5px;
-      z-index:2; /* keep below rain which will be z-index: 9999 */
+      z-index:2;
     }
 
     @keyframes canopyBlink { 0%,100%{ stroke: var(--canopy-stroke-idle);} 50%{ stroke: #000; } }
@@ -94,11 +94,11 @@
     .blink-leaf{ animation: leafBlink 900ms linear infinite; }
     .leaf-number{ font: 800 13px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:#ffffff; text-anchor:middle; dominant-baseline:middle; }
 
-    /* Rain (bring to top layer with z-index and stacking context) */
+    /* Rain on top */
     .treeBox{ position:relative; }
     .rain{
       position:absolute; inset:0; pointer-events:none; display:none;
-      z-index:9999; /* above everything inside treeBox */
+      z-index:9999;
     }
     .rain .drop{
       position:absolute; top:-12px; width:3px; height:14px;
@@ -157,7 +157,7 @@
         </div>
         <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
         <span id="lptVal">9</span>
-        <div class="estWrap" id="weeklyHours">Weekly hours = 3.75 hrs (as per LPT)</div>
+        <div class="estWrap" id="weeklyHours">Weekly hours = 3 hrs 45 mins (as per LPT)</div>
       </div>
     </section>
 
@@ -178,7 +178,7 @@
 
         <div id="percentLabel" class="percentLabel">0%</div>
 
-        <!-- Rain layer on very top via z-index -->
+        <!-- Rain layer -->
         <div id="rainLayer" class="rain"></div>
 
         <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible">
@@ -194,12 +194,47 @@
           </defs>
 
           <g id="canopyGroup" transform="translate(280 280) scale(1,1.2) translate(-280 -280)">
-            <path id="canopyWhite" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="var(--canopy-white)"/>
-            <path id="canopyFillGreen" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="var(--canopy-fill-green)" mask="url(#fillMask)"/>
-            <path id="canopyOutline" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="transparent" stroke="var(--canopy-stroke-idle)" stroke-width="3" />
+            <path id="canopyWhite" d="
+              M 130 210
+              C 160 172, 205 158, 235 172
+              C 255 152, 275 150, 295 165
+              C 315 150, 335 152, 345 172
+              C 365 158, 410 170, 430 210
+              C 446 236, 454 260, 430 284
+              C 405 306, 360 314, 340 304
+              C 312 322, 248 322, 220 304
+              C 195 314, 150 306, 130 284
+              C 110 262, 112 232, 130 210 Z"
+              fill="var(--canopy-white)"/>
+            <path id="canopyFillGreen" d="
+              M 130 210
+              C 160 172, 205 158, 235 172
+              C 255 152, 275 150, 295 165
+              C 315 150, 335 152, 345 172
+              C 365 158, 410 170, 430 210
+              C 446 236, 454 260, 430 284
+              C 405 306, 360 314, 340 304
+              C 312 322, 248 322, 220 304
+              C 195 314, 150 306, 130 284
+              C 110 262, 112 232, 130 210 Z"
+              fill="var(--canopy-fill-green)" mask="url(#fillMask)"/>
+            <path id="canopyOutline" d="
+              M 130 210
+              C 160 172, 205 158, 235 172
+              C 255 152, 275 150, 295 165
+              C 315 150, 335 152, 345 172
+              C 365 158, 410 170, 430 210
+              C 446 236, 454 260, 430 284
+              C 405 306, 360 314, 340 304
+              C 312 322, 248 322, 220 304
+              C 195 314, 150 306, 130 284
+              C 110 262, 112 232, 130 210 Z"
+              fill="transparent" stroke="var(--canopy-stroke-idle)" stroke-width="3" />
+
             <path d="M 280 380 C 280 350, 280 320, 280 284" fill="none" stroke="var(--trunk-brown)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
             <path d="M 280 284 C 270 270, 258 255, 248 238" fill="none" stroke="var(--trunk-brown)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
             <path d="M 280 284 C 290 270, 302 255, 312 238" fill="none" stroke="var(--trunk-brown)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+
             <g id="leafLayer" filter="url(#leafShadow)"></g>
           </g>
         </svg>
@@ -288,7 +323,6 @@
 
     const LEAF_SECONDS=1500; // 25 minutes per leaf
 
-    // Rollover week bookkeeping
     function unshiftWeekToGrid(week, year, live){
       S.grid.unshift({week,year,live,ts:Date.now()});
       if(S.grid.length>52) S.grid.pop();
@@ -319,7 +353,6 @@
       }
     }
 
-    // Leaves
     const baseAnchors=[{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}];
     function anchorForIndex(i){
       if(i<baseAnchors.length) return baseAnchors[i];
@@ -338,7 +371,6 @@
     }
     function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
 
-    // Fill via mask
     const CANOPY_BOTTOM=316;
     const FILL_OVERSCAN=165;
     function setFillPercent(pct){
@@ -359,7 +391,6 @@
       }
     }
 
-    // Rain (top layer)
     function makeRain(densityNear=200, densityFar=150){
       rainLayer.innerHTML='';
       const rect=rainLayer.getBoundingClientRect();
@@ -383,7 +414,8 @@
     let interval=null;
     function setRunning(on){
       S.running=on;
-      if(canopy) canopy.classList.toggle('blink-canopy', !!on);
+      const canopyOutline = document.getElementById('canopyOutline');
+      if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
       const cur=leafLayer.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
       el('startBtn').textContent = on ? 'Running…' : 'Start 25:00';
       el('startBtn').disabled = !!on;
@@ -395,7 +427,6 @@
       return `${m}:${s}`;
     }
 
-    // Grid
     function buildGrid(){
       const grid=el('treeGrid'); grid.innerHTML='';
       for(let i=0;i<52;i++){
@@ -416,7 +447,6 @@
       el('gridCount').textContent=`${Math.min(S.grid.length, 52)} / 52`;
     }
 
-    // Estimated weekly hours from LPT
     function updateWeeklyHours(){
       const hours = (S.leavesPerTree * (LEAF_SECONDS/3600));
       const h = Math.floor(hours);
@@ -432,7 +462,7 @@
       buildGrid();
       lptVal.textContent=String(S.leavesPerTree);
       lptRange.value = S.leavesPerTree;
-      lptInput.value = S.leavesPerTree; // keep input and display in sync
+      lptInput.value = S.leavesPerTree;
       el('lptSetBtn').disabled = !!S.weeklyTargetLocked;
       lptInput.disabled = !!S.weeklyTargetLocked;
       lockHint.textContent = S.weeklyTargetLocked
@@ -441,6 +471,69 @@
       applyProgress();
       updateWeeklyHours();
       save(S);
+    }
+
+    // Wall-clock timer to avoid drift from background throttling
+    function startSessionWallClock(){
+      const targetEpoch = Date.now() + (S.secondsLeft * 1000);
+
+      function tick() {
+        const remainingMs = Math.max(0, targetEpoch - Date.now());
+        const remainingSec = Math.ceil(remainingMs / 1000);
+        S.secondsLeft = remainingSec;
+        el('clock').textContent = format(S.secondsLeft);
+
+        if (remainingMs <= 0) {
+          clearInterval(interval); interval = null;
+          onSessionComplete();
+        }
+      }
+
+      function onVisibility() {
+        if (document.visibilityState === 'visible' && interval) {
+          tick();
+        }
+      }
+
+      setRunning(true);
+      renderHUD();
+      tick();
+      interval = setInterval(tick, 1000);
+      document.addEventListener('visibilitychange', onVisibility, { passive:true });
+
+      function onSessionComplete(){
+        document.removeEventListener('visibilitychange', onVisibility);
+
+        if(S.weeklyComplete){
+          setRunning(false);
+          showRain(false);
+          S.secondsLeft = LEAF_SECONDS;
+          el('clock').textContent = format(S.secondsLeft);
+          save(S);
+          return;
+        }
+
+        const cur=leafLayer.lastElementChild;
+        if(cur){ cur.querySelector('path').classList.remove('blink-leaf'); }
+
+        S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
+        S.focusSecondsTotal+=LEAF_SECONDS; S.focusSecondsToday+=LEAF_SECONDS;
+
+        applyProgress();
+        setRunning(false);
+        showRain(false);
+        renderHUD();
+
+        if(S.placed===S.leavesPerTree){
+          S.weeklyComplete=true;
+          unshiftWeekToGrid(S.week, S.year, true);
+          renderHUD();
+        }else{
+          S.secondsLeft=LEAF_SECONDS;
+          el('clock').textContent=format(S.secondsLeft);
+          save(S);
+        }
+      }
     }
 
     function startOneMinute(){
@@ -461,40 +554,11 @@
         const g=createLeafG(idx+1); placeLeaf(g, anchorForIndex(idx)); leafLayer.appendChild(g);
       }
 
-      S.secondsLeft=LEAF_SECONDS; setRunning(true); renderHUD();
-      interval=setInterval(()=>{
-        S.secondsLeft--; el('clock').textContent=format(S.secondsLeft);
-        if(S.secondsLeft<=0){
-          clearInterval(interval); interval=null;
+      if (S.secondsLeft <= 0 || S.secondsLeft > LEAF_SECONDS) {
+        S.secondsLeft = LEAF_SECONDS;
+      }
 
-          if(S.weeklyComplete){
-            setRunning(false);
-            showRain(false);
-            S.secondsLeft=LEAF_SECONDS; el('clock').textContent=format(S.secondsLeft);
-            save(S); return;
-          }
-
-          const cur=leafLayer.lastElementChild;
-          if(cur){ cur.querySelector('path').classList.remove('blink-leaf'); }
-
-          S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
-          S.focusSecondsTotal+=LEAF_SECONDS; S.focusSecondsToday+=LEAF_SECONDS;
-
-          applyProgress();
-          setRunning(false);
-          showRain(false);
-          renderHUD();
-
-          if(S.placed===S.leavesPerTree){
-            S.weeklyComplete=true;
-            unshiftWeekToGrid(S.week, S.year, true);
-            renderHUD();
-          }else{
-            S.secondsLeft=LEAF_SECONDS; el('clock').textContent=format(S.secondsLeft);
-            save(S);
-          }
-        }
-      },1000);
+      startSessionWallClock();
     }
 
     function resetTimer(){
@@ -520,18 +584,15 @@
       });
     }
 
-    // Fix: keep displayed LPT value in sync and not stuck at 9
     function wireLPTControls(){
       const clamp = (v)=>Math.max(1, Math.min(200, Number(v)||1));
 
-      // Reflect manual input in the live display immediately
       lptInput.addEventListener('input', ()=>{
         const v = clamp(lptInput.value);
         lptVal.textContent = String(v);
         updateWeeklyHoursPreview(v);
       });
 
-      // On Set, lock and propagate value correctly to all UI pieces
       lptSetBtn.addEventListener('click', ()=>{
         rolloverWeekIfNeeded();
         if(S.weeklyTargetLocked) return;
@@ -540,14 +601,12 @@
         S.weeklyTargetLocked = true;
         S.weeklyTargetSetValue = v;
 
-        // Reset progress for the week when target changes
         S.placed = 0;
         S.weeklyLeaves = 0;
         S.secondsLeft = LEAF_SECONDS;
         leafLayer.innerHTML = '';
         applyProgress();
 
-        // Ensure all displays reflect the new value
         lptVal.textContent = String(S.leavesPerTree);
         lptRange.value = S.leavesPerTree;
         lptInput.value = S.leavesPerTree;
@@ -555,7 +614,6 @@
       });
     }
 
-    // Live preview for weekly hours when typing a new LPT (before Set)
     function updateWeeklyHoursPreview(nextLPT){
       const v = Math.max(1, Math.min(200, Number(nextLPT)||1));
       const hours = (v * (LEAF_SECONDS/3600));
@@ -589,8 +647,8 @@
     wireLPTControls();
     wireSubscription();
 
-    el('startBtn').addEventListener('click', startOneMinute);
-    el('resetBtn').addEventListener('click', resetTimer);
+    document.getElementById('startBtn').addEventListener('click', startOneMinute);
+    document.getElementById('resetBtn').addEventListener('click', resetTimer);
   </script>
 </body>
 </html>
