@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Study Mode (5:00)</title>
+  <title>Pomodoro Tree — Study Mode (25:00)</title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -26,7 +26,7 @@
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:#0b1a33; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
     .wrap{ max-width:1140px; margin:0 auto; padding:20px 16px 120px; }
-    header,.stats,.chip,.timerCard,.controls,.settings,.treePanel,.gridWrap,.gridHead,.grid,.bottomAuth { display:flex; align-items:center; }
+    header,.stats,.chip,.timerCard,.controls,.settings,.treePanel,.tabs,.tab,.panelCard,.gridWrap,.gridHead,.grid,.bottomAuth { display:flex; align-items:center; }
 
     header{ justify-content:space-between; gap:12px; flex-wrap:wrap; }
     h1{ margin:0; font-size:22px; }
@@ -100,6 +100,12 @@
     .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
     @keyframes rainFall{ to{ transform:translateY(620px); } }
 
+    .tabsWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
+    .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); }
+    .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
+    .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
+    .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; }
+
     .gridWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; flex-direction:column; }
     .gridHead{ justify-content:space-between; gap:8px; color:#4a6894; width:100%; }
     .grid{ display:grid; gap:10px; grid-template-columns:repeat(13, minmax(0, 1fr)); width:100%; margin-top:10px; }
@@ -126,9 +132,9 @@
     </header>
 
     <section class="timerCard">
-      <div class="time" id="clock">05:00</div>
+      <div class="time" id="clock">25:00</div>
       <div class="controls">
-        <button id="startBtn">Start 05:00</button>
+        <button id="startBtn">Start 25:00</button>
         <button id="resetBtn">Reset</button>
       </div>
       <div class="settings">
@@ -140,15 +146,15 @@
         </div>
 
         <div class="estWrap">
-          <div class="miniNote" id="lptNote">LPT = No. of 5 min sessions per week</div>
+          <div class="miniNote" id="lptNote">LPT = No. of 25 min sessions per week</div>
         </div>
 
-        <div class="progressWrap">
+        <!-- Slider then weekly target placed BELOW Set button -->
+        <div class="progressWrap" id="progressBlock" style="order:2;">
           <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
           <span id="lptVal">9</span>
         </div>
-
-        <div id="weeklyTarget" class="miniNote">Weekly target = 45 mins (as per LPT)</div>
+        <div id="weeklyTarget" class="miniNote" style="order:3;">Weekly target = 3 hrs 45 mins (as per LPT)</div>
       </div>
     </section>
 
@@ -190,7 +196,24 @@
       </div>
     </section>
 
-    <!-- Tabs removed: Pomodoro Hours and Garden. Also removed Subscription and Sync panels -->
+    <section class="tabsWrap">
+      <div class="tabs">
+        <div class="tab active" data-tab="subPanel">Subscription</div>
+        <div class="tab" data-tab="syncPanel">Sync</div>
+      </div>
+
+      <div id="subPanel" class="panelCard" style="display:flex;">
+        <div id="subStatus">Plan: Free — 4 weeks cap. Unlock remaining 48 weeks for $1/year.</div>
+        <button id="subBtn">Unlock 48 weeks — $1</button>
+      </div>
+
+      <div id="syncPanel" class="panelCard">
+        <div id="authState">Signed out</div>
+        <input type="email" id="emailInput" placeholder="email@example.com" />
+        <button id="sendLinkBtn">Send sign-in link</button>
+        <button id="signOutBtn">Sign out</button>
+      </div>
+    </section>
 
     <section class="gridWrap">
       <div class="gridHead">
@@ -208,9 +231,9 @@
   </div>
 
   <script>
-    const KEY='pomodoroTree_SingleMode_5min_V1';
+    const KEY='pomodoroTree_SingleMode_25min_V1';
     const svgns='http://www.w3.org/2000/svg';
-    const LEAF_SECONDS=300; // 5 minutes
+    const LEAF_SECONDS=1500; // 25 minutes
 
     // ISO week helpers
     Date.prototype.getWeek=function(){var d=new Date(this.getTime());d.setHours(0,0,0,0);d.setDate(d.getDate()+3-(d.getDay()+6)%7);var w1=new Date(d.getFullYear(),0,4);return 1+Math.round(((d-w1)/86400000-3+(w1.getDay()+6)%7)/7);};
@@ -250,6 +273,18 @@
     const treeGrid=el('treeGrid'); const gridCount=el('gridCount');
     const leafLayer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
     const fillRect=document.getElementById('fillRect');
+
+    // Tabs behavior
+    const tabsContainer=document.querySelector('.tabs');
+    tabsContainer?.addEventListener('click', (e)=>{
+      const t=e.target.closest('.tab'); if(!t) return;
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      const id=t.getAttribute('data-tab');
+      document.querySelectorAll('.panelCard').forEach(p=>p.style.display='none');
+      const panel=document.getElementById(id);
+      if(panel) panel.style.display='flex';
+    });
 
     // Audio
     let audioCtx=null;
@@ -340,8 +375,7 @@
     }
 
     function buildGrid(){
-      const grid = document.getElementById('treeGrid');
-      grid.innerHTML='';
+      treeGrid.innerHTML='';
       for(let i=0;i<52;i++){
         const cell=document.createElement('div'); cell.className='cell';
         const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
@@ -353,9 +387,9 @@
         }else{
           icon.textContent = '';
         }
-        cell.appendChild(num); cell.appendChild(icon); grid.appendChild(cell);
+        cell.appendChild(num); cell.appendChild(icon); treeGrid.appendChild(cell);
       }
-      document.getElementById('gridCount').textContent=`${Math.min(S.grid.length, 52)} / 52`;
+      gridCount.textContent=`${Math.min(S.grid.length, 52)} / 52`;
     }
 
     function updateWeeklyTarget(){
@@ -363,9 +397,8 @@
       const h = Math.floor(hours);
       const m = Math.round((hours - h)*60);
       weeklyTargetEl.textContent = `Weekly target = ${h>0? h+' hrs ':''}${m} mins (as per LPT)`;
-      lptNoteEl.textContent = 'LPT = No. of 5 min sessions per week';
+      lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
     }
-
     function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
     function minutesForLeaves(n){ return n*(LEAF_SECONDS/60); }
 
@@ -382,7 +415,7 @@
       const done = Math.max(0, Math.min(S.placed, total));
       const pct = (done/total)*100;
       lptRange.style.background = `linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
-      document.getElementById('xyLabel').textContent = `${done}/${total} of leaves completed`;
+      xyLabel.textContent = `${done}/${total} of leaves completed`;
     }
     function format(sec){
       const m=String(Math.floor(sec/60)).padStart(2,'0');
@@ -397,7 +430,7 @@
       if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
       const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
       const cur=layer?.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
-      startBtn.textContent = on ? 'Running…' : 'Start 05:00';
+      startBtn.textContent = on ? 'Running…' : 'Start 25:00';
       startBtn.disabled = !!on;
       showRain(!!on);
     }
@@ -523,7 +556,7 @@
       const h = Math.floor(mins/60);
       const m = Math.round(mins - h*60);
       weeklyTargetEl.textContent = `Weekly target = ${h>0? h+' hrs ':''}${m} mins (as per LPT)`;
-      lptNoteEl.textContent = 'LPT = No. of 5 min sessions per week';
+      lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
     }
 
     // Wire up UI
@@ -561,7 +594,7 @@
     rolloverWeekIfNeeded();
     renderLeavesFromState();
     applyProgress();
-   renderHUD();
+    renderHUD();
   </script>
 </body>
 </html>
