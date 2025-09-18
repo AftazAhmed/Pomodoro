@@ -3,45 +3,35 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Focus Timer with Weekly and Overall Totals</title>
+  <title>Pomodoro Tree — Study Mode (5:00)</title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
       --text:#0b1a33; --dim:#4a6894;
-
-      --leaf-dark:#166534; --leaf-light:#86efac; --leaf-stroke:#0b3d22;
-      --trunk-brown:#4e342e;
-
+      --leaf-dark:#166534; --leaf-light:#86efac; --leaf-stroke:#0b3d22; --trunk-brown:#4e342e;
       --canopy-stroke-idle:#065f46;
-
-      --sky1:#cfe8ff; --sky2:#8ec5ff;
-      --grass1:#bfeec7; --grass2:#8edaa0;
+      --sky1:#cfe8ff; --sky2:#8ec5ff; --grass1:#bfeec7; --grass2:#8edaa0;
       --canopy-base-1:#a3e3b5; --canopy-base-2:#7fce9d; --canopy-fill-green:#3aa85f;
-
       --radius-lg:18px; --shadow:0 10px 28px rgba(30,70,140,.1);
-
       --btn-text:#ffffff; --btn-primary:#2563eb; --btn-primary-hover:#1e40af;
       --btn-success:#16a34a; --btn-success-hover:#0f6a33;
       --btn-danger:#ef4444; --btn-danger-hover:#b91c1c;
       --btn-neutral:#334155; --btn-neutral-hover:#1f2937; --btn-focus:#0ea5e9;
-
       --progress-green:#16a34a; --progress-red:#ef4444; --track-bg:#e6efff;
-
       --xy-font: 37.8px; --info-font: 12px; --info-line: 1.25;
-
-      /* Garden land */
       --soil1:#8a6a47; --soil2:#6f5539; --soil3:#a17d56; --tree-emoji-size:26px;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:#0b1a33; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
     .wrap{ max-width:1140px; margin:0 auto; padding:20px 16px 120px; }
-    header,.stats,.chip,.timerCard,.controls,.settings,.treePanel,.tabs,.tab,.panelCard,.gridWrap,.gridHead,.grid,.bottomAuth { display:flex; align-items:center; }
+    header,.stats,.chip,.timerCard,.controls,.settings,.treePanel,.gridWrap,.gridHead,.grid,.bottomAuth { display:flex; align-items:center; }
 
     header{ justify-content:space-between; gap:12px; flex-wrap:wrap; }
     h1{ margin:0; font-size:22px; }
     .brand{ gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); }
+    .modeTag{ font-weight:800; color:#14563a; }
 
     .stats{ gap:10px; flex-wrap:wrap; }
     .chip{ gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#4a6894; }
@@ -49,7 +39,6 @@
     .timerCard{ margin:16px auto 12px; max-width:760px; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
     .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
     .controls{ gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
-
     button{
       border:none; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;
       color:#fff; background:var(--btn-neutral);
@@ -60,10 +49,10 @@
     button:hover{ background:var(--btn-neutral-hover); }
     button:active{ transform:translateY(1px); }
     button:focus-visible{ outline:3px solid var(--btn-focus); outline-offset:2px; }
-    .controls #startBtn{ background:var(--btn-success); }
-    .controls #startBtn:hover{ background:var(--btn-success-hover); }
-    .controls #resetBtn{ background:var(--btn-danger); }
-    .controls #resetBtn:hover{ background:var(--btn-danger-hover); }
+    #startBtn{ background:var(--btn-success); }
+    #startBtn:hover{ background:var(--btn-success-hover); }
+    #resetBtn{ background:var(--btn-danger); }
+    #resetBtn:hover{ background:var(--btn-danger-hover); }
     #lptSetBtn{ background:var(--btn-primary); }
     #lptSetBtn:hover{ background:var(--btn-primary-hover); }
 
@@ -106,52 +95,16 @@
     .blink-leaf{ animation: leafBlink 900ms linear infinite; }
     .leaf-number{ font: 800 13px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:#ffffff; text-anchor:middle; dominant-baseline:middle; }
 
-    .treeBox{ position:relative; }
     .rain{ position:absolute; inset:0; pointer-events:none; display:none; z-index:9999; }
     .rain .drop{ position:absolute; top:-12px; width:3px; height:14px; background:rgba(14,42,112,.45); border-radius:2px; animation:rainFall 0.8s linear infinite; }
     .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
     @keyframes rainFall{ to{ transform:translateY(620px); } }
 
-    .tabsWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
-    .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); }
-    .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
-    .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
-    .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; }
-
-    /* Plain Garden land (52 slots) */
-    .gardenWrap{ width:100%; display:flex; flex-direction:column; gap:10px; }
-    .gardenField{
-      position:relative; width:100%; border-radius:16px; border:2px solid #2b1a10;
-      background:
-        radial-gradient(20px 12px at 20% 30%, rgba(255,255,255,0.06), transparent 60%),
-        radial-gradient(18px 10px at 70% 60%, rgba(0,0,0,0.06), transparent 60%),
-        linear-gradient(180deg,var(--soil3),var(--soil2) 40%,var(--soil1));
-      padding:14px; box-shadow: inset 0 6px 18px rgba(0,0,0,.25);
-    }
-    .gardenGrid{ display:grid; grid-template-columns:repeat(13, minmax(0, 1fr)); gap:10px; }
-    @media (max-width:980px){ .gardenGrid{ grid-template-columns:repeat(8, minmax(0, 1fr)); } }
-    .plot{
-      position:relative; aspect-ratio:1/1; border-radius:12px;
-      background: rgba(255,255,255,0.05);
-      border:1px dashed rgba(43,26,16,.35);
-      display:flex; align-items:center; justify-content:center;
-      color:#14563a; font-weight:800; overflow:hidden;
-    }
-    .plot.tree{
-      background:linear-gradient(180deg,#e9fff1,#ffffff);
-      border:2px solid #16a34a; color:#14563a;
-    }
-    .plot.tree .emoji{ font-size:var(--tree-emoji-size); filter: drop-shadow(0 2px 2px rgba(0,0,0,.2)); }
-
     .gridWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; flex-direction:column; }
     .gridHead{ justify-content:space-between; gap:8px; color:#4a6894; width:100%; }
     .grid{ display:grid; gap:10px; grid-template-columns:repeat(13, minmax(0, 1fr)); width:100%; margin-top:10px; }
     @media (max-width:980px){ .grid{ grid-template-columns:repeat(8, minmax(0, 1fr)); } }
-    .cell{
-      position:relative;
-      aspect-ratio:1/1; border-radius:14px; background:#f3f8ff; border:1px dashed #c8d8ee; color:#4e6ea0;
-      display:flex; align-items:center; justify-content:center; font-weight:800; overflow:hidden;
-    }
+    .cell{ position:relative; aspect-ratio:1/1; border-radius:14px; background:#f3f8ff; border:1px dashed #c8d8ee; color:#4e6ea0; display:flex; align-items:center; justify-content:center; font-weight:800; overflow:hidden; }
     .num{ position:relative; z-index:1; font-size:18px; color:#4e6ea0; }
     .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; z-index:2; pointer-events:none; }
     .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
@@ -160,21 +113,22 @@
     .bottomAuth input{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); }
   </style>
 </head>
-<body>
+<body data-mode="Study">
   <div class="wrap">
     <header>
       <div class="brand"><span style="font-weight:800;">🌳</span><h1>Pomodoro Tree</h1></div>
+      <div class="modeTag">Mode: <span id="modeName">Study</span></div>
       <div class="stats">
-        <div class="chip" id="todayChip"><strong>Total (week)</strong>: 0 hrs 0 mins</div>
-        <div class="chip" id="weekChip">Week: 0 leaves</div>
-        <div class="chip" id="totalTimeChip"><strong>Total (overall)</strong>: 0 hrs 0 mins</div>
+        <div class="chip" id="todayChip"><strong>Pomodoro hours (week)</strong>: 0 hrs 0 mins</div>
+        <div class="chip" id="todayLeavesChip">Leaves (today) = 0 (0 mins)</div>
+        <div class="chip" id="totalTimeChip"><strong>Pomodoro hours (overall)</strong>: 0 hrs 0 mins</div>
       </div>
     </header>
 
     <section class="timerCard">
-      <div class="time" id="clock">25:00</div>
+      <div class="time" id="clock">05:00</div>
       <div class="controls">
-        <button id="startBtn">Start 25:00</button>
+        <button id="startBtn">Start 05:00</button>
         <button id="resetBtn">Reset</button>
       </div>
       <div class="settings">
@@ -186,14 +140,15 @@
         </div>
 
         <div class="estWrap">
-          <div class="miniNote" id="lptNote">LPT = No. of 25 min sessions per week</div>
-          <div id="weeklyTarget">Weekly target = 3 hrs 45 mins (as per LPT)</div>
+          <div class="miniNote" id="lptNote">LPT = No. of 5 min sessions per week</div>
         </div>
 
         <div class="progressWrap">
           <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
           <span id="lptVal">9</span>
         </div>
+
+        <div id="weeklyTarget" class="miniNote">Weekly target = 45 mins (as per LPT)</div>
       </div>
     </section>
 
@@ -212,8 +167,14 @@
         <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible">
           <defs>
             <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="1.0" flood-color="#000" flood-opacity="0.15" /></filter>
-            <mask id="fillMask" maskUnits="userSpaceOnUse" x="100" y="150" width="380" height="220"><rect fill="#000" x="100" y="150" width="380" height="220"/><rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/></mask>
-            <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="var(--canopy-base-1)" /><stop offset="100%" stop-color="var(--canopy-base-2)" /></linearGradient>
+            <mask id="fillMask" maskUnits="userSpaceOnUse" x="100" y="150" width="380" height="220">
+              <rect fill="#000" x="100" y="150" width="380" height="220"/>
+              <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
+            </mask>
+            <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="var(--canopy-base-1)" />
+              <stop offset="100%" stop-color="var(--canopy-base-2)" />
+            </linearGradient>
           </defs>
 
           <g id="canopyGroup" transform="translate(280 280) scale(1,1.2) translate(-280 -280)">
@@ -229,38 +190,7 @@
       </div>
     </section>
 
-    <section class="tabsWrap">
-      <div class="tabs">
-        <div class="tab active" data-tab="hoursPanel">Pomodoro Hours</div>
-        <div class="tab" data-tab="gardenPanel">Garden</div>
-        <div class="tab" data-tab="subPanel">Subscription</div>
-        <div class="tab" data-tab="syncPanel">Sync</div>
-      </div>
-
-      <div id="hoursPanel" class="panelCard" style="display:flex;">
-        <div class="chip" id="totalTimePanel"><strong>Total (overall)</strong>: 0 hrs 0 mins</div>
-      </div>
-
-      <div id="gardenPanel" class="panelCard">
-        <div class="gardenWrap" style="width:100%;">
-          <div class="gardenField">
-            <div id="gardenGrid" class="gardenGrid"></div>
-          </div>
-        </div>
-      </div>
-
-      <div id="subPanel" class="panelCard">
-        <div id="subStatus">Plan: Free — 4 weeks cap. Unlock remaining 48 weeks for $1/year.</div>
-        <button id="subBtn">Unlock 48 weeks — $1</button>
-      </div>
-
-      <div id="syncPanel" class="panelCard">
-        <div id="authState">Signed out</div>
-        <input type="email" id="emailInput" placeholder="email@example.com" />
-        <button id="sendLinkBtn">Send sign-in link</button>
-        <button id="signOutBtn">Sign out</button>
-      </div>
-    </section>
+    <!-- Tabs removed: Pomodoro Hours and Garden. Also removed Subscription and Sync panels -->
 
     <section class="gridWrap">
       <div class="gridHead">
@@ -277,48 +207,51 @@
     </div>
   </div>
 
-  <script type="module">
-    const KEY='pomodoroTree_Rain_NumberedGrid_V1';
-    const load=()=>JSON.parse(localStorage.getItem(KEY)||'{}');
-    const save=(s)=>localStorage.setItem(KEY, JSON.stringify(s));
+  <script>
+    const KEY='pomodoroTree_SingleMode_5min_V1';
+    const svgns='http://www.w3.org/2000/svg';
+    const LEAF_SECONDS=300; // 5 minutes
 
     // ISO week helpers
     Date.prototype.getWeek=function(){var d=new Date(this.getTime());d.setHours(0,0,0,0);d.setDate(d.getDate()+3-(d.getDay()+6)%7);var w1=new Date(d.getFullYear(),0,4);return 1+Math.round(((d-w1)/86400000-3+(w1.getDay()+6)%7)/7);};
     Date.prototype.getWeekYear=function(){var d=new Date(this.getTime());d.setDate(d.getDate()+3-(d.getDay()+6)%7);return d.getFullYear();};
 
     const DEFAULT_STATE={
-      leavesPerTree:9, placed:0, secondsLeft:1500, running:false,
+      leavesPerTree:9, placed:0, secondsLeft:LEAF_SECONDS, running:false,
       leavesTotal:0, leavesToday:0, weeklyLeaves:0,
-      weeklyFocusSeconds:0,          // resets each ISO week
-      totalFocusSeconds:0,           // accumulates overall
+      weeklyFocusSeconds:0, totalFocusSeconds:0,
       grid:[],
-      subActive:false, plan:'Free',
+      subActive:true, plan:'Free',
       week:undefined, year:undefined,
       weeklyComplete:false,
       weeklyTargetLocked:false, weeklyTargetSetValue:9,
       freeWeeksCap:4
     };
 
+    const load=()=>JSON.parse(localStorage.getItem(KEY)||'{}');
     let S=Object.assign({}, DEFAULT_STATE, load());
 
-    const svgns='http://www.w3.org/2000/svg';
+    // UI refs
     const el=id=>document.getElementById(id);
+    const clockEl=el('clock');
+    const startBtn=el('startBtn');
+    const resetBtn=el('resetBtn');
 
-    const leafLayer=el('leafLayer'),
-          fillRect=el('fillRect'),
-          percentLabel=el('percentLabel'),
-          xyLabel=el('xyLabel'),
-          rainLayer=el('rainLayer');
-
-    const lptInput=el('lptInput'), lptRange=el('lptRange'), lptVal=el('lptVal'), lockHint=el('lockHint'), lptSetBtn=el('lptSetBtn');
+    const lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptRange=el('lptRange'), lptVal=el('lptVal'), lockHint=el('lockHint');
     const weeklyTargetEl=el('weeklyTarget'), lptNoteEl=el('lptNote');
 
-    const todayChip=el('todayChip'), weekChip=el('weekChip');
-    const totalTimeChip=el('totalTimeChip'), totalTimePanel=el('totalTimePanel');
+    const todayChip=el('todayChip');
+    const todayLeavesChip=el('todayLeavesChip');
+    const totalTimeChip=el('totalTimeChip');
 
-    const LEAF_SECONDS=1500;
+    const percentLabel=document.querySelector('.percentLabel');
+    const xyLabel=document.querySelector('.xyLabel');
+    const rainLayer=el('rainLayer');
+    const treeGrid=el('treeGrid'); const gridCount=el('gridCount');
+    const leafLayer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+    const fillRect=document.getElementById('fillRect');
 
-    // Alarm: loud 10s ring (square+saw) with tremolo
+    // Audio
     let audioCtx=null;
     function ensureAudioUnlocked(){
       const AC=window.AudioContext||window.webkitAudioContext;
@@ -328,83 +261,46 @@
     }
     function playAlarm10s(){
       if(!audioCtx || audioCtx.state==='suspended') return;
-
       const now = audioCtx.currentTime;
-
-      // Master gain with strong envelope (loud)
       const master = audioCtx.createGain();
       master.gain.setValueAtTime(0.0001, now);
       master.gain.linearRampToValueAtTime(0.85, now + 0.03);
       master.gain.setValueAtTime(0.85, now + 9.7);
       master.gain.linearRampToValueAtTime(0.0001, now + 10.0);
       master.connect(audioCtx.destination);
-
-      // Square tone (main)
-      const oscA = audioCtx.createOscillator();
-      oscA.type='square';
-      oscA.frequency.setValueAtTime(880, now);
-
-      // Saw tone (body)
-      const oscB = audioCtx.createOscillator();
-      oscB.type='sawtooth';
-      oscB.frequency.setValueAtTime(440, now);
-
-      // Light siren sweep on A
-      oscA.frequency.linearRampToValueAtTime(660, now + 0.5);
-      oscA.frequency.linearRampToValueAtTime(880, now + 1.0);
-
-      // Tremolo for urgency
-      const trem = audioCtx.createOscillator();
-      trem.type='sine';
-      trem.frequency.setValueAtTime(6, now);
-      const tremGain = audioCtx.createGain();
-      tremGain.gain.setValueAtTime(0.5, now);
-      trem.connect(tremGain);
-      tremGain.connect(master.gain);
-
-      oscA.connect(master);
-      oscB.connect(master);
-
-      trem.start(now);
-      oscA.start(now);
-      oscB.start(now);
-
-      oscA.stop(now + 10.1);
-      oscB.stop(now + 10.1);
-      trem.stop(now + 10.1);
+      const oscA = audioCtx.createOscillator(); oscA.type='square'; oscA.frequency.setValueAtTime(880, now);
+      const oscB = audioCtx.createOscillator(); oscB.type='sawtooth'; oscB.frequency.setValueAtTime(440, now);
+      const trem = audioCtx.createOscillator(); trem.type='sine'; trem.frequency.setValueAtTime(6, now);
+      const tremGain = audioCtx.createGain(); tremGain.gain.setValueAtTime(0.5, now);
+      trem.connect(tremGain); tremGain.connect(master.gain);
+      oscA.connect(master); oscB.connect(master);
+      trem.start(now); oscA.start(now); oscB.start(now);
+      oscA.stop(now + 10.1); oscB.stop(now + 10.1); trem.stop(now + 10.1);
     }
 
+    // Week rollover
+    function save(){ localStorage.setItem(KEY, JSON.stringify(S)); }
     function unshiftWeekToGrid(week, year, live){
       S.grid.unshift({week,year,live,ts:Date.now()});
       if(S.grid.length>52) S.grid.pop();
-      save(S);
+      save();
     }
-
-    function freePlanLimitReached(){
-      if(S.subActive) return false;
-      const distinct = new Set(S.grid.map(e=>`${e.year}-W${e.week}`));
-      if(S.week!==undefined && S.year!==undefined) distinct.add(`${S.year}-W${S.week}`);
-      return distinct.size >= (S.freeWeeksCap||4);
-    }
-
     function rolloverWeekIfNeeded(){
       const now=new Date(); const wk=now.getWeek(), yr=now.getWeekYear();
-      if(S.week===undefined || S.year===undefined){ S.week=wk; S.year=yr; save(S); return; }
+      if(S.week===undefined || S.year===undefined){ S.week=wk; S.year=yr; save(); return; }
       if(S.week!==wk || S.year!==yr){
         const completed = (S.placed>=S.leavesPerTree && S.leavesPerTree>0);
         unshiftWeekToGrid(S.week, S.year, completed);
         S.week=wk; S.year=yr;
-        S.weeklyLeaves=0; S.leavesToday=0;
-        S.weeklyFocusSeconds=0;
-        S.weeklyComplete=false;
-        S.weeklyTargetLocked=false;
-        S.weeklyTargetSetValue=S.leavesPerTree;
+        S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0;
+        S.weeklyComplete=false; S.weeklyTargetLocked=false; S.weeklyTargetSetValue=S.leavesPerTree;
         S.placed=0; S.secondsLeft=LEAF_SECONDS;
-        leafLayer.innerHTML='';
-        save(S);
+        if(leafLayer) leafLayer.innerHTML='';
+        save();
       }
     }
 
+    // Leaf anchors
     const baseAnchors=[{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}];
     function anchorForIndex(i){
       if(i<baseAnchors.length) return baseAnchors[i];
@@ -416,8 +312,7 @@
       const p=document.createElementNS(svgns,'path');
       p.setAttribute('d','M 0 -16 C 10 -10, 12 0, 0 14 C -12 0, -10 -10, 0 -16 Z');
       p.setAttribute('fill','var(--leaf-dark)');
-      p.setAttribute('stroke','var(--leaf-stroke)');
-      p.setAttribute('stroke-width','1.2');
+      p.setAttribute('stroke','var(--leaf-stroke)'); p.setAttribute('stroke-width','1.2');
       const t=document.createElementNS(svgns,'text'); t.setAttribute('class','leaf-number'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.textContent=String(n);
       g.appendChild(p); g.appendChild(t); return g;
     }
@@ -436,34 +331,17 @@
     function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
 
     function renderLeavesFromState(){
-      leafLayer.innerHTML='';
+      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+      if(!layer) return;
+      layer.innerHTML='';
       for(let i=0;i<S.placed;i++){
-        const g=createLeafG(i+1); placeLeaf(g, anchorForIndex(i)); leafLayer.appendChild(g);
+        const g=createLeafG(i+1); placeLeaf(g, anchorForIndex(i)); layer.appendChild(g);
       }
     }
 
-    function makeRain(densityNear=200, densityFar=150){
-      rainLayer.innerHTML='';
-      const rect=rainLayer.getBoundingClientRect();
-      const w=rect.width||560;
-      const mk=(n, cls='')=>{
-        for(let i=0;i<n;i++){
-          const d=document.createElement('div'); d.className='drop'+cls;
-          d.style.left=(Math.random()*w)+'px';
-          d.style.animationDelay=(Math.random()*0.9)+'s';
-          d.style.animationDuration=(cls? (1.0+Math.random()*0.9)+'s' : (0.6+Math.random()*0.6)+'s');
-          rainLayer.appendChild(d);
-        }
-      };
-      mk(densityNear,''); mk(densityFar,' far');
-    }
-    function showRain(on){
-      rainLayer.style.display=on?'block':'none';
-      if(on && rainLayer.childElementCount===0){ makeRain(); }
-    }
-
     function buildGrid(){
-      const grid=document.getElementById('treeGrid'); grid.innerHTML='';
+      const grid = document.getElementById('treeGrid');
+      grid.innerHTML='';
       for(let i=0;i<52;i++){
         const cell=document.createElement('div'); cell.className='cell';
         const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
@@ -480,35 +358,23 @@
       document.getElementById('gridCount').textContent=`${Math.min(S.grid.length, 52)} / 52`;
     }
 
-    function buildGarden(){
-      const field=document.getElementById('gardenGrid'); if(!field) return;
-      field.innerHTML='';
-      for(let i=0;i<52;i++){
-        const plot=document.createElement('div'); plot.className='plot';
-        const entry=S.grid[i];
-        if(entry && entry.live){
-          plot.classList.add('tree');
-          const em=document.createElement('div'); em.className='emoji'; em.textContent='🌳';
-          plot.appendChild(em);
-        }
-        field.appendChild(plot);
-      }
-    }
-
     function updateWeeklyTarget(){
       const hours = (S.leavesPerTree * (LEAF_SECONDS/3600));
       const h = Math.floor(hours);
       const m = Math.round((hours - h)*60);
-      weeklyTargetEl.textContent = `Weekly target = ${h} hrs ${m} mins (as per LPT)`;
-      lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
+      weeklyTargetEl.textContent = `Weekly target = ${h>0? h+' hrs ':''}${m} mins (as per LPT)`;
+      lptNoteEl.textContent = 'LPT = No. of 5 min sessions per week';
     }
 
     function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
+    function minutesForLeaves(n){ return n*(LEAF_SECONDS/60); }
+
     function renderTotals(){
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
-      todayChip.innerHTML = `<strong>Total (week)</strong>: ${w.h} hrs ${w.m} mins`;
-      totalTimeChip.innerHTML = `<strong>Total (overall)</strong>: ${o.h} hrs ${o.m} mins`;
-      totalTimePanel.innerHTML = `<strong>Total (overall)</strong>: ${o.h} hrs ${o.m} mins`;
+      todayChip.innerHTML = `<strong>Pomodoro hours (week)</strong>: ${w.h} hrs ${w.m} mins`;
+      totalTimeChip.innerHTML = `<strong>Pomodoro hours (overall)</strong>: ${o.h} hrs ${o.m} mins`;
+      const minsToday = minutesForLeaves(S.leavesToday||0);
+      todayLeavesChip.textContent = `Leaves (today) = ${S.leavesToday||0} (${minsToday} mins)`;
     }
 
     function paintProgressUI(){
@@ -516,14 +382,29 @@
       const done = Math.max(0, Math.min(S.placed, total));
       const pct = (done/total)*100;
       lptRange.style.background = `linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
-      xyLabel.textContent = `${done}/${total} of leaves completed`;
+      document.getElementById('xyLabel').textContent = `${done}/${total} of leaves completed`;
+    }
+    function format(sec){
+      const m=String(Math.floor(sec/60)).padStart(2,'0');
+      const s=String(sec%60).padStart(2,'0');
+      return `${m}:${s}`;
+    }
+
+    let interval=null;
+    function setRunning(on){
+      S.running=on;
+      const canopyOutline = document.getElementById('canopyOutline');
+      if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
+      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+      const cur=layer?.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
+      startBtn.textContent = on ? 'Running…' : 'Start 05:00';
+      startBtn.disabled = !!on;
+      showRain(!!on);
     }
 
     function renderHUD(){
-      document.getElementById('clock').textContent = String(format(S.secondsLeft));
-      weekChip.textContent=`Week: ${S.weeklyLeaves} leaves`;
+      clockEl.textContent = String(format(S.secondsLeft));
       buildGrid();
-      buildGarden();
       lptVal.textContent=String(S.leavesPerTree);
       lptInput.value = S.leavesPerTree;
       lptSetBtn.disabled = !!S.weeklyTargetLocked;
@@ -535,33 +416,58 @@
       updateWeeklyTarget();
       paintProgressUI();
       renderTotals();
-      save(S);
+      save();
     }
 
-    let interval=null;
-    function setRunning(on){
-      S.running=on;
-      const canopyOutline = document.getElementById('canopyOutline');
-      if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
-      const cur=leafLayer.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
-      document.getElementById('startBtn').textContent = on ? 'Running…' : 'Start 25:00';
-      document.getElementById('startBtn').disabled = !!on;
-      showRain(!!on);
+    function showRain(on){
+      rainLayer.style.display=on?'block':'none';
+      if(on && rainLayer.childElementCount===0){
+        const mk=(n, cls='')=>{
+          for(let i=0;i<n;i++){
+            const d=document.createElement('div'); d.className='drop'+cls;
+            d.style.left=(Math.random()*560)+'px';
+            d.style.animationDelay=(Math.random()*0.9)+'s';
+            d.style.animationDuration=(cls? (1.0+Math.random()*0.9)+'s' : (0.6+Math.random()*0.6)+'s');
+            rainLayer.appendChild(d);
+          }
+        };
+        mk(160,''); mk(120,' far');
+      }
     }
 
-    function format(sec){
-      const m=String(Math.floor(sec/60)).padStart(2,'0');
-      const s=String(sec%60).padStart(2,'0');
-      return `${m}:${s}`;
+    function onSessionComplete(){
+      playAlarm10s();
+
+      S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
+      S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
+
+      S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
+
+      applyProgress();
+      setRunning(false);
+      showRain(false);
+
+      if(S.placed===S.leavesPerTree){
+        S.weeklyComplete=true;
+        if(S.week!==undefined && S.year!==undefined){
+          S.grid.unshift({week:S.week,year:S.year,live:true,ts:Date.now()});
+          if(S.grid.length>52) S.grid.pop();
+        }
+      }else{
+        S.secondsLeft=LEAF_SECONDS;
+        clockEl.textContent=format(S.secondsLeft);
+        save();
+      }
+
+      renderHUD();
     }
 
     function startSessionWallClock(){
       const targetEpoch = Date.now() + (S.secondsLeft * 1000);
-
       const tick = ()=>{
         const remainingMs = Math.max(0, targetEpoch - Date.now());
         S.secondsLeft = Math.ceil(remainingMs / 1000);
-        document.getElementById('clock').textContent = format(S.secondsLeft);
+        clockEl.textContent = format(S.secondsLeft);
         paintProgressUI();
         if (remainingMs <= 0) {
           clearInterval(interval); interval = null;
@@ -576,58 +482,19 @@
       interval = setInterval(tick, 1000);
       document.addEventListener('visibilitychange', onVisibility, { passive:true });
 
-      function onSessionComplete(){
-        document.removeEventListener('visibilitychange', onVisibility);
-
-        // Loud 10s alarm
-        playAlarm10s();
-
-        // Update totals
-        S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
-        S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
-
-        // Update leaves
-        S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
-
-        applyProgress();
-        setRunning(false);
-        showRain(false);
-
-        if(S.placed===S.leavesPerTree){
-          S.weeklyComplete=true;
-          unshiftWeekToGrid(S.week, S.year, true);
-        }else{
-          S.secondsLeft=LEAF_SECONDS;
-          document.getElementById('clock').textContent=format(S.secondsLeft);
-          save(S);
-        }
-
-        renderHUD();
-      }
+      startBtn._cleanupVisibility = ()=>document.removeEventListener('visibilitychange', onVisibility);
     }
 
-    function startOneMinute(){
+    function startFlow(){
       rolloverWeekIfNeeded();
       if(interval) return;
 
-      ensureAudioUnlocked(); // unlock audio on user gesture
-
-      if(!S.subActive && (()=>{
-        const distinct = new Set(S.grid.map(e=>`${e.year}-W${e.week}`));
-        if(S.week!==undefined && S.year!==undefined) distinct.add(`${S.year}-W${S.week}`);
-        return distinct.size >= (S.freeWeeksCap||4);
-      })()){
-        alert('Free plan allows 4 weeks. Unlock remaining 48 weeks for $1 to continue tracking weekly trees.');
-        return;
-      }
-
-      if(S.weeklyComplete){
-        alert('Weekly tree complete. Timer will run but no new leaves/trees until next ISO week.');
-      }
+      ensureAudioUnlocked();
 
       if(!S.weeklyComplete && S.placed < S.leavesPerTree){
         const idx=S.placed;
-        const g=createLeafG(idx+1); placeLeaf(g, anchorForIndex(idx)); leafLayer.appendChild(g);
+        const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+        const g=createLeafG(idx+1); placeLeaf(g, anchorForIndex(idx)); layer.appendChild(g);
       }
 
       if (S.secondsLeft <= 0 || S.secondsLeft > LEAF_SECONDS) {
@@ -638,92 +505,63 @@
     }
 
     function resetTimer(){
-      if(interval){ clearInterval(interval); interval=null; }
+      if(interval){ clearInterval(interval); interval=null; startBtn._cleanupVisibility?.(); }
       setRunning(false);
       showRain(false);
-      const cur=leafLayer.lastElementChild;
+      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+      const cur=layer?.lastElementChild;
       if(cur){
         const idx=(Number(cur.querySelector('text')?.textContent)||0)-1;
-        if(idx===S.placed){ leafLayer.removeChild(cur); }
+        if(idx===S.placed){ layer.removeChild(cur); }
       }
       S.secondsLeft=LEAF_SECONDS; renderHUD();
     }
 
-    function setupTabs(){
-      document.querySelectorAll('.tab').forEach(t=>{
-        t.addEventListener('click',()=>{
-          document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-          t.classList.add('active');
-          document.querySelectorAll('.panelCard').forEach(p=>p.style.display='none');
-          document.getElementById(t.dataset.tab).style.display='flex';
-        });
-      });
-    }
-
-    function wireLPTControls(){
-      const clamp = (v)=>Math.max(1, Math.min(200, Number(v)||1));
-
-      lptInput.addEventListener('input', ()=>{
-        const v = clamp(lptInput.value);
-        lptVal.textContent = String(v);
-        updateWeeklyTargetPreview(v);
-      });
-
-      lptSetBtn.addEventListener('click', ()=>{
-        rolloverWeekIfNeeded();
-        if(S.weeklyTargetLocked) return;
-        const v = clamp(lptInput.value);
-        S.leavesPerTree = v;
-        S.weeklyTargetLocked = true;
-        S.weeklyTargetSetValue = v;
-
-        S.placed = 0;
-        S.weeklyLeaves = 0;
-        S.secondsLeft = LEAF_SECONDS;
-        leafLayer.innerHTML = '';
-        applyProgress();
-
-        lptVal.textContent = String(S.leavesPerTree);
-        renderHUD();
-      });
-    }
-
     function updateWeeklyTargetPreview(nextLPT){
       const v = Math.max(1, Math.min(200, Number(nextLPT)||1));
-      const hours = (v * (LEAF_SECONDS/3600));
-      const h = Math.floor(hours);
-      const m = Math.round((hours - h)*60);
-      weeklyTargetEl.textContent = `Weekly target = ${h} hrs ${m} mins (as per LPT)`;
-      lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
+      const mins = v * (LEAF_SECONDS/60);
+      const h = Math.floor(mins/60);
+      const m = Math.round(mins - h*60);
+      weeklyTargetEl.textContent = `Weekly target = ${h>0? h+' hrs ':''}${m} mins (as per LPT)`;
+      lptNoteEl.textContent = 'LPT = No. of 5 min sessions per week';
     }
 
-    function wireSubscription(){
-      const btn=document.getElementById('subBtn');
-      if(!btn) return;
-      btn.addEventListener('click', ()=>{
-        if(S.subActive) return;
-        S.subActive = true;
-        S.plan = 'Paid';
-        renderHUD();
-      });
-    }
+    // Wire up UI
+    startBtn.addEventListener('click', startFlow);
+    resetBtn.addEventListener('click', resetTimer);
 
-    // init
+    const clamp = (v)=>Math.max(1, Math.min(200, Number(v)||1));
+    lptInput.addEventListener('input', ()=>{
+      const v = clamp(lptInput.value);
+      lptVal.textContent = String(v);
+      updateWeeklyTargetPreview(v);
+    });
+
+    lptSetBtn.addEventListener('click', ()=>{
+      rolloverWeekIfNeeded();
+      if(S.weeklyTargetLocked) return;
+      const v = clamp(lptInput.value);
+      S.leavesPerTree = v;
+      S.weeklyTargetLocked = true;
+      S.weeklyTargetSetValue = v;
+
+      S.placed = 0;
+      S.weeklyLeaves = 0;
+      S.secondsLeft = LEAF_SECONDS;
+
+      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+      if(layer) layer.innerHTML = '';
+      applyProgress();
+
+      lptVal.textContent = String(S.leavesPerTree);
+      renderHUD();
+    });
+
+    // Init
     rolloverWeekIfNeeded();
-
-    const fillRectEl = document.getElementById('fillRect');
-    fillRectEl.setAttribute('x','110'); fillRectEl.setAttribute('width','360');
-    fillRectEl.setAttribute('y','316'); fillRectEl.setAttribute('height','0');
-
     renderLeavesFromState();
     applyProgress();
     renderHUD();
-    setupTabs();
-    wireLPTControls();
-    wireSubscription();
-
-    document.getElementById('startBtn').addEventListener('click', startOneMinute);
-    document.getElementById('resetBtn').addEventListener('click', resetTimer);
   </script>
 </body>
 </html>
