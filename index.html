@@ -223,7 +223,7 @@
   </div>
 
   <script>
-    const KEY='pomodoroTree_SingleMode_25min_V3';
+    const KEY='pomodoroTree_SingleMode_25min_V4';
     const svgns='http://www.w3.org/2000/svg';
     const LEAF_SECONDS=1500; // 25 minutes
 
@@ -366,12 +366,12 @@
       }
     }
 
-    // Previous sapling drawing restored (simpler stem with two tiny leaves)
+    // Saplings: previous style, 7 columns x 7 rows (21 + 28 new = 49)
     function buildSaplings(){
       const g=document.getElementById('saplings');
       if(!g) return;
       g.innerHTML='';
-      const cols=7, rows=3;
+      const cols=7, rows=7;
       const startX=28, endX=532;
       const grassYStart=560*0.62 + 18;
       const rowGap=26;
@@ -442,7 +442,7 @@
       todayChip.innerHTML = `<strong>Pomodoro hrs (week)</strong>: ${w.h} hrs ${w.m} mins`;
       totalTimeChip.innerHTML = `<strong>Pomodoro hrs (overall)</strong>: ${o.h} hrs ${o.m} mins`;
       const minsToday = minutesForLeaves(S.leavesToday||0);
-      todaySky.textContent = `Leaves (today) = ${S.leavesToday||0} (${minsToday} mins)`;
+      document.getElementById('todaySky').textContent = `Leaves (today) = ${S.leavesToday||0} (${minsToday} mins)`;
     }
 
     function paintProgressUI(){
