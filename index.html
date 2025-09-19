@@ -20,8 +20,8 @@
       --btn-danger:#ef4444; --btn-danger-hover:#b91c1c;
       --btn-neutral:#334155; --btn-neutral-hover:#1f2937; --btn-focus:#0ea5e9;
       --progress-green:#16a34a; --progress-red:#ef4444; --track-bg:#e6efff;
-      --xy-font: 28.35px; /* reduced by 25% from 37.8px */
-      --info-font: 9px;   /* reduced by ~25% for sky chips */
+      --xy-font: 28.35px;
+      --info-font: 9px;
       --info-line: 1.25;
       --soil1:#8a6a47; --soil2:#6f5539; --soil3:#a17d56; --tree-emoji-size:26px;
     }
@@ -223,7 +223,7 @@
   </div>
 
   <script>
-    const KEY='pomodoroTree_SingleMode_25min_V2';
+    const KEY='pomodoroTree_SingleMode_25min_V3';
     const svgns='http://www.w3.org/2000/svg';
     const LEAF_SECONDS=1500; // 25 minutes
 
@@ -366,33 +366,45 @@
       }
     }
 
-    // Build 21 saplings in 3 rows on the grass
+    // Previous sapling drawing restored (simpler stem with two tiny leaves)
     function buildSaplings(){
       const g=document.getElementById('saplings');
       if(!g) return;
       g.innerHTML='';
       const cols=7, rows=3;
-      const startX=30, endX=530;
-      const grassYStart=560*0.62 + 20; // slightly below grass line
-      const rowGap=28;
+      const startX=28, endX=532;
+      const grassYStart=560*0.62 + 18;
+      const rowGap=26;
       for(let r=0;r<rows;r++){
         for(let c=0;c<cols;c++){
-          const x = startX + c * ((endX - startX)/(cols-1));
-          const y = grassYStart + r*rowGap;
-          const spr = document.createElementNS(svgns,'path');
-          // simple sapling: stem + two small leaves
-          const d = `
-            M ${x} ${y} l 0 -14
-            m 0 -8 c -6 -2, -10 -6, -12 -10 c 6 2, 12 2, 18 0
-            m -6 10 c 6 -2, 10 -6, 12 -10 c -6 2, -12 2, -18 0
-          `;
-          spr.setAttribute('d', d.trim());
-          spr.setAttribute('stroke','#2f6f3a');
-          spr.setAttribute('stroke-width','2');
-          spr.setAttribute('fill','none');
-          spr.setAttribute('stroke-linecap','round');
-          spr.setAttribute('stroke-linejoin','round');
-          g.appendChild(spr);
+          const x = Math.round(startX + c * ((endX - startX)/(cols-1)));
+          const y = Math.round(grassYStart + r*rowGap);
+          const stem = document.createElementNS(svgns,'path');
+          stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
+          stem.setAttribute('stroke','#2f6f3a');
+          stem.setAttribute('stroke-width','2');
+          stem.setAttribute('fill','none');
+          stem.setAttribute('stroke-linecap','round');
+
+          const leafL = document.createElementNS(svgns,'path');
+          leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
+          leafL.setAttribute('stroke','#2f6f3a');
+          leafL.setAttribute('stroke-width','2');
+          leafL.setAttribute('fill','none');
+          leafL.setAttribute('stroke-linecap','round');
+          leafL.setAttribute('stroke-linejoin','round');
+
+          const leafR = document.createElementNS(svgns,'path');
+          leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
+          leafR.setAttribute('stroke','#2f6f3a');
+          leafR.setAttribute('stroke-width','2');
+          leafR.setAttribute('fill','none');
+          leafR.setAttribute('stroke-linecap','round');
+          leafR.setAttribute('stroke-linejoin','round');
+
+          g.appendChild(stem);
+          g.appendChild(leafL);
+          g.appendChild(leafR);
         }
       }
     }
