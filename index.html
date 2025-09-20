@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Fixed x/y, Custom Weekly Lock, Simple No Lock, Per‑Mode State</title>
+  <title>Pomodoro Tree — Mode Select Fixed, Custom/Simple Setters, x/y, Per‑Mode</title>
   <style>
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
@@ -84,18 +84,6 @@
     .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); display:none; }
 
     .todaySky{ position:absolute; left:14px; top:38px; font:800 18px/1 Inter; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
-
-    .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:none; }
-    .rainTop .drop{ position:absolute; top:-16px; width:3px; height:18px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 1.1s linear infinite; }
-    .rainTop .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.4s; }
-    @keyframes rainFall{ to{ transform:translateY(640px); } }
-
-    @keyframes canopyBlink { 0%,100%{ stroke:#065f46;} 50%{ stroke:#000; } }
-    .blink-canopy{ animation: canopyBlink 900ms linear infinite; }
-    @keyframes leafBlink { 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
-    .blink-leaf{ animation: leafBlink 900ms linear infinite; }
-    @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
-    .leaf-pop{ animation: leafPop 380ms ease-out forwards; transform-origin:center; transform-box:fill-box; }
 
     .tabsWrap{ margin:12px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:760px; max-width:100%; position:relative; z-index:var(--z-tabs); }
     .tabs{ display:flex; gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); justify-content:center; }
@@ -322,7 +310,7 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_Final_XY_Fixes_v1';
+    const APP_KEY='pomodoroTree_ModeSelect_Fix_CustomSimpleSetters_v1';
     const GLOBAL_KEY=APP_KEY+'_global', NAMES_KEY=APP_KEY+'_names';
     const svgns='http://www.w3.org/2000/svg';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simple:'simple' };
@@ -373,15 +361,11 @@
     const treeGrid=el('treeGrid'), gridCount=el('gridCount');
 
     let CUSTOM_NAMES=load(NAMES_KEY,{});
-    const DEFAULT_MODE_NAMES={
-      exercise:'Exercise mode', cycling:'Cycling mode', digitalDetox:'Digital detox mode', bedTime:'Bed-time mode',
-      quran:'Quran mode', dikhr:'Dikhr mode', maths:'Maths mode',
-      subject1:'Subject 1 mode', subject2:'Subject 2 mode', subject3:'Subject 3 mode',
-      user1:'User 1 mode', user2:'User 2 mode', user3:'User 3 mode'
-    };
+    const DEFAULT_MODE_NAMES={ exercise:'Exercise mode', cycling:'Cycling mode', digitalDetox:'Digital detox mode', bedTime:'Bed-time mode', quran:'Quran mode', dikhr:'Dikhr mode', maths:'Maths mode', subject1:'Subject 1 mode', subject2:'Subject 2 mode', subject3:'Subject 3 mode', user1:'User 1 mode', user2:'User 2 mode', user3:'User 3 mode' };
     const MODE_IDS=['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
     const nameFor=(id)=> (CUSTOM_NAMES[id]??'').trim() || (DEFAULT_MODE_NAMES[id]||id);
 
+    // Build mode select and wire a single reliable change listener
     function populateModeSelect(){
       modeSelect.innerHTML='';
       const f=document.createDocumentFragment();
@@ -397,6 +381,17 @@
       const label=opt? opt.text : nameFor(currentMode);
       modeNameHeader.textContent=label.replace(/ mode$/i,'');
     }
+
+    // Tabs
+    document.getElementById('tabs').addEventListener('click', (e)=>{
+      const t=e.target.closest('.tab'); if(!t) return;
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      ['modesPanel','subPanel','syncPanel'].forEach(id=> document.getElementById(id).style.display='none');
+      document.getElementById(t.getAttribute('data-tab')).style.display='flex';
+    });
+
+    // Names
     function populateNamesInputs(){
       subject1Input.value=CUSTOM_NAMES.subject1||''; subject2Input.value=CUSTOM_NAMES.subject2||''; subject3Input.value=CUSTOM_NAMES.subject3||'';
       user1Input.value=CUSTOM_NAMES.user1||''; user2Input.value=CUSTOM_NAMES.user2||''; user3Input.value=CUSTOM_NAMES.user3||'';
@@ -416,20 +411,6 @@
       }
       refreshModeHeader();
     });
-
-    // Timezone (UI helper)
-    const countrySearch=el('countrySearch'), countryList=el('countryList');
-    const COUNTRY_TZ=[{name:'India',tz:'Asia/Kolkata'},{name:'United Kingdom',tz:'Europe/London'},{name:'United States',tz:'America/New_York'},{name:'Canada',tz:'America/Toronto'},{name:'Australia',tz:'Australia/Sydney'},{name:'UAE',tz:'Asia/Dubai'},{name:'Bangladesh',tz:'Asia/Dhaka'},{name:'Japan',tz:'Asia/Tokyo'},{name:'China',tz:'Asia/Shanghai'},{name:'Germany',tz:'Europe/Berlin'},{name:'France',tz:'Europe/Paris'},{name:'Brazil',tz:'America/Sao_Paulo'}].sort((a,b)=> a.name.localeCompare(b.name));
-    function renderCountryList(filter=''){
-      const q=filter.trim().toLowerCase(); const items=COUNTRY_TZ.filter(c=> c.name.toLowerCase().includes(q));
-      if(items.length===0){ countryList.style.display='none'; countryList.innerHTML=''; return; }
-      countryList.innerHTML=items.map(c=>`<div class="drop-item" data-tz="${c.tz}" data-name="${c.name}">${c.name}</div>`).join('');
-      countryList.style.display='block';
-    }
-    countrySearch.addEventListener('input', ()=> renderCountryList(countrySearch.value) );
-    countrySearch.addEventListener('focus', ()=> renderCountryList(countrySearch.value) );
-    document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
-    countryList.addEventListener('click', (e)=>{ const it=e.target.closest('.drop-item'); if(!it) return; countrySearch.value=it.getAttribute('data-name'); countryList.style.display='none'; });
 
     // Week rollover per-mode
     function rolloverWeekIfNeeded(){
@@ -497,7 +478,6 @@
       const done=Math.min(S.placed,total);
       const pct=(done/total)*100;
       setFillPercent(pct);
-      // Show x/y only for Pomodoro and Custom
       const showXY = (G.timerType==='pomodoro' || G.timerType==='custom');
       xyLabel.style.display = showXY ? 'block' : 'none';
       if(showXY){ xyLabel.textContent = `${done}/${total} leaves`; }
@@ -542,6 +522,7 @@
       mk(160,''); mk(140,' far');
     }
     function rain(on){ ensureRainDrops(); rainTop.style.display = on ? 'block' : 'none'; }
+    let blinkWrap=null;
     function startBlinkPlaceholder(){
       stopBlinkPlaceholder();
       const idx=S.placed;
@@ -560,7 +541,6 @@
       }
     }
 
-    let ticker=null;
     function stopSession(){
       if(ticker){ clearInterval(ticker); ticker=null; }
       canopyBlink(false); rain(false); stopBlinkPlaceholder();
@@ -689,7 +669,6 @@
     function applyTimerTypeUI(){
       reflectCustomLockUI();
       reflectSimpleUI();
-      // x/y label visible only in Pomodoro + Custom
       xyLabel.style.display = (G.timerType==='pomodoro' || G.timerType==='custom') ? 'block' : 'none';
       updateWeeklyTargetText();
       setClockAndButtons();
@@ -703,7 +682,7 @@
       saveState(currentMode,S);
     });
 
-    // Mode switching (per-mode isolation)
+    // Mode switching (robust single change handler)
     modeSelect.addEventListener('change', ()=>{
       stopSession();
       currentMode=modeSelect.value; G.selectedMode=currentMode; save(GLOBAL_KEY,G);
@@ -767,7 +746,7 @@
       buildSaplings();
       populateModeSelect();
       populateNamesInputs();
-      // prepare rain
+      // prepare rain once
       (function ensureRain(){ const r=rainTop; if(r.childElementCount===0){ const mk=(n, cls='')=>{ for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='drop'+cls; d.style.left=(Math.random()*560)+'px'; d.style.animationDelay=(Math.random()*1.0)+'s'; d.style.animationDuration=(cls? (1.1+Math.random()*0.9)+'s' : (0.8+Math.random()*0.7)+'s'); r.appendChild(d);} }; mk(160,''); mk(140,' far'); } })();
       rolloverWeekIfNeeded();
       reflectLPTLockUI();
