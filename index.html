@@ -5,17 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Pomodoro Tree — Study Mode</title>
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-G91N05XLB3"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-G91N05XLB3');
-  </script>
-
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
+
   <style>
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
@@ -26,35 +18,34 @@
       --btn-danger:#ef4444; --btn-danger-hover:#b91c1c;
       --btn-neutral:#334155; --btn-neutral-hover:#1f2937; --btn-focus:#0ea5e9;
       --progress-green:#16a34a; --progress-red:#ef4444; --track-bg:#e6efff;
-      --xy-font:28.35px;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
     .wrap{ max-width:1140px; margin:0 auto; padding:20px 16px 120px; }
-    header,.tzBar,.stats,.chip,.timerCard,.controls,.settings,.treePanel,.tabs,.tab,.panelCard,.gridWrap,.gridHead,.grid,.bottomAuth,.modesBar,.modeEditRow,.topStack,.timerTypeBar { display:flex; align-items:center; }
 
-    header{ justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
     h1{ margin:0; font-size:22px; }
-    .brand{ gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); }
+    .brand{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); }
     .modeTag{ font-weight:800; color:#14563a; font-size:20px; }
 
-    .topStack{ flex-direction:column; gap:12px; margin-top:12px; width:100%; }
+    .topStack{ display:flex; flex-direction:column; gap:12px; margin-top:12px; width:100%; }
 
-    /* Timer type and duration bar */
-    .timerTypeBar{ gap:12px; flex-wrap:wrap; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; box-shadow:var(--shadow); justify-content:center; }
+    /* Center helpers for main cards */
+    .centerRow{ width:100%; display:flex; justify-content:center; }
+    .fixedCard{ width:760px; }
+
+    /* Timer type + duration bar (no “choose” label) */
+    .timerTypeBar{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; box-shadow:var(--shadow); justify-content:center; }
     .timerTypeInner{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .timerTypeInner select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:800; }
     .customInputs{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .customInputs input{ width:90px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
-    /* Center helpers to keep layout aligned */
-    .centerRow{ width:100%; display:flex; justify-content:center; }
-    .fixedCard{ width:760px; }
-
-    .timerCard{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
+    /* Timer */
+    .timerCard{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
     .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
-    .controls{ gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
+    .controls{ display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
     button{
       border:none; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;
       color:#fff; background:var(--btn-neutral);
@@ -72,17 +63,17 @@
     #lptSetBtn{ background:var(--btn-primary); }
     #lptSetBtn:hover{ background:var(--btn-primary-hover); }
 
-    .settings{ gap:12px; margin-top:10px; flex-wrap:wrap; justify-content:center; color:var(--dim); flex-direction:column; align-items:center; width:100%; }
+    .settings{ display:flex; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap; justify-content:center; color:var(--dim); flex-direction:column; width:100%; }
     input[type=range][readonly]{ pointer-events:none; }
     .numWrap{ display:flex; align-items:center; gap:8px; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
-
     .estWrap{ margin-top:6px; color:#0b1a33; font-weight:800; font-size:11px; line-height:1.25; text-align:center; min-height:22px; display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; order:-1; width:100%; }
 
+    /* Slider kept for Pomodoro only; green->red fill applied inline via JS */
     .progressWrap{ display:flex; align-items:center; gap:10px; }
     #lptRange{
       -webkit-appearance:none; appearance:none; width:260px; height:12px; border-radius:999px; overflow:hidden; background:var(--track-bg); border:1px solid var(--line);
-      background-image:linear-gradient(90deg, var(--progress-green) 0%, var(--progress-red) 0%);
+      background-image:linear-gradient(90deg, #16a34a 0%, #ef4444 0%);
       background-size:100% 100%; background-repeat:no-repeat;
     }
     #lptRange::-webkit-slider-thumb{ -webkit-appearance:none; width:0; height:0; background:transparent; }
@@ -90,46 +81,37 @@
     #lptRange::-webkit-slider-runnable-track{ height:12px; border-radius:999px; background:transparent; }
     #lptRange::-moz-range-track{ height:12px; border-radius:999px; background:transparent; }
 
-    .treePanel{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
+    /* Tree + blue canvas panel */
+    .treePanel{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treePanel.fixedCard{ width:760px; }
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
     .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, #bfeec7 62%, #8edaa0 100%); }
-    .percentLabel{ display:none; } /* always hidden */
-    .xyLabel{ position:absolute; left:16px; top:14px; font:900 28.35px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
-    .todaySky{ position:absolute; left:16px; top:52px; font:800 21px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
+    .percentLabel{ display:none; }
+    .xyLabel{ position:absolute; left:12px; top:12px; font:900 28px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
+    .todaySky{ position:absolute; left:12px; top:48px; font:800 20px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
-    @keyframes canopyBlink { 0%,100%{ stroke:#065f46;} 50%{ stroke:#000; } }
-    @keyframes leafBlink { 0%,100%{ fill:#166534;} 50%{ fill:#86efac;} }
-    .blink-canopy{ animation: canopyBlink 900ms linear infinite; }
-    .blink-leaf{ animation: leafBlink 900ms linear infinite; }
-    .leaf-number{ font:800 13px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:#ffffff; text-anchor:middle; dominant-baseline:middle; }
+    /* Nudge inner SVG slightly left so labels never clip on the right while remaining visually centered */
+    #treeSVG{ position:absolute; left:48%; transform:translateX(-50%); bottom:20px; overflow:visible; }
 
-    .rain{ position:absolute; inset:0; pointer-events:none; display:none; z-index:9999; }
-    .rain .drop{ position:absolute; top:-12px; width:3px; height:14px; background:rgba(14,42,112,.45); border-radius:2px; animation:rainFall 0.8s linear infinite; }
-    .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
-    @keyframes rainFall{ to{ transform:translateY(620px); } }
-
-    .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; }
-    .tzLeft{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .tzBar{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; }
     .tzLeft select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:700; min-width:260px; }
-    .stats{ gap:10px; flex-wrap:wrap; }
-    .chip{ gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#4a6894; }
+    .stats{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .chip{ display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#4a6894; }
 
     .tabsWrap{ margin:12px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:980px; }
-    .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); justify-content:center; }
-    .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
+    .tabs{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); justify-content:center; }
+    .tab{ display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
     .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
-    .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; flex-wrap:wrap; }
+    .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; }
 
-    .modesBar{ gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin:0; width:100%; }
-    .modesBar select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; color:#0b1a33; min-width:260px; }
-    .modeEditRow{ gap:8px; flex-wrap:wrap; }
+    /* Modes panel: stack cells vertically */
+    .modesBar{ display:flex; flex-direction:column; align-items:stretch; gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); }
+    .modeEditRow{ display:flex; flex-direction:column; align-items:stretch; gap:10px; }
     .modeEditRow .editGroup{ display:flex; align-items:center; gap:6px; background:#f8fbff; border:1px solid var(--line); padding:6px 8px; border-radius:10px; }
     .modeEditRow input{ padding:6px 8px; border-radius:8px; border:1px solid var(--line); font-weight:700; min-width:160px; }
-    .modeNote{ color:#4a6894; font-weight:700; flex-basis:100%; }
 
     .gridWrap{ margin:14px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:980px; display:flex; flex-direction:column; align-items:center; }
-    .gridHead{ justify-content:space-between; gap:8px; color:#4a6894; width:100%; max-width:980px; }
+    .gridHead{ display:flex; align-items:center; justify-content:space-between; gap:8px; color:#4a6894; width:100%; max-width:980px; }
     .grid{ display:grid; gap:10px; grid-template-columns:repeat(13, minmax(0, 1fr)); width:100%; margin-top:10px; }
     @media (max-width:980px){ .grid{ grid-template-columns:repeat(8, minmax(0, 1fr)); } }
     .cell{ position:relative; aspect-ratio:1/1; border-radius:14px; background:#f3f8ff; border:1px dashed #c8d8ee; color:#4e6ea0; display:flex; align-items:center; justify-content:center; font-weight:800; overflow:hidden; }
@@ -137,11 +119,14 @@
     .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; z-index:2; pointer-events:none; }
     .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
 
-    .bottomAuth{ margin:18px auto 0; max-width:760px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; }
+    .bottomAuth{ margin:18px auto 0; max-width:760px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; display:flex; align-items:center; }
     .bottomAuth input{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); }
+
+    /* Buttons */
+    .hidden{ display:none !important; }
   </style>
 </head>
-<body data-mode="Study">
+<body>
   <div class="wrap">
     <header>
       <div class="brand"><span style="font-weight:800;">🌳</span><h1>Pomodoro Tree</h1></div>
@@ -149,7 +134,7 @@
     </header>
 
     <div class="topStack">
-      <!-- Timer type and duration selector, centered -->
+      <!-- Timer type and duration -->
       <div class="centerRow">
         <section class="timerTypeBar fixedCard" aria-label="Timer type and custom duration">
           <div class="timerTypeInner">
@@ -170,7 +155,7 @@
         </section>
       </div>
 
-      <!-- Timer card centered -->
+      <!-- Timer -->
       <div class="centerRow">
         <section class="timerCard fixedCard">
           <div class="time" id="clock">25:00</div>
@@ -185,11 +170,9 @@
               <button id="lptSetBtn">Set</button>
               <span id="lockHint" style="color:#4a6894">Editable once per ISO week</span>
             </div>
-
             <div class="estWrap">
               <div class="miniNote" id="lptNote">LPT = No. of sessions per week</div>
             </div>
-
             <div class="progressWrap" id="progressBlock" style="order:2;">
               <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
               <span id="lptVal">9</span>
@@ -199,7 +182,7 @@
         </section>
       </div>
 
-      <!-- Tree panel centered -->
+      <!-- Tree -->
       <div class="centerRow">
         <section class="treePanel fixedCard">
           <h3 style="margin:0 0 8px 0; text-align:center;">Current Tree</h3>
@@ -214,7 +197,8 @@
               <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
             </svg>
 
-            <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible">
+            <!-- Slight left offset via left:48% to keep labels visible -->
+            <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet">
               <defs>
                 <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="1.0" flood-color="#000" flood-opacity="0.15" /></filter>
                 <mask id="fillMask" maskUnits="userSpaceOnUse" x="100" y="150" width="380" height="220">
@@ -242,6 +226,7 @@
       </div>
     </div>
 
+    <!-- Time zone + stats -->
     <div class="centerRow">
       <div class="tzBar fixedCard" id="tzBar">
         <div class="tzLeft">
@@ -254,6 +239,7 @@
       </div>
     </div>
 
+    <!-- Tabs -->
     <section class="tabsWrap" id="tabsWrap">
       <div class="tabs">
         <div class="tab" data-tab="subPanel">Subscription</div>
@@ -275,8 +261,7 @@
 
       <div id="modesPanel" class="panelCard" style="display:flex;">
         <div class="modesBar">
-          <div class="modeEditRow" style="flex-basis:100%;">
-            <label for="modeSelect" class="modeNote">Mode</label>
+          <div class="modeEditRow">
             <select id="modeSelect" title="Switch mode"></select>
           </div>
           <div class="modeEditRow" id="editableNamesRow">
@@ -288,11 +273,12 @@
             <div class="editGroup"><span>User 3</span><input id="user3Input" placeholder="Edit name" /></div>
             <button id="saveNamesBtn">Save names</button>
           </div>
-          <div class="modeNote">Each mode has its own timer/data. Selecting from dropdown switches instantly.</div>
+          <div class="miniNote">Modes stack vertically here for easier editing.</div>
         </div>
       </div>
     </section>
 
+    <!-- Completed trees -->
     <section class="gridWrap" id="gridWrap">
       <div class="gridHead">
         <div class="chip">Completed Trees</div>
@@ -309,7 +295,7 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_Centered_V1';
+    const APP_KEY = 'pomodoroTree_Align_V1';
     const NAMES_KEY = APP_KEY + '_customNames';
     const GLOBAL_KEY = APP_KEY + '_global';
     const svgns='http://www.w3.org/2000/svg';
@@ -334,12 +320,7 @@
     };
 
     const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}');
-    const G = Object.assign({
-      timeZone:'UTC',
-      selectedMode:'maths',
-      timerType:TIMER_TYPES.pomodoro,
-      customSeconds: 15*60
-    }, loadGlobal());
+    const G = Object.assign({ timeZone:'UTC', selectedMode:'maths', timerType:TIMER_TYPES.pomodoro, customSeconds: 15*60 }, loadGlobal());
     function saveGlobal(){ localStorage.setItem(GLOBAL_KEY, JSON.stringify(G)); }
 
     const loadNames = () => JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
@@ -350,23 +331,15 @@
     const DEFAULT_STATE = {
       leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS, running:false,
       leavesTotal:0, leavesToday:0, weeklyLeaves:0,
-      weeklyFocusSeconds:0, totalFocusSeconds:0,
-      completedSessions:0,
-      grid:[],
-      subActive:true, plan:'Free',
-      week:undefined, year:undefined,
-      weeklyComplete:false,
-      weeklyTargetLocked:false, weeklyTargetSetValue:9,
-      freeWeeksCap:4
+      weeklyFocusSeconds:0, totalFocusSeconds:0, completedSessions:0,
+      grid:[], subActive:true, plan:'Free', week:undefined, year:undefined,
+      weeklyComplete:false, weeklyTargetLocked:false, weeklyTargetSetValue:9, freeWeeksCap:4
     };
     function loadState(modeId){
-      const raw = localStorage.getItem(modeKey(modeId));
-      try{ return Object.assign({}, DEFAULT_STATE, raw? JSON.parse(raw): {}); }
+      try{ return Object.assign({}, DEFAULT_STATE, JSON.parse(localStorage.getItem(modeKey(modeId))||'{}')); }
       catch{ return Object.assign({}, DEFAULT_STATE); }
     }
-    function saveState(modeId, S){
-      localStorage.setItem(modeKey(modeId), JSON.stringify(S));
-    }
+    function saveState(modeId, S){ localStorage.setItem(modeKey(modeId), JSON.stringify(S)); }
 
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
@@ -375,24 +348,15 @@
     function clearModeInterval(modeId){ if(intervals[modeId]){ clearInterval(intervals[modeId]); intervals[modeId]=null; } }
 
     const el=id=>document.getElementById(id);
-    const clockEl=el('clock');
-    const startBtn=el('startBtn');
-    const resetBtn=el('resetBtn');
-
+    const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
     const lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptRange=el('lptRange'), lptVal=el('lptVal'), lockHint=el('lockHint');
     const weeklyTargetEl=el('weeklyTarget'), lptNoteEl=el('lptNote');
-
-    const todayChip=el('todayChip');
-    const totalTimeChip=el('totalTimeChip');
-
-    const percentLabel=document.getElementById('percentLabel');
-    const xyLabel=document.getElementById('xyLabel');
-    const rainLayer=el('rainLayer');
-    const treeGrid=el('treeGrid'); const gridCount=el('gridCount');
+    const todayChip=el('todayChip'), totalTimeChip=el('totalTimeChip');
+    const percentLabel=document.getElementById('percentLabel'), xyLabel=document.getElementById('xyLabel'), rainLayer=el('rainLayer');
+    const treeGrid=el('treeGrid'), gridCount=el('gridCount');
     const leafLayer=document.querySelector('#treeSVG #leafLayer');
     const fillRect=document.getElementById('fillRect');
-    const todaySky=el('todaySky');
-    const modeNameEl=document.getElementById('modeName');
+    const todaySky=el('todaySky'), modeNameEl=document.getElementById('modeName');
 
     const timerTypeSelect = document.getElementById('timerTypeSelect');
     const customInputsDiv = document.getElementById('customInputs');
@@ -429,16 +393,11 @@
       if(panel) panel.style.display='flex';
     });
 
+    // Audio init
     let audioCtx=null;
-    function ensureAudioUnlocked(){
-      const AC=window.AudioContext||window.webkitAudioContext;
-      if(!AC) return;
-      if(!audioCtx){ audioCtx=new AC(); }
-      if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); }
-    }
+    function ensureAudioUnlocked(){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; if(!audioCtx){ audioCtx=new AC(); } if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); } }
     function playAlarm10s(){
-      const isBedtime = (currentMode === 'bedTime');
-      if(isBedtime) return;
+      if(currentMode==='bedTime') return;
       if(!audioCtx || audioCtx.state==='suspended') return;
       const now = audioCtx.currentTime;
       const master = audioCtx.createGain();
@@ -464,9 +423,7 @@
         const get = k => Number(parts.find(p=>p.type===k)?.value);
         const y=get('year'), m=get('month'), d=get('day'), hh=get('hour'), mm=get('minute'), ss=get('second');
         return new Date(Date.UTC(y, m-1, d, hh, mm, ss));
-      }catch(e){
-        return new Date();
-      }
+      }catch(e){ return new Date(); }
     }
     function isoWeekOf(date){
       const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -492,10 +449,10 @@
         const completed = (S.placed>=S.leavesPerTree && S.leavesPerTree>0);
         unshiftWeekToGrid(S.week, S.year, completed);
         S.week=wk; S.year=yr;
-        S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0;
-        S.weeklyComplete=false; S.weeklyTargetLocked=false; S.weeklyTargetSetValue=S.leavesPerTree;
+        S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0; S.weeklyComplete=false;
+        S.weeklyTargetLocked=false; S.weeklyTargetSetValue=S.leavesPerTree;
         S.placed=0; S.secondsLeft=getCurrentSessionSeconds();
-        if(leafLayer) leafLayer.innerHTML='';
+        const layer=document.querySelector('#treeSVG #leafLayer'); if(layer) layer.innerHTML='';
         save();
       }
     }
@@ -510,8 +467,7 @@
       const g=document.createElementNS(svgns,'g'); g.setAttribute('filter','url(#leafShadow)');
       const p=document.createElementNS(svgns,'path');
       p.setAttribute('d','M 0 -16 C 10 -10, 12 0, 0 14 C -12 0, -10 -10, 0 -16 Z');
-      p.setAttribute('fill','#166534');
-      p.setAttribute('stroke','#0b3d22'); p.setAttribute('stroke-width','1.2');
+      p.setAttribute('fill','#166534'); p.setAttribute('stroke','#0b3d22'); p.setAttribute('stroke-width','1.2');
       const t=document.createElementNS(svgns,'text'); t.setAttribute('class','leaf-number'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.textContent=String(n);
       g.appendChild(p); g.appendChild(t); return g;
     }
@@ -529,54 +485,25 @@
     function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
 
     function renderLeavesFromState(){
-      const layer=document.querySelector('#treeSVG #leafLayer');
-      if(!layer) return;
+      const layer=document.querySelector('#treeSVG #leafLayer'); if(!layer) return;
       layer.innerHTML='';
-      for(let i=0;i<S.placed;i++){
-        const g=createLeafG(i+1); placeLeaf(g, anchorForIndex(i)); layer.appendChild(g);
-      }
+      for(let i=0;i<S.placed;i++){ const g=createLeafG(i+1); placeLeaf(g, anchorForIndex(i)); layer.appendChild(g); }
     }
 
     function buildSaplings(){
-      const g=document.getElementById('saplings');
-      if(!g) return;
-      g.innerHTML='';
-      const cols=7, rows=7;
-      const startX=28, endX=532;
-      const grassYStart=560*0.62 + 18;
-      const rowGap=26;
-      for(let r=0;r<rows;r++){
-        for(let c=0;c<cols;c++){
-          const x = Math.round(startX + c * ((endX - startX)/(cols-1)));
-          const y = Math.round(grassYStart + r*rowGap);
-          const stem = document.createElementNS(svgns,'path');
-          stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
-          stem.setAttribute('stroke','#2f6f3a');
-          stem.setAttribute('stroke-width','2');
-          stem.setAttribute('fill','none');
-          stem.setAttribute('stroke-linecap','round');
-
-          const leafL = document.createElementNS(svgns,'path');
-          leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
-          leafL.setAttribute('stroke','#2f6f3a');
-          leafL.setAttribute('stroke-width','2');
-          leafL.setAttribute('fill','none');
-          leafL.setAttribute('stroke-linecap','round');
-          leafL.setAttribute('stroke-linejoin','round');
-
-          const leafR = document.createElementNS(svgns,'path');
-          leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
-          leafR.setAttribute('stroke','#2f6f3a');
-          leafR.setAttribute('stroke-width','2');
-          leafR.setAttribute('fill','none');
-          leafR.setAttribute('stroke-linecap','round');
-          leafR.setAttribute('stroke-linejoin','round');
-
-          g.appendChild(stem);
-          g.appendChild(leafL);
-          g.appendChild(leafR);
-        }
-      }
+      const g=document.getElementById('saplings'); if(!g) return; g.innerHTML='';
+      const cols=7, rows=7, startX=28, endX=532, grassYStart=560*0.62 + 18, rowGap=26;
+      for(let r=0;r<rows;r++){ for(let c=0;c<cols;c++){
+        const x = Math.round(startX + c * ((endX - startX)/(cols-1)));
+        const y = Math.round(grassYStart + r*rowGap);
+        const stem = document.createElementNS(svgns,'path'); stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
+        stem.setAttribute('stroke','#2f6f3a'); stem.setAttribute('stroke-width','2'); stem.setAttribute('fill','none'); stem.setAttribute('stroke-linecap','round');
+        const leafL = document.createElementNS(svgns,'path'); leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
+        leafL.setAttribute('stroke','#2f6f3a'); leafL.setAttribute('stroke-width','2'); leafL.setAttribute('fill','none'); leafL.setAttribute('stroke-linecap','round'); leafL.setAttribute('stroke-linejoin','round');
+        const leafR = document.createElementNS(svgns,'path'); leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
+        leafR.setAttribute('stroke','#2f6f3a'); leafR.setAttribute('stroke-width','2'); leafR.setAttribute('fill','none'); leafR.setAttribute('stroke-linecap','round'); leafR.setAttribute('stroke-linejoin','round');
+        g.appendChild(stem); g.appendChild(leafL); g.appendChild(leafR);
+      }}
     }
 
     function buildGrid(){
@@ -586,12 +513,7 @@
         const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
         const icon=document.createElement('div'); icon.className='icon';
         const entry=S.grid[i];
-        if(entry){
-          icon.textContent = entry.live ? '🌳' : '';
-          if(entry.live){ cell.classList.add('live'); }
-        }else{
-          icon.textContent = '';
-        }
+        if(entry){ icon.textContent = entry.live ? '🌳' : ''; if(entry.live){ cell.classList.add('live'); } } else { icon.textContent = ''; }
         cell.appendChild(num); cell.appendChild(icon); treeGrid.appendChild(cell);
       }
       gridCount.textContent=`${Math.min(S.grid.length, 52)} / 52`;
@@ -600,13 +522,11 @@
     function updateWeeklyTarget(){
       const secsPer = getCurrentSessionSeconds();
       const totalSecs = (S.leavesPerTree * secsPer);
-      const h = Math.floor(totalSecs/3600);
-      const m = Math.round((totalSecs%3600)/60);
+      const h = Math.floor(totalSecs/3600), m = Math.round((totalSecs%3600)/60);
       weeklyTargetEl.textContent = `Weekly target = ${h>0? h+' hrs ':''}${m} mins (as per LPT)`;
       lptNoteEl.textContent = 'LPT = No. of sessions per week';
     }
-
-    function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
+    function formatTimeHM(sec){ const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60); return {h,m}; }
 
     function renderTotals(){
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
@@ -623,19 +543,11 @@
       const total = Math.max(1, Number(S.leavesPerTree)||1);
       const done = Math.max(0, Math.min(S.placed, total));
       const pct = (done/total)*100;
-      lptRange.style.backgroundImage = `linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
+      lptRange.style.backgroundImage = `linear-gradient(90deg, #16a34a ${pct}%, #ef4444 ${pct}%)`;
     }
 
-    function format(sec){
-      const m=String(Math.floor(sec/60)).padStart(2,'0');
-      const s=String(sec%60).padStart(2,'0');
-      return `${m}:${s}`;
-    }
-
-    function getCurrentSessionSeconds(){
-      if(G.timerType==='custom' || G.timerType==='simple') return Math.max(10, Number(G.customSeconds)||900);
-      return POMODORO_SECONDS;
-    }
+    function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
+    function getCurrentSessionSeconds(){ if(G.timerType==='custom' || G.timerType==='simple') return Math.max(10, Number(G.customSeconds)||900); return POMODORO_SECONDS; }
 
     function setClockUIToCurrentType(){
       const secs = getCurrentSessionSeconds();
@@ -646,22 +558,17 @@
       const isSimple = (G.timerType==='simple');
       const isCustom = (G.timerType==='custom');
 
-      // Simple: hide everything below tree, only tree panel stays and shows Total duration (today)
-      [tzBar, statsChips, tabsWrap, gridWrap, bottomAuth, settingsBlock].forEach(el=>{
-        if(!el) return;
-        el.style.display = isSimple ? 'none' : '';
-      });
-      // Slider only in Pomodoro
-      progressBlock.style.display = (isSimple || isCustom) ? 'none' : '';
-      percentLabel.style.display = 'none';
+      [tzBar, statsChips, tabsWrap, gridWrap, bottomAuth, settingsBlock].forEach(el=>{ if(!el) return; el.classList.toggle('hidden', isSimple); });
+      progressBlock.classList.toggle('hidden', isSimple || isCustom);
+      percentLabel.classList.add('hidden');
     }
 
     function setRunning(on){
       S.running=on;
       const canopyOutline = document.getElementById('canopyOutline');
       if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on && G.timerType!=='simple');
-      const layer=document.querySelector('#treeSVG #leafLayer');
-      const cur=layer?.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on && G.timerType!=='simple'); }
+      const layer=document.querySelector('#treeSVG #leafLayer'); const cur=layer?.lastElementChild;
+      if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on && G.timerType!=='simple'); }
       startBtn.disabled = !!on;
       startBtn.textContent = on ? 'Running…' : `Start ${format(getCurrentSessionSeconds())}`;
       if(G.timerType!=='simple') showRain(!!on);
@@ -676,9 +583,7 @@
       lptInput.value = S.leavesPerTree;
       lptSetBtn.disabled = !!S.weeklyTargetLocked;
       lptInput.disabled = !!S.weeklyTargetLocked;
-      lockHint.textContent = S.weeklyTargetLocked
-        ? `Target locked for ISO Week ${S.week}-${S.year} at ${S.weeklyTargetSetValue}`
-        : 'Editable once per ISO week';
+      lockHint.textContent = S.weeklyTargetLocked ? `Target locked for ISO Week ${S.week}-${S.year} at ${S.weeklyTargetSetValue}` : 'Editable once per ISO week';
       applyProgress();
       if(G.timerType==='pomodoro') paintProgressUI();
       updateWeeklyTarget();
@@ -705,9 +610,7 @@
     }
 
     function onSessionComplete(){
-      // Alarm muted in Bed-time mode
-      const isBedtime = (currentMode === 'bedTime');
-      if(!isBedtime) playAlarm10s();
+      if(currentMode!=='bedTime') playAlarm10s();
 
       if(G.timerType!=='simple'){
         const dur = getCurrentSessionSeconds();
@@ -734,7 +637,6 @@
         save();
         renderHUD();
       }else{
-        // Simple: still form a leaf per completion, but no stats beneath
         S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1;
         renderLeavesFromState();
         setRunning(false);
@@ -750,40 +652,28 @@
     function startSessionWallClock(){
       const thisMode = currentMode;
       const targetEpoch = Date.now() + (S.secondsLeft * 1000);
-
       const tick = ()=>{
         if(thisMode !== currentMode){ clearModeInterval(thisMode); return; }
         const remainingMs = Math.max(0, targetEpoch - Date.now());
         S.secondsLeft = Math.ceil(remainingMs / 1000);
         clockEl.textContent = format(S.secondsLeft);
         if(G.timerType==='pomodoro') paintProgressUI();
-        if (remainingMs <= 0) {
-          clearModeInterval(thisMode);
-          onSessionComplete();
-        }
+        if (remainingMs <= 0) { clearModeInterval(thisMode); onSessionComplete(); }
       };
-
       const onVisibility=()=>{ if(document.visibilityState==='visible' && intervals[thisMode]) tick(); };
-
       setRunning(true);
       if(G.timerType!=='simple') renderHUD();
       tick();
       clearModeInterval(thisMode);
       intervals[thisMode] = setInterval(tick, 1000);
       document.addEventListener('visibilitychange', onVisibility, { passive:true });
-
       startBtn._cleanupVisibility = ()=>document.removeEventListener('visibilitychange', onVisibility);
     }
 
     function startFlow(){
       if(intervals[currentMode]) return;
-
       ensureAudioUnlocked();
-
-      if(G.timerType!=='simple'){
-        rolloverWeekIfNeeded();
-      }
-
+      if(G.timerType!=='simple'){ rolloverWeekIfNeeded(); }
       if(G.timerType!=='simple'){
         if(!S.weeklyComplete && S.placed < S.leavesPerTree){
           const idx=S.placed;
@@ -791,12 +681,8 @@
           const g=createLeafG(idx+1); placeLeaf(g, anchorForIndex(idx)); layer.appendChild(g);
         }
       }
-
       const maxSecs = getCurrentSessionSeconds();
-      if (S.secondsLeft <= 0 || S.secondsLeft > maxSecs) {
-        S.secondsLeft = maxSecs;
-      }
-
+      if (S.secondsLeft <= 0 || S.secondsLeft > maxSecs) { S.secondsLeft = maxSecs; }
       startSessionWallClock();
     }
 
@@ -840,10 +726,8 @@
       S.weeklyLeaves = 0;
       S.secondsLeft = getCurrentSessionSeconds();
 
-      const layer=document.querySelector('#treeSVG #leafLayer');
-      if(layer) layer.innerHTML = '';
+      const layer=document.querySelector('#treeSVG #leafLayer'); if(layer) layer.innerHTML = '';
       applyProgress();
-
       lptVal.textContent = String(S.leavesPerTree);
       renderHUD();
     });
@@ -858,8 +742,7 @@
         const frag=document.createDocumentFragment();
         for(const z of zones){
           const opt=document.createElement('option');
-          opt.value=z;
-          opt.textContent=labelForTZ(z);
+          opt.value=z; opt.textContent=labelForTZ(z);
           frag.appendChild(opt);
         }
         tzSelect.appendChild(frag);
@@ -880,151 +763,6 @@
       save();
     });
 
-    function allModeIds(){ return ['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3']; }
-    function modeLabel(id){
-      const custom = CUSTOM_NAMES[id];
-      if(custom && String(custom).trim().length>0) return custom;
-      return DEFAULT_MODE_NAMES[id] || id;
-    }
-    function populateModesUI(){
-      const ids = allModeIds();
-      if(modeSelect){
-        const curVal = modeSelect.value;
-        modeSelect.innerHTML='';
-        const frag=document.createDocumentFragment();
-        for(const id of ids){
-          const opt=document.createElement('option');
-          opt.value=id; opt.textContent=modeLabel(id);
-          frag.appendChild(opt);
-        }
-        modeSelect.appendChild(frag);
-        modeSelect.value = ids.includes(currentMode)? currentMode : ids[0];
-        if(curVal && ids.includes(curVal)) modeSelect.value = curVal;
-      }
-      subject1Input.value = CUSTOM_NAMES['subject1'] || '';
-      subject2Input.value = CUSTOM_NAMES['subject2'] || '';
-      subject3Input.value = CUSTOM_NAMES['subject3'] || '';
-      user1Input.value = CUSTOM_NAMES['user1'] || '';
-      user2Input.value = CUSTOM_NAMES['user2'] || '';
-      user3Input.value = CUSTOM_NAMES['user3'] || '';
-
-      if(modeNameEl) modeNameEl.textContent = modeLabel(currentMode).replace(/ mode$/i,'');
-    }
-
-    modeSelect?.addEventListener('change', ()=>{
-      switchMode(modeSelect.value);
-    });
-
-    function switchMode(toId){
-      if(!toId || toId===currentMode) return;
-      clearModeInterval(currentMode);
-      startBtn._cleanupVisibility?.();
-      if(G.timerType!=='simple') showRain(false);
-
-      save();
-
-      currentMode = toId;
-      G.selectedMode = toId;
-      S = loadState(currentMode);
-
-      const secs = getCurrentSessionSeconds();
-      if (S.secondsLeft <= 0 || S.secondsLeft > secs) S.secondsLeft = secs;
-
-      const layer=document.querySelector('#treeSVG #leafLayer');
-      if(layer) layer.innerHTML='';
-      renderLeavesFromState();
-      if(G.timerType!=='simple'){ rolloverWeekIfNeeded(); }
-      renderHUD();
-    }
-
-    function applyTimerTypeUI(){
-      timerTypeSelect.value = G.timerType;
-      customInputsDiv.style.display = (G.timerType==='custom' || G.timerType==='simple') ? 'flex' : 'none';
-      const secs = getCurrentSessionSeconds();
-      if(S.secondsLeft <= 0 || S.secondsLeft > secs) S.secondsLeft = secs;
-
-      setClockUIToCurrentType();
-
-      // Custom behaves like pomodoro but no slider/percentage
-      if(G.timerType==='custom'){
-        progressBlock.style.display='none';
-        percentLabel.style.display='none';
-      }
-      // Simple hides sections (handled in setClockUIToCurrentType)
-      if(G.timerType==='simple'){
-        progressBlock.style.display='none';
-        percentLabel.style.display='none';
-      }
-      // Pomodoro shows slider
-      if(G.timerType==='pomodoro'){
-        progressBlock.style.display='';
-      }
-
-      save();
-      renderHUD();
-    }
-    timerTypeSelect.addEventListener('change', ()=>{
-      G.timerType = timerTypeSelect.value;
-      if(G.timerType==='pomodoro'){ S.secondsLeft = POMODORO_SECONDS; }
-      applyTimerTypeUI();
-    });
-    customMinInput.value = String(Math.floor((G.customSeconds||900)/60));
-    customSecInput.value = String((G.customSeconds||900)%60);
-    applyCustomBtn.addEventListener('click', ()=>{
-      const mins = Math.max(0, Math.floor(Number(customMinInput.value)||0));
-      const secs = Math.max(0, Math.floor(Number(customSecInput.value)||0));
-      const total = Math.min(23*3600+59*60+59, mins*60 + secs);
-      G.customSeconds = Math.max(10, total||900);
-      const maxSecs = getCurrentSessionSeconds();
-      if (S.secondsLeft <= 0 || S.secondsLeft > maxSecs) S.secondsLeft = maxSecs;
-      applyTimerTypeUI();
-    });
-
-    const tzSelectEl = tzSelect;
-    function populateTimeZonesIfNeeded(){
-      if(!tzSelectEl) return;
-      if(tzSelectEl.options.length===0){
-        let zones=[];
-        try{ zones = Intl.supportedValuesOf('timeZone'); }
-        catch{ zones = ['UTC','Europe/London','Asia/Kolkata','America/New_York','Asia/Tokyo']; }
-        zones = Array.from(new Set(['UTC', ...zones]));
-        const frag=document.createDocumentFragment();
-        for(const z of zones){
-          const opt=document.createElement('option');
-          opt.value=z; opt.textContent=labelForTZ(z);
-          frag.appendChild(opt);
-        }
-        tzSelectEl.appendChild(frag);
-      }
-      tzSelectEl.value = G.timeZone || 'UTC';
-    }
-    function labelForTZ(tz){
-      try{
-        const now = new Date();
-        const short = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName:'shortOffset' }).format(now);
-        const offsetPart = short.split(', ').pop() || 'GMT';
-        return `(${offsetPart}) ${tz}`;
-      }catch{ return `(GMT) ${tz}`; }
-    }
-    tzSelectEl?.addEventListener('change', ()=>{
-      G.timeZone = tzSelectEl.value || 'UTC';
-      if(G.timerType!=='simple'){ rolloverWeekIfNeeded(); renderHUD(); }
-      save();
-    });
-
-    const saveNamesBtnEl = saveNamesBtn;
-    saveNamesBtnEl?.addEventListener('click', ()=>{
-      CUSTOM_NAMES['subject1'] = subject1Input.value.trim();
-      CUSTOM_NAMES['subject2'] = subject2Input.value.trim();
-      CUSTOM_NAMES['subject3'] = subject3Input.value.trim();
-      CUSTOM_NAMES['user1'] = user1Input.value.trim();
-      CUSTOM_NAMES['user2'] = user2Input.value.trim();
-      CUSTOM_NAMES['user3'] = user3Input.value.trim();
-      saveNames();
-      populateModesUI();
-      if(G.timerType!=='simple') renderHUD();
-    });
-
     function populateModesUI(){
       const ids = ['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
       if(modeSelect){
@@ -1032,9 +770,8 @@
         modeSelect.innerHTML='';
         const frag=document.createDocumentFragment();
         for(const id of ids){
-          const opt=document.createElement('option');
-          opt.value=id; opt.textContent=(CUSTOM_NAMES[id] && CUSTOM_NAMES[id].trim()) ? CUSTOM_NAMES[id] : (DEFAULT_MODE_NAMES[id]||id);
-          frag.appendChild(opt);
+          const label = (CUSTOM_NAMES[id] && CUSTOM_NAMES[id].trim()) ? CUSTOM_NAMES[id] : (DEFAULT_MODE_NAMES[id]||id);
+          const opt=document.createElement('option'); opt.value=id; opt.textContent=label; frag.appendChild(opt);
         }
         modeSelect.appendChild(frag);
         modeSelect.value = ids.includes(currentMode)? currentMode : ids[0];
@@ -1045,9 +782,19 @@
         modeNameEl.textContent = label.replace(/ mode$/i,'');
       }
     }
-    modeSelect?.addEventListener('change', ()=>{
-      switchMode(modeSelect.value);
+    document.getElementById('saveNamesBtn')?.addEventListener('click', ()=>{
+      CUSTOM_NAMES['subject1'] = subject1Input.value.trim();
+      CUSTOM_NAMES['subject2'] = subject2Input.value.trim();
+      CUSTOM_NAMES['subject3'] = subject3Input.value.trim();
+      CUSTOM_NAMES['user1'] = user1Input.value.trim();
+      CUSTOM_NAMES['user2'] = user2Input.value.trim();
+      CUSTOM_NAMES['user3'] = user3Input.value.trim();
+      saveNames();
+      populateModesUI();
+      if(G.timerType!=='simple') renderHUD();
     });
+    modeSelect?.addEventListener('change', ()=> switchMode(modeSelect.value) );
+
     function switchMode(toId){
       if(!toId || toId===currentMode) return;
       clearModeInterval(currentMode);
@@ -1059,40 +806,35 @@
       S = loadState(currentMode);
       const secs = getCurrentSessionSeconds();
       if (S.secondsLeft <= 0 || S.secondsLeft > secs) S.secondsLeft = secs;
-      const layer=document.querySelector('#treeSVG #leafLayer');
-      if(layer) layer.innerHTML='';
+      const layer=document.querySelector('#treeSVG #leafLayer'); if(layer) layer.innerHTML='';
       renderLeavesFromState();
       if(G.timerType!=='simple'){ rolloverWeekIfNeeded(); }
       renderHUD();
     }
 
-    // Init
-    if(!G.timeZone) G.timeZone='UTC';
-    if(!G.selectedMode) G.selectedMode='maths';
-    currentMode = G.selectedMode;
-    S = loadState(currentMode);
-
-    // Timer type init
     function applyTimerTypeUI(){
       timerTypeSelect.value = G.timerType;
       customInputsDiv.style.display = (G.timerType==='custom' || G.timerType==='simple') ? 'flex' : 'none';
       const secs = getCurrentSessionSeconds();
       if(S.secondsLeft <= 0 || S.secondsLeft > secs) S.secondsLeft = secs;
       setClockUIToCurrentType();
-      if(G.timerType==='custom'){ progressBlock.style.display='none'; percentLabel.style.display='none'; }
-      if(G.timerType==='simple'){ progressBlock.style.display='none'; percentLabel.style.display='none'; }
-      if(G.timerType==='pomodoro'){ progressBlock.style.display=''; }
+      if(G.timerType==='custom'){ progressBlock.classList.add('hidden'); percentLabel.classList.add('hidden'); }
+      if(G.timerType==='simple'){ progressBlock.classList.add('hidden'); percentLabel.classList.add('hidden'); }
+      if(G.timerType==='pomodoro'){ progressBlock.classList.remove('hidden'); }
       save();
+      renderHUD();
     }
+
+    // Events
+    document.getElementById('startBtn').addEventListener('click', startFlow);
+    document.getElementById('resetBtn').addEventListener('click', resetTimer);
+
     timerTypeSelect.addEventListener('change', ()=>{
       G.timerType = timerTypeSelect.value;
       if(G.timerType==='pomodoro'){ S.secondsLeft = POMODORO_SECONDS; }
       applyTimerTypeUI();
-      renderHUD();
     });
-    customMinInput.value = String(Math.floor((G.customSeconds||900)/60));
-    customSecInput.value = String((G.customSeconds||900)%60);
-    applyCustomBtn.addEventListener('click', ()=>{
+    document.getElementById('applyCustomBtn').addEventListener('click', ()=>{
       const mins = Math.max(0, Math.floor(Number(customMinInput.value)||0));
       const secs = Math.max(0, Math.floor(Number(customSecInput.value)||0));
       const total = Math.min(23*3600+59*60+59, mins*60 + secs);
@@ -1100,13 +842,17 @@
       const maxSecs = getCurrentSessionSeconds();
       if (S.secondsLeft <= 0 || S.secondsLeft > maxSecs) S.secondsLeft = maxSecs;
       applyTimerTypeUI();
-      renderHUD();
     });
+
+    // Init
+    if(!G.timeZone) G.timeZone='UTC';
+    if(!G.selectedMode) G.selectedMode='maths';
+    currentMode = G.selectedMode;
+    S = loadState(currentMode);
 
     populateTimeZonesIfNeeded();
     populateModesUI();
     applyTimerTypeUI();
-
     renderLeavesFromState();
     applyProgress();
     renderHUD();
