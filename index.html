@@ -40,16 +40,19 @@
 
     .topStack{ flex-direction:column; gap:12px; margin-top:12px; width:100%; }
 
-    .timerTypeBar{ gap:12px; justify-content:space-between; flex-wrap:wrap; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; box-shadow:var(--shadow); }
-    .timerTypeLeft{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .timerTypeLeft label{ color:#4a6894; font-weight:800; }
-    .timerTypeLeft select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:800; }
+    /* Timer type and duration bar */
+    .timerTypeBar{ gap:12px; flex-wrap:wrap; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 12px; box-shadow:var(--shadow); justify-content:center; }
+    .timerTypeInner{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .timerTypeInner select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:800; }
     .customInputs{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .customInputs input{ width:90px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
-    .centerBox{ width:100%; display:flex; justify-content:center; } /* keep central alignment fixed */
-    .timerCard{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; width:760px; }
+    /* Center helpers to keep layout aligned */
+    .centerRow{ width:100%; display:flex; justify-content:center; }
+    .fixedCard{ width:760px; }
+
+    .timerCard{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
     .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
     .controls{ gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
     button{
@@ -87,10 +90,11 @@
     #lptRange::-webkit-slider-runnable-track{ height:12px; border-radius:999px; background:transparent; }
     #lptRange::-moz-range-track{ height:12px; border-radius:999px; background:transparent; }
 
-    .treePanel{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); width:760px; }
+    .treePanel{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
+    .treePanel.fixedCard{ width:760px; }
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
     .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, #bfeec7 62%, #8edaa0 100%); }
-    .percentLabel{ position:absolute; left:14px; bottom:8px; font:900 81px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; display:none; } /* hidden per requirements */
+    .percentLabel{ display:none; } /* always hidden */
     .xyLabel{ position:absolute; left:16px; top:14px; font:900 28.35px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
     .todaySky{ position:absolute; left:16px; top:52px; font:800 21px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
@@ -105,9 +109,8 @@
     .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
     @keyframes rainFall{ to{ transform:translateY(620px); } }
 
-    .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; width:760px; }
+    .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; }
     .tzLeft{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .tzLeft label{ color:#4a6894; font-weight:800; }
     .tzLeft select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:700; min-width:260px; }
     .stats{ gap:10px; flex-wrap:wrap; }
     .chip{ gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#4a6894; }
@@ -146,27 +149,30 @@
     </header>
 
     <div class="topStack">
-      <section class="timerTypeBar" aria-label="Timer type and custom duration">
-        <div class="timerTypeLeft">
-          <label for="timerTypeSelect">Timer</label>
-          <select id="timerTypeSelect">
-            <option value="pomodoro">Pomodoro timer (25 min)</option>
-            <option value="custom">Custom timer</option>
-            <option value="simple">Simple timer</option>
-          </select>
-          <div class="customInputs" id="customInputs" style="display:none;">
-            <label class="miniNote" for="customMin">Minutes</label>
-            <input id="customMin" type="number" min="0" max="999" step="1" value="15" />
-            <label class="miniNote" for="customSec">Seconds</label>
-            <input id="customSec" type="number" min="0" max="59" step="1" value="0" />
-            <button id="applyCustomBtn" title="Apply custom duration">Apply</button>
+      <!-- Timer type and duration selector, centered -->
+      <div class="centerRow">
+        <section class="timerTypeBar fixedCard" aria-label="Timer type and custom duration">
+          <div class="timerTypeInner">
+            <select id="timerTypeSelect">
+              <option value="pomodoro">Pomodoro timer (25 min)</option>
+              <option value="custom">Custom timer</option>
+              <option value="simple">Simple timer</option>
+            </select>
+            <div class="customInputs" id="customInputs" style="display:none;">
+              <span class="miniNote">Duration</span>
+              <input id="customMin" type="number" min="0" max="999" step="1" value="15" />
+              <span class="miniNote">min</span>
+              <input id="customSec" type="number" min="0" max="59" step="1" value="0" />
+              <span class="miniNote">sec</span>
+              <button id="applyCustomBtn" title="Apply custom duration">Apply</button>
+            </div>
           </div>
-        </div>
-        <div class="miniNote" id="timerTypeHint">Choose timer type and optional duration for Custom/Simple.</div>
-      </section>
+        </section>
+      </div>
 
-      <div class="centerBox">
-        <section class="timerCard">
+      <!-- Timer card centered -->
+      <div class="centerRow">
+        <section class="timerCard fixedCard">
           <div class="time" id="clock">25:00</div>
           <div class="controls">
             <button id="startBtn">Start 25:00</button>
@@ -193,8 +199,9 @@
         </section>
       </div>
 
-      <div class="centerBox">
-        <section class="treePanel">
+      <!-- Tree panel centered -->
+      <div class="centerRow">
+        <section class="treePanel fixedCard">
           <h3 style="margin:0 0 8px 0; text-align:center;">Current Tree</h3>
           <div class="treeBox">
             <div class="sky"></div>
@@ -235,10 +242,9 @@
       </div>
     </div>
 
-    <div class="centerBox">
-      <div class="tzBar" id="tzBar">
+    <div class="centerRow">
+      <div class="tzBar fixedCard" id="tzBar">
         <div class="tzLeft">
-          <label for="tzSelect">Time zone</label>
           <select id="tzSelect" aria-label="Time zone"></select>
         </div>
         <div class="stats" id="statsChips">
@@ -303,7 +309,7 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_SimpleCustomPomodoro_V2';
+    const APP_KEY = 'pomodoroTree_Centered_V1';
     const NAMES_KEY = APP_KEY + '_customNames';
     const GLOBAL_KEY = APP_KEY + '_global';
     const svgns='http://www.w3.org/2000/svg';
@@ -393,7 +399,6 @@
     const customMinInput = document.getElementById('customMin');
     const customSecInput = document.getElementById('customSec');
     const applyCustomBtn = document.getElementById('applyCustomBtn');
-    const timerTypeHint = document.getElementById('timerTypeHint');
 
     const tzBar = document.getElementById('tzBar');
     const statsChips = document.getElementById('statsChips');
@@ -519,7 +524,6 @@
       const targetY=CANOPY_BOTTOM-targetH;
       fillRect.setAttribute('x','110'); fillRect.setAttribute('width','360');
       fillRect.setAttribute('y', String(targetY)); fillRect.setAttribute('height', String(targetH));
-      // percentage hidden per requirements
     }
     function percentFromState(){ const denom=Math.max(1, S.leavesPerTree|0); return (S.placed/denom)*100; }
     function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
@@ -639,20 +643,17 @@
       clockEl.textContent = format(S.secondsLeft || secs);
       startBtn.textContent = `Start ${label}`;
 
-      // Hide blocks in Simple; hide slider and percentage in Custom; show all in Pomodoro
       const isSimple = (G.timerType==='simple');
       const isCustom = (G.timerType==='custom');
 
-      // Hide/show lower UI containers
-      [tzBar, statsChips, tabsWrap, gridWrap, bottomAuth].forEach(el=>{
+      // Simple: hide everything below tree, only tree panel stays and shows Total duration (today)
+      [tzBar, statsChips, tabsWrap, gridWrap, bottomAuth, settingsBlock].forEach(el=>{
         if(!el) return;
         el.style.display = isSimple ? 'none' : '';
       });
-
-      // Settings visibility and slider/percent per requirements
-      settingsBlock.style.display = isSimple ? 'none' : '';
-      progressBlock.style.display = (isSimple || isCustom) ? 'none' : ''; // no slider in Custom or Simple
-      percentLabel.style.display = 'none'; // never show percentage in any mode now
+      // Slider only in Pomodoro
+      progressBlock.style.display = (isSimple || isCustom) ? 'none' : '';
+      percentLabel.style.display = 'none';
     }
 
     function setRunning(on){
@@ -679,7 +680,7 @@
         ? `Target locked for ISO Week ${S.week}-${S.year} at ${S.weeklyTargetSetValue}`
         : 'Editable once per ISO week';
       applyProgress();
-      if(G.timerType==='pomodoro') paintProgressUI(); // slider only in pomodoro
+      if(G.timerType==='pomodoro') paintProgressUI();
       updateWeeklyTarget();
       renderTotals();
       populateTimeZonesIfNeeded();
@@ -704,7 +705,9 @@
     }
 
     function onSessionComplete(){
-      playAlarm10s();
+      // Alarm muted in Bed-time mode
+      const isBedtime = (currentMode === 'bedTime');
+      if(!isBedtime) playAlarm10s();
 
       if(G.timerType!=='simple'){
         const dur = getCurrentSessionSeconds();
@@ -731,14 +734,13 @@
         save();
         renderHUD();
       }else{
-        // Simple: still add a leaf to visualize count, but no stats
+        // Simple: still form a leaf per completion, but no stats beneath
         S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1;
         renderLeavesFromState();
         setRunning(false);
         S.secondsLeft=getCurrentSessionSeconds();
         clockEl.textContent=format(S.secondsLeft);
         save();
-        // Only update today's label
         const totalTodaySecs = (S.leavesToday * getCurrentSessionSeconds());
         const minsToday = Math.round(totalTodaySecs/60);
         todaySky.textContent = `Total duration (today): ${minsToday} mins`;
@@ -782,7 +784,6 @@
         rolloverWeekIfNeeded();
       }
 
-      // Add placeholder leaf only when tracking (custom/pomodoro)
       if(G.timerType!=='simple'){
         if(!S.weeklyComplete && S.placed < S.leavesPerTree){
           const idx=S.placed;
@@ -944,19 +945,17 @@
 
       setClockUIToCurrentType();
 
-      // For custom: behave like pomodoro (tracking), but no slider and no percentage
+      // Custom behaves like pomodoro but no slider/percentage
       if(G.timerType==='custom'){
         progressBlock.style.display='none';
         percentLabel.style.display='none';
       }
-
-      // For simple: large sections hidden already by setClockUIToCurrentType
+      // Simple hides sections (handled in setClockUIToCurrentType)
       if(G.timerType==='simple'){
         progressBlock.style.display='none';
         percentLabel.style.display='none';
       }
-
-      // Pomodoro: show slider
+      // Pomodoro shows slider
       if(G.timerType==='pomodoro'){
         progressBlock.style.display='';
       }
@@ -966,7 +965,6 @@
     }
     timerTypeSelect.addEventListener('change', ()=>{
       G.timerType = timerTypeSelect.value;
-      // Enforce 25:00 in Pomodoro
       if(G.timerType==='pomodoro'){ S.secondsLeft = POMODORO_SECONDS; }
       applyTimerTypeUI();
     });
@@ -977,13 +975,45 @@
       const secs = Math.max(0, Math.floor(Number(customSecInput.value)||0));
       const total = Math.min(23*3600+59*60+59, mins*60 + secs);
       G.customSeconds = Math.max(10, total||900);
-      // If current type uses customSeconds, adjust display
       const maxSecs = getCurrentSessionSeconds();
       if (S.secondsLeft <= 0 || S.secondsLeft > maxSecs) S.secondsLeft = maxSecs;
       applyTimerTypeUI();
     });
 
-    saveNamesBtn?.addEventListener('click', ()=>{
+    const tzSelectEl = tzSelect;
+    function populateTimeZonesIfNeeded(){
+      if(!tzSelectEl) return;
+      if(tzSelectEl.options.length===0){
+        let zones=[];
+        try{ zones = Intl.supportedValuesOf('timeZone'); }
+        catch{ zones = ['UTC','Europe/London','Asia/Kolkata','America/New_York','Asia/Tokyo']; }
+        zones = Array.from(new Set(['UTC', ...zones]));
+        const frag=document.createDocumentFragment();
+        for(const z of zones){
+          const opt=document.createElement('option');
+          opt.value=z; opt.textContent=labelForTZ(z);
+          frag.appendChild(opt);
+        }
+        tzSelectEl.appendChild(frag);
+      }
+      tzSelectEl.value = G.timeZone || 'UTC';
+    }
+    function labelForTZ(tz){
+      try{
+        const now = new Date();
+        const short = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName:'shortOffset' }).format(now);
+        const offsetPart = short.split(', ').pop() || 'GMT';
+        return `(${offsetPart}) ${tz}`;
+      }catch{ return `(GMT) ${tz}`; }
+    }
+    tzSelectEl?.addEventListener('change', ()=>{
+      G.timeZone = tzSelectEl.value || 'UTC';
+      if(G.timerType!=='simple'){ rolloverWeekIfNeeded(); renderHUD(); }
+      save();
+    });
+
+    const saveNamesBtnEl = saveNamesBtn;
+    saveNamesBtnEl?.addEventListener('click', ()=>{
       CUSTOM_NAMES['subject1'] = subject1Input.value.trim();
       CUSTOM_NAMES['subject2'] = subject2Input.value.trim();
       CUSTOM_NAMES['subject3'] = subject3Input.value.trim();
@@ -995,11 +1025,83 @@
       if(G.timerType!=='simple') renderHUD();
     });
 
+    function populateModesUI(){
+      const ids = ['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
+      if(modeSelect){
+        const curVal = modeSelect.value;
+        modeSelect.innerHTML='';
+        const frag=document.createDocumentFragment();
+        for(const id of ids){
+          const opt=document.createElement('option');
+          opt.value=id; opt.textContent=(CUSTOM_NAMES[id] && CUSTOM_NAMES[id].trim()) ? CUSTOM_NAMES[id] : (DEFAULT_MODE_NAMES[id]||id);
+          frag.appendChild(opt);
+        }
+        modeSelect.appendChild(frag);
+        modeSelect.value = ids.includes(currentMode)? currentMode : ids[0];
+        if(curVal && ids.includes(curVal)) modeSelect.value = curVal;
+      }
+      if(modeNameEl){
+        const label = (CUSTOM_NAMES[currentMode] && CUSTOM_NAMES[currentMode].trim()) ? CUSTOM_NAMES[currentMode] : (DEFAULT_MODE_NAMES[currentMode]||currentMode);
+        modeNameEl.textContent = label.replace(/ mode$/i,'');
+      }
+    }
+    modeSelect?.addEventListener('change', ()=>{
+      switchMode(modeSelect.value);
+    });
+    function switchMode(toId){
+      if(!toId || toId===currentMode) return;
+      clearModeInterval(currentMode);
+      startBtn._cleanupVisibility?.();
+      if(G.timerType!=='simple') showRain(false);
+      save();
+      currentMode = toId;
+      G.selectedMode = toId;
+      S = loadState(currentMode);
+      const secs = getCurrentSessionSeconds();
+      if (S.secondsLeft <= 0 || S.secondsLeft > secs) S.secondsLeft = secs;
+      const layer=document.querySelector('#treeSVG #leafLayer');
+      if(layer) layer.innerHTML='';
+      renderLeavesFromState();
+      if(G.timerType!=='simple'){ rolloverWeekIfNeeded(); }
+      renderHUD();
+    }
+
     // Init
     if(!G.timeZone) G.timeZone='UTC';
     if(!G.selectedMode) G.selectedMode='maths';
     currentMode = G.selectedMode;
     S = loadState(currentMode);
+
+    // Timer type init
+    function applyTimerTypeUI(){
+      timerTypeSelect.value = G.timerType;
+      customInputsDiv.style.display = (G.timerType==='custom' || G.timerType==='simple') ? 'flex' : 'none';
+      const secs = getCurrentSessionSeconds();
+      if(S.secondsLeft <= 0 || S.secondsLeft > secs) S.secondsLeft = secs;
+      setClockUIToCurrentType();
+      if(G.timerType==='custom'){ progressBlock.style.display='none'; percentLabel.style.display='none'; }
+      if(G.timerType==='simple'){ progressBlock.style.display='none'; percentLabel.style.display='none'; }
+      if(G.timerType==='pomodoro'){ progressBlock.style.display=''; }
+      save();
+    }
+    timerTypeSelect.addEventListener('change', ()=>{
+      G.timerType = timerTypeSelect.value;
+      if(G.timerType==='pomodoro'){ S.secondsLeft = POMODORO_SECONDS; }
+      applyTimerTypeUI();
+      renderHUD();
+    });
+    customMinInput.value = String(Math.floor((G.customSeconds||900)/60));
+    customSecInput.value = String((G.customSeconds||900)%60);
+    applyCustomBtn.addEventListener('click', ()=>{
+      const mins = Math.max(0, Math.floor(Number(customMinInput.value)||0));
+      const secs = Math.max(0, Math.floor(Number(customSecInput.value)||0));
+      const total = Math.min(23*3600+59*60+59, mins*60 + secs);
+      G.customSeconds = Math.max(10, total||900);
+      const maxSecs = getCurrentSessionSeconds();
+      if (S.secondsLeft <= 0 || S.secondsLeft > maxSecs) S.secondsLeft = maxSecs;
+      applyTimerTypeUI();
+      renderHUD();
+    });
 
     populateTimeZonesIfNeeded();
     populateModesUI();
