@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Final</title>
+  <title>Pomodoro Tree — Final (GMT default)</title>
 
   <style>
     :root{
@@ -67,6 +67,7 @@
     .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, #bfeec7 62%, #8edaa0 100%); }
 
     .percentLabel{ position:absolute; left:14px; bottom:8px; font:900 64px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); z-index:2; }
+    .grassPct{ position:absolute; right:14px; bottom:10px; font:900 56px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#065f46; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); z-index:2; }
     .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:2; }
     .todaySky{ position:absolute; left:14px; top:46px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
@@ -105,14 +106,8 @@
     .tzBar{ display:flex; flex-direction:column; gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); margin-top:12px; width:560px; max-width:100%; }
     .tzLeft{ display:flex; flex-direction:column; gap:8px; width:100%; }
     .searchWrap{ position:relative; }
-    .searchWrap input{
-      width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--line); font-weight:700;
-    }
-    .dropdown{
-      position:absolute; inset:unset; top:100%; left:0; right:0;
-      background:#fff; border:1px solid #caddf8; border-radius:12px; max-height:260px; overflow:auto;
-      box-shadow:0 10px 28px rgba(30,70,140,.1); z-index:20; display:none;
-    }
+    .searchWrap input{ width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--line); font-weight:700; }
+    .dropdown{ position:absolute; inset:unset; top:100%; left:0; right:0; background:#fff; border:1px solid #caddf8; border-radius:12px; max-height:260px; overflow:auto; box-shadow:0 10px 28px rgba(30,70,140,.1); z-index:20; display:none; }
     .drop-item{ padding:10px 12px; cursor:pointer; }
     .drop-item:hover{ background:#eef6ff; }
 
@@ -124,6 +119,7 @@
       .treeBox{ width:92vw; height:92vw; max-width:92vw; }
       #treeSVG{ width:92vw; height:auto; left:50%; transform:translateX(-50%) scale(1.2); }
       .percentLabel{ font-size:48px; }
+      .grassPct{ font-size:42px; }
       .xyLabel{ font-size:18px; }
       .todaySky{ font-size:16px; }
       h1{ font-size:18px; }
@@ -193,6 +189,7 @@
           <div class="treeBox">
             <div class="sky"></div>
             <div id="percentLabel" class="percentLabel">0%</div>
+            <div id="grassPct" class="grassPct">0%</div>
             <div id="xyLabel" class="xyLabel">0/9 leaves</div>
             <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
             <div id="rainLayer" class="rain"></div>
@@ -239,7 +236,6 @@
             <div id="countryList" class="dropdown"></div>
           </div>
           <div class="chips">
-            <div class="chip">Selected country: <span id="selCountry">None</span></div>
             <div class="chip">IANA zone: <span id="selZone">None</span></div>
             <div class="chip">UTC offset now: <span id="selOffset">--</span></div>
           </div>
@@ -302,7 +298,7 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_Final_LPTLock_ResetLeaf_v1';
+    const APP_KEY = 'pomodoroTree_GMT_Default_Final_v1';
     const GLOBAL_KEY = APP_KEY + '_global';
     const NAMES_KEY = APP_KEY + '_names';
     const svgns='http://www.w3.org/2000/svg';
@@ -320,7 +316,8 @@
     const load = (k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
     const save = (k,v)=> localStorage.setItem(k, JSON.stringify(v));
 
-    const G = load(GLOBAL_KEY, { timeZone:'', selectedMode:'maths', timerType:TIMER_TYPES.pomodoro, customSeconds: 25*60 });
+    // Default time zone set to GMT
+    const G = load(GLOBAL_KEY, { timeZone:'Etc/GMT', selectedMode:'maths', timerType:TIMER_TYPES.pomodoro, customSeconds: 25*60 });
     const CUSTOM_NAMES = load(NAMES_KEY, {});
 
     const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
@@ -340,21 +337,17 @@
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
 
-    // Elements
     const el=id=>document.getElementById(id);
     const timerTypeSelect=el('timerTypeSelect'), customInputs=el('customInputs'), customMinInput=el('customMin'), applyCustomBtn=el('applyCustomBtn'), customLockMsg=el('customLockMsg'), durationLabel=el('durationLabel');
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
     const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptLockNote=el('lptLockNote'), lockHint=el('lockHint'), lptHelper=el('lptHelper');
     const progressWrap=el('progressWrap'), progressRange=el('progressRange'), progressPct=el('progressPct'), weeklyTargetEl=el('weeklyTarget');
-    const percentLabel=el('percentLabel'), xyLabel=el('xyLabel'), todaySky=el('todaySky');
+    const percentLabel=el('percentLabel'), grassPctEl=el('grassPct'), xyLabel=el('xyLabel'), todaySky=el('todaySky');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), saplingsG=document.getElementById('saplings');
     const treeGrid=el('treeGrid'), gridCount=el('gridCount'), modeNameEl=el('modeName');
     const rainLayer=el('rainLayer');
+    const countrySearch=el('countrySearch'), countryList=el('countryList'), selZone=el('selZone'), selOffset=el('selOffset');
 
-    // Time zone search
-    const countrySearch=el('countrySearch'), countryList=el('countryList'), selCountry=el('selCountry'), selZone=el('selZone'), selOffset=el('selOffset');
-
-    // Country tz list (representative zones)
     const COUNTRY_TZ = [
       { name:'Afghanistan', tz:'Asia/Kabul' },{ name:'Albania', tz:'Europe/Tirane' },{ name:'Algeria', tz:'Africa/Algiers' },
       { name:'Argentina', tz:'America/Argentina/Buenos_Aires' },{ name:'Armenia', tz:'Asia/Yerevan' },{ name:'Australia', tz:'Australia/Sydney' },
@@ -407,13 +400,11 @@
         return parts.find(p=>p.type==='timeZoneName')?.value || '--';
       }catch{ return '--'; }
     }
-    function setTimeZone(tz, countryName){
+    function setTimeZone(tz){
       G.timeZone = tz;
       save(GLOBAL_KEY,G);
-      selCountry.textContent = countryName || (COUNTRY_TZ.find(c=>c.tz===tz)?.name || '—');
-      selZone.textContent = tz;
-      selOffset.textContent = formatOffset(tz);
-      countrySearch.value = selCountry.textContent;
+      selZone.textContent = tz || 'None';
+      selOffset.textContent = tz ? formatOffset(tz) : '--';
       rolloverWeekIfNeeded();
       renderAll();
     }
@@ -429,15 +420,15 @@
     document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
     countryList.addEventListener('click', (e)=>{
       const item=e.target.closest('.drop-item'); if(!item) return;
-      const name=item.getAttribute('data-name'); const tz=item.getAttribute('data-tz');
-      setTimeZone(tz, name);
+      const tz=item.getAttribute('data-tz');
+      countrySearch.value = item.getAttribute('data-name');
+      setTimeZone(tz);
       countryList.style.display='none';
     });
 
-    // Time helpers
     function nowInTZ(){
       try{
-        const tz= G.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const tz= G.timeZone || 'Etc/GMT';
         const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
         const parts = fmt.formatToParts(new Date());
         const get = k => Number(parts.find(p=>p.type===k)?.value);
@@ -532,7 +523,7 @@
       outline?.classList.toggle('blink-canopy', !!on);
     }
 
-    // Leaf placement / animations
+    // Leaf animations
     let placeholderLeaf=null;
     function baseAnchorsArr(){ return [{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}]; }
     function anchorForIndex(i){
@@ -588,7 +579,8 @@
       const targetY=CANOPY_BOTTOM-targetH;
       fillRect.setAttribute('y', String(targetY));
       fillRect.setAttribute('height', String(targetH));
-      percentLabel.textContent = p? Math.round(p)+'%':'';
+      percentLabel.textContent = Math.round(p)+'%';
+      grassPctEl.textContent = Math.round(p)+'%';
     }
     function animateFillTo(pct){
       const p=Math.max(0, Math.min(100, Number(pct)||0));
@@ -603,7 +595,9 @@
         const y = CANOPY_BOTTOM - h;
         fillRect.setAttribute('y', String(y));
         fillRect.setAttribute('height', String(h));
-        percentLabel.textContent = Math.round((h/FILL_OVERSCAN)*100)+'%';
+        const pctNow = Math.round((h/FILL_OVERSCAN)*100);
+        percentLabel.textContent = pctNow+'%';
+        grassPctEl.textContent = pctNow+'%';
         if(t<1) requestAnimationFrame(step);
       }
       requestAnimationFrame(step);
@@ -654,13 +648,13 @@
       weeklyTargetEl.textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
     }
 
-    // Saplings 7×8
+    // Saplings 6×7 (rows × cols)
     function buildSaplings(){
       saplingsG.innerHTML='';
-      const rows=7, cols=8;
+      const rows=6, cols=7;
       const left=24, right=536;
       const grassTop = Math.round(560*0.62)+14;
-      const rowGap=26;
+      const rowGap=28;
       for(let r=0;r<rows;r++){
         for(let c=0;c<cols;c++){
           const x = Math.round(left + c*((right-left)/(cols-1)));
@@ -723,6 +717,7 @@
       if(isSimple){
         xyLabel.textContent = `${S.placed} leaves`;
         percentLabel.textContent = '';
+        grassPctEl.textContent = '0%';
         setFillPercentInstant(0);
       }else{
         updateProgressInstant();
@@ -736,15 +731,13 @@
     startBtn.addEventListener('click', startSession);
     resetBtn.addEventListener('click', ()=>{
       stopSession();
-      // remove current blinking or last-added leaf if present
       const last = leafLayer?.lastElementChild;
       if(last){ leafLayer.removeChild(last); }
-      // also clear placeholder blink reference
       if(placeholderLeaf){ try{ leafLayer.removeChild(placeholderLeaf); }catch{} placeholderLeaf=null; }
-      // reset countdown
       S.secondsLeft=getSessionSeconds();
       setClockAndButtons();
       saveAll();
+      updateProgressInstant();
     });
 
     timerTypeSelect.addEventListener('change', ()=>{
@@ -770,13 +763,13 @@
         customLockMsg.textContent = 'Locked';
       }
       setClockAndButtons();
-      if(G.timerType!=='simple'){ updateWeeklyTargetText(); }
+      if(G.timerType!=='simple'){ updateWeeklyTargetText(); updateProgressInstant(); }
       saveAll();
     });
 
-    // LPT set: shows "Will be locked" label and really locks for the week (both Pomodoro and Custom)
+    // LPT set lock for week
     lptSetBtn.addEventListener('click', ()=>{
-      if(G.timerType==='simple') return; // no LPT in simple
+      if(G.timerType==='simple') return;
       rolloverWeekIfNeeded();
       if(S.weeklyTargetLocked) return;
       const v = Math.max(1, Math.min(200, Math.floor(Number(lptInput.value)||1)));
@@ -824,45 +817,11 @@
       renderAll();
     });
 
-    // Saplings 7×8
-    function buildSaplings(){
-      const g=document.getElementById('saplings'); g.innerHTML='';
-      const rows=7, cols=8, left=24, right=536, grassTop=Math.round(560*0.62)+14, rowGap=26;
-      for(let r=0;r<rows;r++){
-        for(let c=0;c<cols;c++){
-          const x = Math.round(left + c*((right-left)/(cols-1)));
-          const y = grassTop + r*rowGap;
-          const stem = document.createElementNS(svgns,'path'); stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
-          stem.setAttribute('stroke','#2f6f3a'); stem.setAttribute('stroke-width','2'); stem.setAttribute('fill','none'); stem.setAttribute('stroke-linecap','round');
-          const leafL = document.createElementNS(svgns,'path'); leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
-          leafL.setAttribute('stroke','#2f6f3a'); leafL.setAttribute('stroke-width','2'); leafL.setAttribute('fill','none'); leafL.setAttribute('stroke-linecap','round'); leafL.setAttribute('stroke-linejoin','round');
-          const leafR = document.createElementNS(svgns,'path'); leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
-          leafR.setAttribute('stroke','#2f6f3a'); leafR.setAttribute('stroke-width','2'); leafR.setAttribute('fill','none'); leafR.setAttribute('stroke-linecap','round'); leafR.setAttribute('stroke-linejoin','round');
-          g.appendChild(stem); g.appendChild(leafL); g.appendChild(leafR);
-        }
-      }
-    }
-    buildSaplings();
-
-    // Country init (prefer saved, else system)
-    (function initCountry(){
-      if(G.timeZone){
-        const match = COUNTRY_TZ.find(c=>c.tz===G.timeZone);
-        setTimeZone(G.timeZone, match?.name || '');
-      }else{
-        const sys = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-        const match = COUNTRY_TZ.find(c=>c.tz===sys);
-        if(match) setTimeZone(sys, match.name);
-      }
-    })();
-
     function refreshModeHeader(){
       const label=(CUSTOM_NAMES[currentMode] && CUSTOM_NAMES[currentMode].trim()) ? CUSTOM_NAMES[currentMode] : (DEFAULT_MODE_NAMES[currentMode]||currentMode);
       document.getElementById('modeName').textContent=label.replace(/ mode$/i,'');
     }
-    refreshModeHeader();
 
-    // Render pipeline
     function renderAll(){
       renderLeaves();
       renderGrid();
@@ -872,6 +831,7 @@
         todaySky.textContent = `Total duration (today): ${minsToday} mins`;
         xyLabel.textContent = `${S.placed} leaves`;
         percentLabel.textContent = '';
+        grassPctEl.textContent = '0%';
       }else{
         updateWeeklyTargetText();
         updateProgressInstant();
@@ -880,6 +840,22 @@
     }
 
     // Init
+    buildSaplings();
+    refreshModeHeader();
+
+    (function initCountry(){
+      // Keep GMT as default; do not override with system if empty
+      if(G.timeZone){
+        selZone.textContent = G.timeZone;
+        selOffset.textContent = formatOffset(G.timeZone);
+      }else{
+        G.timeZone = 'Etc/GMT';
+        selZone.textContent = 'Etc/GMT';
+        selOffset.textContent = formatOffset('Etc/GMT');
+        save(GLOBAL_KEY, G);
+      }
+    })();
+
     timerTypeSelect.value=G.timerType;
     customMinInput.value=String(Math.max(1, Math.floor((G.customSeconds||1500)/60)));
     rolloverWeekIfNeeded();
