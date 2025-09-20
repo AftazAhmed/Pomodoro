@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Modes + Country Time Zone</title>
+  <title>Pomodoro Tree — Final</title>
 
   <style>
     :root{
@@ -20,7 +20,6 @@
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
     .wrap{ max-width:1140px; margin:0 auto; padding:20px 16px 120px; }
 
-    /* Header in one line on mobile too */
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap; }
     .brand{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); white-space:nowrap; }
     h1{ margin:0; font-size:22px; }
@@ -30,13 +29,11 @@
     .centerRow{ width:100%; display:flex; justify-content:center; }
     .fixedCard{ width:760px; max-width:100%; }
 
-    /* Controls vertical stacks */
     .timerTypeBar{ display:flex; flex-direction:column; gap:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px; box-shadow:var(--shadow); }
     .vstack{ display:flex; flex-direction:column; gap:10px; }
     .vstack select, .vstack input[type=number]{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; width:100%; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
-    /* Timer card */
     .timerCard{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
     .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
     .controls{ display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
@@ -53,10 +50,9 @@
     #applyCustomBtn:hover, #lptSetBtn:hover{ background:var(--btn-primary-hover); }
 
     .settings{ display:flex; flex-direction:column; gap:12px; margin-top:10px; color:var(--dim); width:100%; }
-    .numWrap{ display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+    .numWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
     .numWrap input{ width:160px; }
 
-    /* Weekly progress slider (Pomodoro/Custom only) */
     .progressWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
     #progressRange{
       -webkit-appearance:none; appearance:none; width:260px; height:10px; border-radius:999px; overflow:hidden; background:var(--track-bg); border:1px solid var(--line);
@@ -65,7 +61,6 @@
     #progressRange::-webkit-slider-thumb{ -webkit-appearance:none; width:0; height:0; background:transparent; }
     #progressRange::-moz-range-thumb{ width:0; height:0; background:transparent; border:none; }
 
-    /* Tree canvas */
     .treePanel{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treePanel.fixedCard{ width:760px; }
     .treeBox{ position:relative; width:560px; max-width:100%; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
@@ -75,10 +70,8 @@
     .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:2; }
     .todaySky{ position:absolute; left:14px; top:46px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
-    /* Tree enlarged by 20% via scale */
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; }
 
-    /* Leaf and canopy animations */
     @keyframes leafBlink { 0%,100%{ fill:#166534;} 50%{ fill:#86efac;} }
     @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
     .blink-leaf path{ animation: leafBlink 900ms linear infinite; }
@@ -92,7 +85,6 @@
     .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.3s; }
     @keyframes rainFall{ to{ transform:translateY(620px); } }
 
-    /* Tabs + Modes vertical */
     .tabsWrap{ margin:12px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:760px; max-width:100%; }
     .tabs{ display:flex; gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); justify-content:center; }
     .tab{ display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
@@ -103,7 +95,6 @@
     .modeEditRow .editGroup{ display:flex; align-items:center; gap:6px; background:#f8fbff; border:1px solid var(--line); padding:6px 8px; border-radius:10px; }
     .modeEditRow input{ padding:6px 8px; border-radius:8px; border:1px solid var(--line); font-weight:700; width:100%; }
 
-    /* Completed Trees: 6 columns */
     .gridWrap{ margin:14px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:420px; max-width:92vw; display:flex; flex-direction:column; align-items:center; }
     .gridHead{ display:flex; align-items:center; justify-content:space-between; gap:8px; color:#4a6894; width:100%; max-width:420px; }
     .grid{ display:grid; gap:6px; grid-template-columns:repeat(6, 1fr); width:100%; }
@@ -125,14 +116,10 @@
     .drop-item{ padding:10px 12px; cursor:pointer; }
     .drop-item:hover{ background:#eef6ff; }
 
-    .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
-    .chip{ padding:8px 12px; border-radius:999px; border:1px solid var(--line); background:#fff; color:#4a6894; }
-
     .bottomAuth{ margin:18px auto 0; max-width:560px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; display:flex; flex-direction:column; align-items:stretch; }
 
     .hidden{ display:none !important; }
 
-    /* Mobile prevent clipping */
     @media (max-width: 640px){
       .treeBox{ width:92vw; height:92vw; max-width:92vw; }
       #treeSVG{ width:92vw; height:auto; left:50%; transform:translateX(-50%) scale(1.2); }
@@ -153,7 +140,7 @@
     </header>
 
     <div class="topStack">
-      <!-- Timer type and minutes input -->
+      <!-- Timer type and minutes -->
       <div class="centerRow">
         <section class="timerTypeBar fixedCard vstack" aria-label="Timer type and minutes">
           <select id="timerTypeSelect">
@@ -162,10 +149,10 @@
             <option value="simple">Simple timer</option>
           </select>
           <div id="customInputs" class="vstack" style="display:none;">
-            <span class="miniNote" id="durationLabel">Duration (minutes)</span>
+            <span class="miniNote" id="durationLabel">Timer value can be edited only once per week</span>
             <input id="customMin" type="number" min="1" max="999" step="1" value="25" />
             <button id="applyCustomBtn" title="Apply minutes">Apply</button>
-            <span id="customLockMsg" class="miniNote"></span>
+            <span id="customLockMsg" class="miniNote">Will be locked</span>
           </div>
         </section>
       </div>
@@ -181,8 +168,12 @@
           <div class="settings vstack" id="settingsBlock">
             <div class="numWrap" id="lptWrap">
               <label for="lptInput"><strong>Leaves per week (LPT)</strong></label>
-              <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
-              <button id="lptSetBtn">Set</button>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
+                <button id="lptSetBtn">Set</button>
+                <span id="lptLockNote" class="miniNote">Will be locked</span>
+              </div>
+              <span id="lptHelper" class="miniNote">LPT = No. of timer sessions per week</span>
               <span id="lockHint" class="miniNote">Editable once per ISO week</span>
             </div>
             <div class="progressWrap" id="progressWrap">
@@ -238,11 +229,11 @@
       </div>
     </div>
 
-    <!-- Country-based time zone picker -->
+    <!-- Time zone search -->
     <div class="centerRow">
       <div class="tzBar" id="tzBar">
         <div class="tzLeft">
-          <label for="countrySearch" class="miniNote">Country (sets IANA time zone)</label>
+          <label for="countrySearch" class="miniNote">Time zone</label>
           <div class="searchWrap">
             <input id="countrySearch" type="text" placeholder="Type country name..." autocomplete="off" />
             <div id="countryList" class="dropdown"></div>
@@ -311,7 +302,7 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_Consolidated_Final_v1';
+    const APP_KEY = 'pomodoroTree_Final_LPTLock_ResetLeaf_v1';
     const GLOBAL_KEY = APP_KEY + '_global';
     const NAMES_KEY = APP_KEY + '_names';
     const svgns='http://www.w3.org/2000/svg';
@@ -353,16 +344,17 @@
     const el=id=>document.getElementById(id);
     const timerTypeSelect=el('timerTypeSelect'), customInputs=el('customInputs'), customMinInput=el('customMin'), applyCustomBtn=el('applyCustomBtn'), customLockMsg=el('customLockMsg'), durationLabel=el('durationLabel');
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
-    const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lockHint=el('lockHint');
+    const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptLockNote=el('lptLockNote'), lockHint=el('lockHint'), lptHelper=el('lptHelper');
     const progressWrap=el('progressWrap'), progressRange=el('progressRange'), progressPct=el('progressPct'), weeklyTargetEl=el('weeklyTarget');
     const percentLabel=el('percentLabel'), xyLabel=el('xyLabel'), todaySky=el('todaySky');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), saplingsG=document.getElementById('saplings');
     const treeGrid=el('treeGrid'), gridCount=el('gridCount'), modeNameEl=el('modeName');
     const rainLayer=el('rainLayer');
 
-    // Country-based TZ picker
+    // Time zone search
     const countrySearch=el('countrySearch'), countryList=el('countryList'), selCountry=el('selCountry'), selZone=el('selZone'), selOffset=el('selOffset');
 
+    // Country tz list (representative zones)
     const COUNTRY_TZ = [
       { name:'Afghanistan', tz:'Asia/Kabul' },{ name:'Albania', tz:'Europe/Tirane' },{ name:'Algeria', tz:'Africa/Algiers' },
       { name:'Argentina', tz:'America/Argentina/Buenos_Aires' },{ name:'Armenia', tz:'Asia/Yerevan' },{ name:'Australia', tz:'Australia/Sydney' },
@@ -412,8 +404,7 @@
       try{
         const now=new Date();
         const parts=new Intl.DateTimeFormat('en-US',{ timeZone: tz, timeZoneName:'shortOffset' }).formatToParts(now);
-        const tzName = parts.find(p=>p.type==='timeZoneName')?.value || '';
-        return tzName;
+        return parts.find(p=>p.type==='timeZoneName')?.value || '--';
       }catch{ return '--'; }
     }
     function setTimeZone(tz, countryName){
@@ -435,13 +426,13 @@
     }
     countrySearch.addEventListener('input', ()=> renderCountryList(countrySearch.value) );
     countrySearch.addEventListener('focus', ()=> renderCountryList(countrySearch.value) );
+    document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
     countryList.addEventListener('click', (e)=>{
       const item=e.target.closest('.drop-item'); if(!item) return;
       const name=item.getAttribute('data-name'); const tz=item.getAttribute('data-tz');
       setTimeZone(tz, name);
       countryList.style.display='none';
     });
-    document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
 
     // Time helpers
     function nowInTZ(){
@@ -487,7 +478,6 @@
     }
     function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
 
-    // Accurate countdown via wall clock
     const intervals={};
     function clearTicker(){ if(intervals[currentMode]){ clearInterval(intervals[currentMode]); intervals[currentMode]=null; } }
     function startSession(){
@@ -542,7 +532,7 @@
       outline?.classList.toggle('blink-canopy', !!on);
     }
 
-    // Leaf animations
+    // Leaf placement / animations
     let placeholderLeaf=null;
     function baseAnchorsArr(){ return [{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}]; }
     function anchorForIndex(i){
@@ -590,7 +580,7 @@
       }
     }
 
-    // Canopy fill animation
+    // Canopy fill
     const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
     function setFillPercentInstant(pct){
       const p=Math.max(0, Math.min(100, Number(pct)||0));
@@ -598,7 +588,7 @@
       const targetY=CANOPY_BOTTOM-targetH;
       fillRect.setAttribute('y', String(targetY));
       fillRect.setAttribute('height', String(targetH));
-      percentLabel.textContent = Math.round(p)+'%';
+      percentLabel.textContent = p? Math.round(p)+'%':'';
     }
     function animateFillTo(pct){
       const p=Math.max(0, Math.min(100, Number(pct)||0));
@@ -656,7 +646,7 @@
       }
     }
 
-    // Weekly target / labels
+    // Weekly target text
     function updateWeeklyTargetText(){
       const per=getSessionSeconds();
       const totalSec = per * (S.leavesPerTree||0);
@@ -701,7 +691,6 @@
       gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
     }
 
-    // UI state
     function setClockAndButtons(){
       const secs=getSessionSeconds();
       if(S.secondsLeft<=0 || S.secondsLeft>secs) S.secondsLeft=secs;
@@ -714,14 +703,15 @@
       const isCustom=(G.timerType==='custom');
 
       customInputs.style.display = (isCustom || isSimple) ? 'block' : 'none';
-      durationLabel.textContent = isSimple ? 'Duration (minutes — can change anytime)' : (isCustom ? 'Duration (minutes — change once per ISO week)' : 'Duration (minutes)');
+      durationLabel.textContent = isCustom ? 'Timer value can be edited only once per week' : (isSimple ? '' : 'Timer value');
       if(isCustom){
         customMinInput.value = String(Math.max(1, Math.floor((G.customSeconds||1500)/60)));
         const locked = !!S.customLocked && S.customLockWeek===S.week && S.customLockYear===S.year;
         customMinInput.disabled = locked; applyCustomBtn.disabled = locked;
-        customLockMsg.textContent = locked ? `Custom minutes locked for ISO Week ${S.week}-${S.year}` : 'Not locked yet';
+        customLockMsg.textContent = locked ? 'Locked' : 'Will be locked';
       }else if(isSimple){
-        customMinInput.disabled=false; applyCustomBtn.disabled=false; customLockMsg.textContent='Not locked';
+        customMinInput.disabled=false; applyCustomBtn.disabled=false;
+        customLockMsg.textContent = 'Will not lock';
       }else{
         customLockMsg.textContent='';
       }
@@ -744,7 +734,18 @@
 
     // Events
     startBtn.addEventListener('click', startSession);
-    resetBtn.addEventListener('click', ()=>{ stopSession(); S.secondsLeft=getSessionSeconds(); setClockAndButtons(); saveAll(); });
+    resetBtn.addEventListener('click', ()=>{
+      stopSession();
+      // remove current blinking or last-added leaf if present
+      const last = leafLayer?.lastElementChild;
+      if(last){ leafLayer.removeChild(last); }
+      // also clear placeholder blink reference
+      if(placeholderLeaf){ try{ leafLayer.removeChild(placeholderLeaf); }catch{} placeholderLeaf=null; }
+      // reset countdown
+      S.secondsLeft=getSessionSeconds();
+      setClockAndButtons();
+      saveAll();
+    });
 
     timerTypeSelect.addEventListener('change', ()=>{
       G.timerType=timerTypeSelect.value;
@@ -753,26 +754,29 @@
       saveAll();
     });
 
+    // Apply minutes
     applyCustomBtn.addEventListener('click', ()=>{
       const mins = Math.max(1, Math.floor(Number(customMinInput.value)||0));
       if(G.timerType==='simple'){
         G.customSeconds = mins*60;
         S.secondsLeft = getSessionSeconds();
-        setClockAndButtons();
+        customLockMsg.textContent = 'Will not lock';
       }else if(G.timerType==='custom'){
         rolloverWeekIfNeeded();
         if(S.customLocked && S.customLockWeek===S.week && S.customLockYear===S.year) return;
         G.customSeconds = mins*60;
         S.customLocked = true; S.customLockWeek=S.week; S.customLockYear=S.year;
         S.secondsLeft = getSessionSeconds();
+        customLockMsg.textContent = 'Locked';
       }
-      applyTimerTypeUI();
+      setClockAndButtons();
       if(G.timerType!=='simple'){ updateWeeklyTargetText(); }
       saveAll();
     });
 
+    // LPT set: shows "Will be locked" label and really locks for the week (both Pomodoro and Custom)
     lptSetBtn.addEventListener('click', ()=>{
-      if(G.timerType==='simple') return;
+      if(G.timerType==='simple') return; // no LPT in simple
       rolloverWeekIfNeeded();
       if(S.weeklyTargetLocked) return;
       const v = Math.max(1, Math.min(200, Math.floor(Number(lptInput.value)||1)));
@@ -780,6 +784,7 @@
       S.weeklyTargetLocked=true;
       S.weeklyTargetSetValue=v;
       lptInput.value=String(v);
+      lptLockNote.textContent='Locked';
       S.placed=0;
       leafLayer.innerHTML='';
       updateWeeklyTargetText();
@@ -799,7 +804,7 @@
       if(panel) panel.style.display='flex';
     });
 
-    // Modes UI
+    // Modes
     const modeSelect=document.getElementById('modeSelect');
     const ids=['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
     const frag=document.createDocumentFragment();
@@ -819,14 +824,45 @@
       renderAll();
     });
 
-    // Misc helpers
-    function updateStatsChips(){
-      const wH=Math.floor((S.weeklyFocusSeconds||0)/3600), wM=Math.floor(((S.weeklyFocusSeconds||0)%3600)/60);
-      const oH=Math.floor((S.totalFocusSeconds||0)/3600), oM=Math.floor(((S.totalFocusSeconds||0)%3600)/60);
-      // Could place these chips near tzBar if needed
+    // Saplings 7×8
+    function buildSaplings(){
+      const g=document.getElementById('saplings'); g.innerHTML='';
+      const rows=7, cols=8, left=24, right=536, grassTop=Math.round(560*0.62)+14, rowGap=26;
+      for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+          const x = Math.round(left + c*((right-left)/(cols-1)));
+          const y = grassTop + r*rowGap;
+          const stem = document.createElementNS(svgns,'path'); stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
+          stem.setAttribute('stroke','#2f6f3a'); stem.setAttribute('stroke-width','2'); stem.setAttribute('fill','none'); stem.setAttribute('stroke-linecap','round');
+          const leafL = document.createElementNS(svgns,'path'); leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
+          leafL.setAttribute('stroke','#2f6f3a'); leafL.setAttribute('stroke-width','2'); leafL.setAttribute('fill','none'); leafL.setAttribute('stroke-linecap','round'); leafL.setAttribute('stroke-linejoin','round');
+          const leafR = document.createElementNS(svgns,'path'); leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
+          leafR.setAttribute('stroke','#2f6f3a'); leafR.setAttribute('stroke-width','2'); leafR.setAttribute('fill','none'); leafR.setAttribute('stroke-linecap','round'); leafR.setAttribute('stroke-linejoin','round');
+          g.appendChild(stem); g.appendChild(leafL); g.appendChild(leafR);
+        }
+      }
     }
+    buildSaplings();
 
-    // Render
+    // Country init (prefer saved, else system)
+    (function initCountry(){
+      if(G.timeZone){
+        const match = COUNTRY_TZ.find(c=>c.tz===G.timeZone);
+        setTimeZone(G.timeZone, match?.name || '');
+      }else{
+        const sys = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        const match = COUNTRY_TZ.find(c=>c.tz===sys);
+        if(match) setTimeZone(sys, match.name);
+      }
+    })();
+
+    function refreshModeHeader(){
+      const label=(CUSTOM_NAMES[currentMode] && CUSTOM_NAMES[currentMode].trim()) ? CUSTOM_NAMES[currentMode] : (DEFAULT_MODE_NAMES[currentMode]||currentMode);
+      document.getElementById('modeName').textContent=label.replace(/ mode$/i,'');
+    }
+    refreshModeHeader();
+
+    // Render pipeline
     function renderAll(){
       renderLeaves();
       renderGrid();
@@ -843,49 +879,7 @@
       setClockAndButtons();
     }
 
-    // Animations toggle helpers
-    function showRain(on){ rain(on); }
-    function canopyBlinking(on){ canopyBlink(on); }
-
-    // Rain builder alias used in start/stop
-    function rain(on){
-      rainLayer.style.display=on?'block':'none';
-      if(on && rainLayer.childElementCount===0){
-        const mk=(n, cls='')=>{
-          for(let i=0;i<n;i++){
-            const d=document.createElement('div'); d.className='drop'+cls;
-            d.style.left=(Math.random()*560)+'px';
-            d.style.animationDelay=(Math.random()*0.9)+'s';
-            d.style.animationDuration=(cls? (1.0+Math.random()*0.9)+'s' : (0.6+Math.random()*0.6)+'s');
-            rainLayer.appendChild(d);
-          }
-        };
-        mk(160,''); mk(120,' far');
-      }
-    }
-
-    // Header mode label
-    function refreshModeHeader(){
-      const label=(CUSTOM_NAMES[currentMode] && CUSTOM_NAMES[currentMode].trim()) ? CUSTOM_NAMES[currentMode] : (DEFAULT_MODE_NAMES[currentMode]||currentMode);
-      if(modeNameEl) modeNameEl.textContent=label.replace(/ mode$/i,'');
-    }
-
-    // Initialize
-    buildSaplings();
-
-    // Country prefill from saved or system tz
-    (function initCountry(){
-      if(G.timeZone){
-        const match = COUNTRY_TZ.find(c=>c.tz===G.timeZone);
-        setTimeZone(G.timeZone, match?.name || '');
-      }else{
-        const sys = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-        const match = COUNTRY_TZ.find(c=>c.tz===sys);
-        if(match) setTimeZone(sys, match.name);
-      }
-    })();
-
-    refreshModeHeader();
+    // Init
     timerTypeSelect.value=G.timerType;
     customMinInput.value=String(Math.max(1, Math.floor((G.customSeconds||1500)/60)));
     rolloverWeekIfNeeded();
