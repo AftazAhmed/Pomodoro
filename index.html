@@ -23,27 +23,29 @@
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
     .wrap{ max-width:1140px; margin:0 auto; padding:20px 16px 120px; }
 
-    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    /* Header single-line on mobile */
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap; }
+    .brand{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); white-space:nowrap; }
     h1{ margin:0; font-size:22px; }
-    .brand{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); }
-    .modeTag{ font-weight:800; color:#14563a; font-size:20px; }
+    .modeTag{ font-weight:800; color:#14563a; font-size:20px; white-space:nowrap; }
+
+    @media (max-width: 420px){
+      h1{ font-size:18px; }
+      .modeTag{ font-size:16px; }
+      header{ gap:8px; }
+    }
 
     .topStack{ display:flex; flex-direction:column; gap:12px; margin-top:12px; width:100%; }
-
-    /* Center rows */
     .centerRow{ width:100%; display:flex; justify-content:center; }
     .fixedCard{ width:760px; max-width:100%; }
 
-    /* Vertical stacks for all control groups */
-    .vstack{ display:flex; flex-direction:column; align-items:stretch; gap:10px; }
-    .vstack select, .vstack input[type=number]{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; width:100%; }
-
-    /* Timer type + duration (vertical) */
+    /* Timer type + duration (vertical; minutes only) */
     .timerTypeBar{ display:flex; flex-direction:column; gap:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px; box-shadow:var(--shadow); }
-    .customInputs{ display:flex; flex-direction:column; gap:8px; }
+    .vstack{ display:flex; flex-direction:column; gap:10px; }
+    .vstack select, .vstack input[type=number]{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; width:100%; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
-    /* Timer */
+    /* Timer card */
     .timerCard{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
     .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
     .controls{ display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
@@ -56,23 +58,22 @@
     }
     #startBtn{ background:var(--btn-success); }
     #resetBtn{ background:var(--btn-danger); }
-    #lptSetBtn{ background:var(--btn-primary); }
+    #applyCustomBtn{ background:var(--btn-primary); }
 
     .settings{ display:flex; flex-direction:column; gap:12px; margin-top:10px; color:var(--dim); width:100%; }
     .numWrap{ display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
     .numWrap input{ width:160px; }
-    .estWrap{ margin-top:6px; color:#0b1a33; font-weight:800; font-size:11px; line-height:1.25; text-align:center; min-height:22px; display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; order:-1; width:100%; }
 
-    /* Slider only for Pomodoro; JS hides in other modes */
     .progressWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
     #lptRange{
-      -webkit-appearance:none; appearance:none; width:220px; height:10px; border-radius:999px; overflow:hidden; background:var(--track-bg); border:1px solid var(--line);
-      background-image:linear-gradient(90deg, #16a34a 0%, #ef4444 0%); background-size:100% 100%; background-repeat:no-repeat;
+      -webkit-appearance:none; appearance:none; width:240px; height:10px; border-radius:999px; overflow:hidden; background:var(--track-bg); border:1px solid var(--line);
+      background-image:linear-gradient(90deg, #16a34a 0%, #ef4444 0%);
+      background-size:100% 100%; background-repeat:no-repeat;
     }
     #lptRange::-webkit-slider-thumb{ -webkit-appearance:none; width:0; height:0; background:transparent; }
     #lptRange::-moz-range-thumb{ width:0; height:0; background:transparent; border:none; }
 
-    /* Tree + sky + grass canvas */
+    /* Tree canvas; responsive fit */
     .treePanel{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treePanel.fixedCard{ width:760px; }
     .treeBox{ position:relative; width:560px; max-width:100%; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
@@ -81,29 +82,27 @@
     .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:2; }
     .todaySky{ position:absolute; left:14px; top:46px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
-    /* Default desktop centering for tree SVG */
-    #treeSVG{ position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible; }
+    #treeSVG{ position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible; width:680px; height:620px; }
 
-    /* Timezone + stats stacked */
+    /* TZ + stats */
     .tzBar{ display:flex; flex-direction:column; gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); margin-top:12px; width:560px; max-width:100%; }
     .tzLeft{ display:flex; flex-direction:column; gap:8px; width:100%; }
     .tzLeft select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:700; width:100%; }
     .stats{ display:flex; flex-direction:column; gap:8px; width:100%; }
     .chip{ display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#4a6894; width:100%; justify-content:center; }
 
-    /* Tabs and Modes panel: vertical cells */
+    /* Tabs + Modes vertical */
     .tabsWrap{ margin:12px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:760px; max-width:100%; }
     .tabs{ display:flex; gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); justify-content:center; }
     .tab{ display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
     .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
     .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; flex-direction:column; }
-
     .modesBar{ display:flex; flex-direction:column; gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); }
     .modeEditRow{ display:flex; flex-direction:column; gap:10px; }
     .modeEditRow .editGroup{ display:flex; align-items:center; gap:6px; background:#f8fbff; border:1px solid var(--line); padding:6px 8px; border-radius:10px; }
-    .modeEditRow input{ padding:6px 8px; border-radius:8px; border:1px solid var(--line); font-weight:700; min-width:160px; width:100%; }
+    .modeEditRow input{ padding:6px 8px; border-radius:8px; border:1px solid var(--line); font-weight:700; width:100%; }
 
-    /* Completed Trees grid: exactly 6 columns, smaller cells; responsive width */
+    /* Completed Trees: 6 columns */
     .gridWrap{ margin:14px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:420px; max-width:92vw; display:flex; flex-direction:column; align-items:center; }
     .gridHead{ display:flex; align-items:center; justify-content:space-between; gap:8px; color:#4a6894; width:100%; max-width:420px; }
     .grid{ display:grid; gap:6px; grid-template-columns:repeat(6, 1fr); width:100%; }
@@ -115,13 +114,12 @@
 
     .hidden{ display:none !important; }
 
-    /* Mobile adjustments: prevent left clipping by nudging SVG 6% right on small screens */
+    /* Mobile: shrink canvas to avoid clipping; keep header 1-line */
     @media (max-width: 640px){
-      #treeSVG{ left:56%; transform:translateX(-50%); }
-      .time{ font-size:72px; }
-      .treeBox{ height:500px; }
-      .percentLabel{ font-size:56px; }
-      .xyLabel{ font-size:20px; }
+      .treeBox{ width:92vw; height:92vw; max-width:92vw; }
+      #treeSVG{ width:92vw; height:auto; left:50%; transform:translateX(-50%); }
+      .percentLabel{ font-size:48px; }
+      .xyLabel{ font-size:18px; }
       .todaySky{ font-size:16px; }
     }
   </style>
@@ -134,7 +132,7 @@
     </header>
 
     <div class="topStack">
-      <!-- Timer type and duration (vertical) -->
+      <!-- Timer type and duration (minutes only) -->
       <div class="centerRow">
         <section class="timerTypeBar fixedCard vstack" aria-label="Timer type and custom duration">
           <select id="timerTypeSelect">
@@ -142,12 +140,12 @@
             <option value="custom">Custom timer</option>
             <option value="simple">Simple timer</option>
           </select>
-          <div class="customInputs" id="customInputs" style="display:none;">
+          <div id="customInputs" class="vstack" style="display:none;">
             <div class="vstack">
-              <span class="miniNote">Duration (min, sec)</span>
-              <input id="customMin" type="number" min="0" max="999" step="1" value="15" />
-              <input id="customSec" type="number" min="0" max="59" step="1" value="0" />
-              <button id="applyCustomBtn" title="Apply custom duration">Apply</button>
+              <span class="miniNote">Custom duration (minutes)</span>
+              <input id="customMin" type="number" min="1" max="999" step="1" value="15" />
+              <button id="applyCustomBtn" title="Apply custom minutes">Apply</button>
+              <span id="customLockMsg" class="miniNote"></span>
             </div>
           </div>
         </section>
@@ -163,19 +161,17 @@
           </div>
           <div class="settings vstack" id="settingsBlock">
             <div class="numWrap">
-              <label for="lptInput"><strong>Leaves per tree (LPT)</strong></label>
+              <label for="lptInput"><strong>Leaves per week</strong></label>
               <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
               <button id="lptSetBtn">Set</button>
-              <span id="lockHint" style="color:#4a6894">Editable once per ISO week</span>
-            </div>
-            <div class="estWrap">
-              <div class="miniNote" id="lptNote">LPT = No. of sessions per week</div>
+              <span id="lockHint" class="miniNote">Editable once per ISO week</span>
             </div>
             <div class="progressWrap" id="progressBlock">
-              <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
-              <span id="lptVal">9</span>
+              <label class="miniNote">Weekly completion</label>
+              <input type="range" id="lptRange" min="0" max="100" step="1" value="0" readonly />
+              <span id="progressPct">0%</span>
             </div>
-            <div id="weeklyTarget" class="miniNote">Weekly target = 3 hrs 45 mins (as per LPT)</div>
+            <div id="weeklyTarget" class="miniNote">Weekly target = 3 hrs 45 mins</div>
           </div>
         </section>
       </div>
@@ -223,7 +219,7 @@
       </div>
     </div>
 
-    <!-- Timezone + stats stacked -->
+    <!-- TZ + stats -->
     <div class="centerRow">
       <div class="tzBar" id="tzBar">
         <div class="tzLeft">
@@ -292,124 +288,53 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_MobileAlign_6col_V1';
-    const NAMES_KEY = APP_KEY + '_customNames';
+    const APP_KEY = 'pomodoroTree_CustomLockMinutes_V1';
     const GLOBAL_KEY = APP_KEY + '_global';
+    const NAMES_KEY = APP_KEY + '_names';
     const svgns='http://www.w3.org/2000/svg';
 
     const TIMER_TYPES = { pomodoro:'pomodoro', custom:'custom', simple:'simple' };
     const POMODORO_SECONDS = 25*60;
 
     const DEFAULT_MODE_NAMES = {
-      'exercise': 'Exercise mode',
-      'cycling': 'Cycling mode',
-      'digitalDetox': 'Digital detox mode',
-      'bedTime': 'Bed-time mode',
-      'quran': 'Quran mode',
-      'dikhr': 'Dikhr mode',
-      'maths': 'Maths mode',
-      'subject1': 'Subject 1 mode',
-      'subject2': 'Subject 2 mode',
-      'subject3': 'Subject 3 mode',
-      'user1': 'User 1 mode',
-      'user2': 'User 2 mode',
-      'user3': 'User 3 mode'
+      'exercise': 'Exercise mode', 'cycling': 'Cycling mode', 'digitalDetox': 'Digital detox mode', 'bedTime': 'Bed-time mode',
+      'quran': 'Quran mode', 'dikhr': 'Dikhr mode', 'maths': 'Maths mode', 'subject1': 'Subject 1 mode',
+      'subject2': 'Subject 2 mode', 'subject3': 'Subject 3 mode', 'user1': 'User 1 mode', 'user2': 'User 2 mode', 'user3': 'User 3 mode'
     };
 
-    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}');
-    const G = Object.assign({ timeZone:'UTC', selectedMode:'maths', timerType:TIMER_TYPES.pomodoro, customSeconds: 15*60 }, loadGlobal());
-    function saveGlobal(){ localStorage.setItem(GLOBAL_KEY, JSON.stringify(G)); }
+    const load = (k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
+    const save = (k,v)=> localStorage.setItem(k, JSON.stringify(v));
 
-    const loadNames = () => JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
-    const CUSTOM_NAMES = Object.assign({}, loadNames());
-    function saveNames(){ localStorage.setItem(NAMES_KEY, JSON.stringify(CUSTOM_NAMES)); }
+    const G = load(GLOBAL_KEY, { timeZone:'UTC', selectedMode:'maths', timerType:TIMER_TYPES.pomodoro, customSeconds: 15*60 });
+    const CUSTOM_NAMES = load(NAMES_KEY, {});
 
     const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
     const DEFAULT_STATE = {
       leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS, running:false,
       leavesTotal:0, leavesToday:0, weeklyLeaves:0,
       weeklyFocusSeconds:0, totalFocusSeconds:0, completedSessions:0,
-      grid:[], subActive:true, plan:'Free', week:undefined, year:undefined,
-      weeklyComplete:false, weeklyTargetLocked:false, weeklyTargetSetValue:9, freeWeeksCap:4
+      grid:[], subActive:true, plan:'Free',
+      week:undefined, year:undefined,
+      weeklyComplete:false,
+      weeklyTargetLocked:false, weeklyTargetSetValue:9,
+      customLocked:false, customLockWeek:undefined, customLockYear:undefined,
     };
-    function loadState(modeId){
-      try{ return Object.assign({}, DEFAULT_STATE, JSON.parse(localStorage.getItem(modeKey(modeId))||'{}')); }
-      catch{ return Object.assign({}, DEFAULT_STATE); }
-    }
-    function saveState(modeId, S){ localStorage.setItem(modeKey(modeId), JSON.stringify(S)); }
+
+    function loadState(modeId){ return load(modeKey(modeId), DEFAULT_STATE); }
+    function saveState(modeId,S){ save(modeKey(modeId), S); }
 
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
 
     const el=id=>document.getElementById(id);
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
-    const lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptRange=el('lptRange'), lptVal=el('lptVal'), lockHint=el('lockHint');
-    const weeklyTargetEl=el('weeklyTarget'), lptNoteEl=el('lptNote');
-    const todayChip=el('todayChip'), totalTimeChip=el('totalTimeChip');
-    const percentLabel=document.getElementById('percentLabel'), xyLabel=document.getElementById('xyLabel'), rainLayer=el('rainLayer');
-    const treeGrid=el('treeGrid'), gridCount=el('gridCount');
-    const leafLayer=document.querySelector('#treeSVG #leafLayer'); const fillRect=document.getElementById('fillRect');
-    const todaySky=el('todaySky'), modeNameEl=document.getElementById('modeName');
+    const timerTypeSelect=el('timerTypeSelect'), customInputs=el('customInputs'), customMinInput=el('customMin'), applyCustomBtn=el('applyCustomBtn'), customLockMsg=el('customLockMsg');
+    const lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lockHint=el('lockHint');
+    const progressBlock=el('progressBlock'), lptRange=el('lptRange'), progressPct=el('progressPct'), weeklyTargetEl=el('weeklyTarget');
+    const percentLabel=el('percentLabel'), xyLabel=el('xyLabel'), todaySky=el('todaySky');
+    const treeGrid=el('treeGrid'), gridCount=el('gridCount'), modeNameEl=el('modeName');
+    const tzSelect=el('tzSelect');
 
-    const timerTypeSelect = document.getElementById('timerTypeSelect');
-    const customInputsDiv = document.getElementById('customInputs');
-    const customMinInput = document.getElementById('customMin');
-    const customSecInput = document.getElementById('customSec');
-    const applyCustomBtn = document.getElementById('applyCustomBtn');
-
-    const tzBar = document.getElementById('tzBar');
-    const statsChips = document.getElementById('statsChips');
-    const tabsWrap = document.getElementById('tabsWrap');
-    const gridWrap = document.getElementById('gridWrap');
-    const bottomAuth = document.getElementById('bottomAuth');
-    const settingsBlock = document.getElementById('settingsBlock');
-    const progressBlock = document.getElementById('progressBlock');
-
-    const tzSelect = document.getElementById('tzSelect');
-    const modeSelect = document.getElementById('modeSelect');
-    const subject1Input = document.getElementById('subject1Input');
-    const subject2Input = document.getElementById('subject2Input');
-    const subject3Input = document.getElementById('subject3Input');
-    const user1Input = document.getElementById('user1Input');
-    const user2Input = document.getElementById('user2Input');
-    const user3Input = document.getElementById('user3Input');
-    const saveNamesBtn = document.getElementById('saveNamesBtn');
-
-    const tabsContainer=document.querySelector('.tabs');
-    tabsContainer?.addEventListener('click', (e)=>{
-      const t=e.target.closest('.tab'); if(!t) return;
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      t.classList.add('active');
-      const id=t.getAttribute('data-tab');
-      document.querySelectorAll('.panelCard').forEach(p=>p.style.display='none');
-      const panel=document.getElementById(id);
-      if(panel) panel.style.display='flex';
-    });
-
-    // Alarm sound
-    let audioCtx=null;
-    function ensureAudioUnlocked(){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; if(!audioCtx){ audioCtx=new AC(); } if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); } }
-    function playAlarm10s(){
-      if(currentMode==='bedTime') return;
-      if(!audioCtx || audioCtx.state==='suspended') return;
-      const now = audioCtx.currentTime;
-      const master = audioCtx.createGain();
-      master.gain.setValueAtTime(0.0001, now);
-      master.gain.linearRampToValueAtTime(0.85, now + 0.03);
-      master.gain.setValueAtTime(0.85, now + 9.7);
-      master.gain.linearRampToValueAtTime(0.0001, now + 10.0);
-      master.connect(audioCtx.destination);
-      const oscA = audioCtx.createOscillator(); oscA.type='square'; oscA.frequency.setValueAtTime(880, now);
-      const oscB = audioCtx.createOscillator(); oscB.type='sawtooth'; oscB.frequency.setValueAtTime(440, now);
-      const trem = audioCtx.createOscillator(); trem.type='sine'; trem.frequency.setValueAtTime(6, now);
-      const tremGain = audioCtx.createGain(); tremGain.gain.setValueAtTime(0.5, now);
-      trem.connect(tremGain); tremGain.connect(master.gain);
-      oscA.connect(master); oscB.connect(master);
-      trem.start(now); oscA.start(now); oscB.start(now);
-      oscA.stop(now + 10.1); oscB.stop(now + 10.1); trem.stop(now + 10.1);
-    }
-
-    // TZ helpers
     function nowInTZ(){
       try{
         const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: G.timeZone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
@@ -417,7 +342,7 @@
         const get = k => Number(parts.find(p=>p.type===k)?.value);
         const y=get('year'), m=get('month'), d=get('day'), hh=get('hour'), mm=get('minute'), ss=get('second');
         return new Date(Date.UTC(y, m-1, d, hh, mm, ss));
-      }catch(e){ return new Date(); }
+      }catch{ return new Date(); }
     }
     function isoWeekOf(date){
       const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
@@ -428,30 +353,214 @@
       return { week, year: d.getUTCFullYear() };
     }
 
-    function save(){ saveState(currentMode, S); saveGlobal(); }
-    function unshiftWeekToGrid(week, year, live){
-      S.grid.unshift({week,year,live,ts:Date.now()});
-      if(S.grid.length>52) S.grid.pop();
-      save();
-    }
-
     function rolloverWeekIfNeeded(){
-      const nowTz = nowInTZ();
-      const { week:wk, year:yr } = isoWeekOf(nowTz);
-      if(S.week===undefined || S.year===undefined){ S.week=wk; S.year=yr; save(); return; }
-      if(S.week!==wk || S.year!==yr){
-        const completed = (S.placed>=S.leavesPerTree && S.leavesPerTree>0);
-        unshiftWeekToGrid(S.week, S.year, completed);
-        S.week=wk; S.year=yr;
-        S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0;
-        S.weeklyComplete=false; S.weeklyTargetLocked=false; S.weeklyTargetSetValue=S.leavesPerTree;
-        S.placed=0; S.secondsLeft=getCurrentSessionSeconds();
-        const layer=document.querySelector('#treeSVG #leafLayer'); if(layer) layer.innerHTML='';
-        save();
+      const {week,year}=isoWeekOf(nowInTZ());
+      if(S.week===undefined || S.year===undefined){ S.week=week; S.year=year; saveAll(); return; }
+      if(S.week!==week || S.year!==year){
+        // carry last week's completion to grid
+        const completed = S.placed>=S.leavesPerTree && S.leavesPerTree>0;
+        S.grid.unshift({week:S.week,year:S.year,live:completed,ts:Date.now()});
+        if(S.grid.length>52) S.grid.pop();
+        // reset week stats and unlock weekly settings
+        S.week=week; S.year=year;
+        S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0; S.weeklyComplete=false;
+        S.weeklyTargetLocked=false; S.weeklyTargetSetValue=S.leavesPerTree;
+        // unlock custom timer for this week
+        S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
+        // reset progress and placeholder leaf visuals
+        S.placed=0; S.secondsLeft=getSessionSeconds();
+        document.querySelector('#treeSVG #leafLayer').innerHTML='';
+        saveAll();
       }
     }
 
-    // Tree rendering helpers
+    function getSessionSeconds(){
+      if(G.timerType==='pomodoro') return POMODORO_SECONDS;
+      if(G.timerType==='custom') return Math.max(60, Number(G.customSeconds)||900);
+      if(G.timerType==='simple') return Math.max(60, Number(G.customSeconds)||900);
+      return POMODORO_SECONDS;
+    }
+
+    function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
+
+    // Accurate countdown via wall-clock target
+    const intervals={};
+    function clearTicker(){ if(intervals[currentMode]){ clearInterval(intervals[currentMode]); intervals[currentMode]=null; } }
+    function startSession(){
+      if(intervals[currentMode]) return;
+      const maxSecs=getSessionSeconds();
+      if(S.secondsLeft<=0 || S.secondsLeft>maxSecs) S.secondsLeft=maxSecs;
+
+      const target = Date.now() + S.secondsLeft*1000;
+      const tick = ()=>{
+        const msLeft = Math.max(0, target - Date.now());
+        S.secondsLeft = Math.ceil(msLeft/1000);
+        clockEl.textContent = format(S.secondsLeft);
+        if(msLeft<=0){
+          clearTicker();
+          onComplete();
+        }
+      };
+      tick();
+      clearTicker();
+      intervals[currentMode]=setInterval(tick,1000);
+    }
+
+    function stopSession(){
+      clearTicker();
+    }
+
+    function onComplete(){
+      // record work only for pomodoro/custom
+      if(G.timerType!=='simple'){
+        const dur=getSessionSeconds();
+        S.weeklyFocusSeconds=(S.weeklyFocusSeconds||0)+dur;
+        S.totalFocusSeconds=(S.totalFocusSeconds||0)+dur;
+        S.completedSessions=(S.completedSessions||0)+1;
+        S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
+        if(S.placed>=S.leavesPerTree){ S.weeklyComplete=true; }
+        updateProgressUI();
+      }else{
+        S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1;
+      }
+      // reset for next session
+      S.secondsLeft=getSessionSeconds();
+      clockEl.textContent=format(S.secondsLeft);
+      saveAll();
+      renderAll();
+    }
+
+    function setClockAndButtons(){
+      const secs=getSessionSeconds();
+      if(S.secondsLeft<=0 || S.secondsLeft>secs) S.secondsLeft=secs;
+      clockEl.textContent=format(S.secondsLeft);
+      startBtn.textContent=`Start ${format(secs)}`;
+    }
+
+    function updateWeeklyTargetText(){
+      const per=getSessionSeconds();
+      const totalSec = per * (S.leavesPerTree||0);
+      const h=Math.floor(totalSec/3600), m=Math.round((totalSec%3600)/60);
+      weeklyTargetEl.textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
+    }
+
+    function updateProgressUI(){
+      // slider shows completion of placed/leavesPerTree in green→red
+      const total=Math.max(1, Number(S.leavesPerTree)||1);
+      const done=Math.min(S.placed,total);
+      const pct=Math.round((done/total)*100);
+      lptRange.value=String(pct);
+      lptRange.style.backgroundImage=`linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
+      progressPct.textContent=`${pct}%`;
+      percentLabel.textContent=`${pct}%`;
+      xyLabel.textContent=`${done}/${total} leaves`;
+    }
+
+    function renderGrid(){
+      treeGrid.innerHTML='';
+      for(let i=0;i<52;i++){
+        const cell=document.createElement('div'); cell.className='cell';
+        const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
+        const icon=document.createElement('div'); icon.className='icon';
+        const entry=S.grid[i];
+        if(entry){ icon.textContent= entry.live?'🌳':''; if(entry.live) cell.classList.add('live'); }
+        cell.appendChild(num); cell.appendChild(icon); treeGrid.appendChild(cell);
+      }
+      gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
+    }
+
+    function populateTimeZones(){
+      if(tzSelect.options.length===0){
+        let zones=[];
+        try{ zones=Intl.supportedValuesOf('timeZone'); }catch{ zones=['UTC','Asia/Kolkata','Europe/London','America/New_York']; }
+        const frag=document.createDocumentFragment();
+        for(const z of ['UTC',...zones]){
+          const opt=document.createElement('option'); opt.value=z; opt.textContent=z; frag.appendChild(opt);
+        }
+        tzSelect.appendChild(frag);
+      }
+      tzSelect.value=G.timeZone||'UTC';
+    }
+
+    function applyTimerTypeUI(){
+      // show custom minutes input for custom or simple; lock message on custom
+      customInputs.style.display = (G.timerType==='custom' || G.timerType==='simple') ? 'block' : 'none';
+      const isCustom = (G.timerType==='custom');
+      const {week,year}=isoWeekOf(nowInTZ());
+      if(isCustom){
+        // compute lock state
+        const locked = !!S.customLocked && S.customLockWeek===S.week && S.customLockYear===S.year;
+        customMinInput.disabled = locked;
+        applyCustomBtn.disabled = locked;
+        customLockMsg.textContent = locked
+          ? `Custom minutes locked for ISO Week ${S.week}-${S.year}`
+          : 'Can be set once per ISO week';
+      }else{
+        customLockMsg.textContent = '';
+      }
+      // show slider always for pomodoro and custom, hide for simple
+      progressBlock.classList.toggle('hidden', G.timerType==='simple');
+      setClockAndButtons();
+      updateWeeklyTargetText();
+      updateProgressUI();
+    }
+
+    function switchMode(toId){
+      if(!toId || toId===currentMode) return;
+      stopSession();
+      currentMode=toId; G.selectedMode=toId; save(GLOBAL_KEY,G);
+      S=loadState(currentMode);
+      rolloverWeekIfNeeded();
+      setClockAndButtons();
+      applyTimerTypeUI();
+      renderAll();
+    }
+
+    function saveAll(){ saveState(currentMode,S); save(GLOBAL_KEY,G); }
+
+    // UI hooks
+    startBtn.addEventListener('click', startSession);
+    resetBtn.addEventListener('click', ()=>{ stopSession(); S.secondsLeft=getSessionSeconds(); setClockAndButtons(); saveAll(); });
+
+    timerTypeSelect.addEventListener('change', ()=>{
+      G.timerType=timerTypeSelect.value;
+      if(G.timerType==='pomodoro') S.secondsLeft=POMODORO_SECONDS;
+      setClockAndButtons();
+      applyTimerTypeUI();
+      saveAll();
+    });
+
+    applyCustomBtn.addEventListener('click', ()=>{
+      // lock once per current ISO week
+      rolloverWeekIfNeeded();
+      if(S.customLocked && S.customLockWeek===S.week && S.customLockYear===S.year) return;
+      const mins = Math.max(1, Math.floor(Number(customMinInput.value)||0));
+      G.customSeconds = mins*60;
+      S.customLocked=true; S.customLockWeek=S.week; S.customLockYear=S.year;
+      S.secondsLeft=getSessionSeconds();
+      setClockAndButtons();
+      applyTimerTypeUI();
+      saveAll();
+    });
+
+    lptSetBtn.addEventListener('click', ()=>{
+      rolloverWeekIfNeeded();
+      if(S.weeklyTargetLocked) return;
+      const v = Math.max(1, Math.min(200, Math.floor(Number(lptInput.value)||1)));
+      S.leavesPerTree=v;
+      S.weeklyTargetLocked=true;
+      S.weeklyTargetSetValue=v;
+      S.placed=0;
+      document.querySelector('#treeSVG #leafLayer').innerHTML='';
+      updateWeeklyTargetText();
+      updateProgressUI();
+      saveAll();
+      renderAll();
+    });
+
+    tzSelect.addEventListener('change', ()=>{ G.timeZone=tzSelect.value||'UTC'; save(GLOBAL_KEY,G); rolloverWeekIfNeeded(); renderAll(); });
+
+    // Minimal tree leaves renderers (re-using previous helpers)
     const baseAnchors=[{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}];
     function anchorForIndex(i){
       if(i<baseAnchors.length) return baseAnchors[i];
@@ -462,393 +571,51 @@
       const g=document.createElementNS(svgns,'g'); g.setAttribute('filter','url(#leafShadow)');
       const p=document.createElementNS(svgns,'path'); p.setAttribute('d','M 0 -16 C 10 -10, 12 0, 0 14 C -12 0, -10 -10, 0 -16 Z');
       p.setAttribute('fill','#166534'); p.setAttribute('stroke','#0b3d22'); p.setAttribute('stroke-width','1.2');
-      const t=document.createElementNS(svgns,'text'); t.setAttribute('class','leaf-number'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.textContent=String(n);
+      const t=document.createElementNS(svgns,'text'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.setAttribute('fill','#fff'); t.setAttribute('font-weight','800'); t.setAttribute('font-size','13'); t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle'); t.textContent=String(n);
       g.appendChild(p); g.appendChild(t); return g;
     }
     function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
 
-    const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
-    function setFillPercent(pct){
-      const p=Math.max(0, Math.min(100, Number(pct)||0));
-      const targetH=FILL_OVERSCAN*(p/100);
-      const targetY=CANOPY_BOTTOM-targetH;
-      fillRect.setAttribute('x','110'); fillRect.setAttribute('width','360');
-      fillRect.setAttribute('y', String(targetY)); fillRect.setAttribute('height', String(targetH));
-      percentLabel.textContent = Math.round(p)+'%';
-    }
-    function percentFromState(){ const denom=Math.max(1, S.leavesPerTree|0); return (S.placed/denom)*100; }
-    function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
-
-    function renderLeavesFromState(){
-      const layer=document.querySelector('#treeSVG #leafLayer'); if(!layer) return;
+    function renderLeaves(){
+      const layer=document.querySelector('#treeSVG #leafLayer');
       layer.innerHTML='';
       for(let i=0;i<S.placed;i++){ const g=createLeafG(i+1); placeLeaf(g, anchorForIndex(i)); layer.appendChild(g); }
     }
 
-    function buildSaplings(){
-      const g=document.getElementById('saplings'); if(!g) return; g.innerHTML='';
-      const cols=7, rows=7, startX=28, endX=532, grassYStart=560*0.62 + 18, rowGap=26;
-      for(let r=0;r<rows;r++){ for(let c=0;c<cols;c++){
-        const x = Math.round(startX + c * ((endX - startX)/(cols-1)));
-        const y = Math.round(grassYStart + r*rowGap);
-        const stem = document.createElementNS(svgns,'path'); stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
-        stem.setAttribute('stroke','#2f6f3a'); stem.setAttribute('stroke-width','2'); stem.setAttribute('fill','none'); stem.setAttribute('stroke-linecap','round');
-        const leafL = document.createElementNS(svgns,'path'); leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
-        leafL.setAttribute('stroke','#2f6f3a'); leafL.setAttribute('stroke-width','2'); leafL.setAttribute('fill','none'); leafL.setAttribute('stroke-linecap','round'); leafL.setAttribute('stroke-linejoin','round');
-        const leafR = document.createElementNS(svgns,'path'); leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
-        leafR.setAttribute('stroke','#2f6f3a'); leafR.setAttribute('stroke-width','2'); leafR.setAttribute('fill','none'); leafR.setAttribute('stroke-linecap','round'); leafR.setAttribute('stroke-linejoin','round');
-        g.appendChild(stem); g.appendChild(leafL); g.appendChild(leafR);
-      }}
+    function renderAll(){
+      renderLeaves();
+      renderGrid();
+      updateWeeklyTargetText();
+      updateProgressUI();
+      setClockAndButtons();
     }
-
-    function buildGrid(){
-      treeGrid.innerHTML='';
-      for(let i=0;i<52;i++){
-        const cell=document.createElement('div'); cell.className='cell';
-        const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
-        const icon=document.createElement('div'); icon.className='icon';
-        const entry=S.grid[i];
-        if(entry){ icon.textContent = entry.live ? '🌳' : ''; if(entry.live){ cell.classList.add('live'); } } else { icon.textContent = ''; }
-        cell.appendChild(num); cell.appendChild(icon); treeGrid.appendChild(cell);
-      }
-      gridCount.textContent=`${Math.min(S.grid.length, 52)} / 52`;
-    }
-
-    function updateWeeklyTarget(){
-      const secsPer = getCurrentSessionSeconds();
-      const totalSecs = (S.leavesPerTree * secsPer);
-      const h = Math.floor(totalSecs/3600), m = Math.round((totalSecs%3600)/60);
-      weeklyTargetEl.textContent = `Weekly target = ${h>0? h+' hrs ':''}${m} mins (as per LPT)`;
-      lptNoteEl.textContent = 'LPT = No. of sessions per week';
-    }
-    function formatTimeHM(sec){ const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60); return {h,m}; }
-
-    function renderTotals(){
-      const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
-      const isCustom = (G.timerType === 'custom');
-      todayChip.innerHTML = `<strong>${isCustom? 'Work hrs (week)':'Pomodoro hrs (week)'}</strong>: ${w.h} hrs ${w.m} mins`;
-      totalTimeChip.innerHTML = `<strong>${isCustom? 'Work hrs (overall)':'Pomodoro hrs (overall)'}</strong>: ${o.h} hrs ${o.m} mins`;
-      const totalTodaySecs = (S.leavesToday * getCurrentSessionSeconds());
-      const minsToday = Math.round(totalTodaySecs/60);
-      todaySky.textContent = `Total duration (today): ${minsToday} mins`;
-      xyLabel.textContent = `${Math.min(S.placed, S.leavesPerTree)}/${S.leavesPerTree} leaves`;
-    }
-
-    function paintProgressUI(){
-      const total = Math.max(1, Number(S.leavesPerTree)||1);
-      const done = Math.max(0, Math.min(S.placed, total));
-      const pct = (done/total)*100;
-      lptRange.style.backgroundImage = `linear-gradient(90deg, #16a34a ${pct}%, #ef4444 ${pct}%)`;
-    }
-
-    function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
-    function getCurrentSessionSeconds(){ if(G.timerType==='custom' || G.timerType==='simple') return Math.max(10, Number(G.customSeconds)||900); return POMODORO_SECONDS; }
-
-    function setClockUIToCurrentType(){
-      const secs = getCurrentSessionSeconds();
-      const label = format(secs);
-      clockEl.textContent = format(S.secondsLeft || secs);
-      startBtn.textContent = `Start ${label}`;
-
-      const isSimple = (G.timerType==='simple');
-      const isCustom = (G.timerType==='custom');
-
-      [tzBar, statsChips, tabsWrap, gridWrap, bottomAuth, settingsBlock].forEach(el=>{ if(!el) return; el.classList.toggle('hidden', isSimple); });
-      progressBlock.classList.toggle('hidden', isSimple || isCustom);
-      percentLabel.classList.toggle('hidden', isCustom || isSimple);
-    }
-
-    function setRunning(on){
-      S.running=on;
-      const canopyOutline = document.getElementById('canopyOutline');
-      if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on && G.timerType!=='simple');
-      const layer=document.querySelector('#treeSVG #leafLayer'); const cur=layer?.lastElementChild;
-      if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on && G.timerType!=='simple'); }
-      startBtn.disabled = !!on;
-      startBtn.textContent = on ? 'Running…' : `Start ${format(getCurrentSessionSeconds())}`;
-      if(G.timerType!=='simple') showRain(!!on);
-      save();
-    }
-
-    function renderHUD(){
-      setClockUIToCurrentType();
-      buildGrid();
-      buildSaplings();
-      lptVal.textContent=String(S.leavesPerTree);
-      lptInput.value = S.leavesPerTree;
-      lptSetBtn.disabled = !!S.weeklyTargetLocked;
-      lptInput.disabled = !!S.weeklyTargetLocked;
-      lockHint.textContent = S.weeklyTargetLocked ? `Target locked for ISO Week ${S.week}-${S.year} at ${S.weeklyTargetSetValue}` : 'Editable once per ISO week';
-      applyProgress();
-      if(G.timerType==='pomodoro') paintProgressUI();
-      updateWeeklyTarget();
-      renderTotals();
-      populateTimeZonesIfNeeded();
-      populateModesUI();
-      save();
-    }
-
-    function showRain(on){
-      rainLayer.style.display=on?'block':'none';
-      if(on && rainLayer.childElementCount===0){
-        const mk=(n, cls='')=>{
-          for(let i=0;i<n;i++){
-            const d=document.createElement('div'); d.className='drop'+cls;
-            d.style.left=(Math.random()*560)+'px';
-            d.style.animationDelay=(Math.random()*0.9)+'s';
-            d.style.animationDuration=(cls? (1.0+Math.random()*0.9)+'s' : (0.6+Math.random()*0.6)+'s');
-            rainLayer.appendChild(d);
-          }
-        };
-        mk(160,''); mk(120,' far');
-      }
-    }
-
-    function onSessionComplete(){
-      if(currentMode!=='bedTime') playAlarm10s();
-
-      if(G.timerType!=='simple'){
-        const dur = getCurrentSessionSeconds();
-        S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + dur;
-        S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + dur;
-        S.completedSessions = (S.completedSessions||0) + 1;
-
-        S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
-
-        applyProgress();
-        setRunning(false);
-        showRain(false);
-
-        if(S.placed===S.leavesPerTree){
-          S.weeklyComplete=true;
-          if(S.week!==undefined && S.year!==undefined){
-            S.grid.unshift({week:S.week,year:S.year,live:true,ts:Date.now()});
-            if(S.grid.length>52) S.grid.pop();
-          }
-        }else{
-          S.secondsLeft=getCurrentSessionSeconds();
-        }
-        clockEl.textContent=format(S.secondsLeft);
-        save();
-        renderHUD();
-      }else{
-        S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1;
-        renderLeavesFromState();
-        setRunning(false);
-        S.secondsLeft=getCurrentSessionSeconds();
-        clockEl.textContent=format(S.secondsLeft);
-        save();
-        const totalTodaySecs = (S.leavesToday * getCurrentSessionSeconds());
-        const minsToday = Math.round(totalTodaySecs/60);
-        todaySky.textContent = `Total duration (today): ${minsToday} mins`;
-      }
-    }
-
-    function startSessionWallClock(){
-      const thisMode = currentMode;
-      const targetEpoch = Date.now() + (S.secondsLeft * 1000);
-      const tick = ()=>{
-        if(thisMode !== currentMode){ clearModeInterval(thisMode); return; }
-        const remainingMs = Math.max(0, targetEpoch - Date.now());
-        S.secondsLeft = Math.ceil(remainingMs / 1000);
-        clockEl.textContent = format(S.secondsLeft);
-        if(G.timerType==='pomodoro') paintProgressUI();
-        if (remainingMs <= 0) { clearModeInterval(thisMode); onSessionComplete(); }
-      };
-      const onVisibility=()=>{ if(document.visibilityState==='visible' && intervals[thisMode]) tick(); };
-      setRunning(true);
-      if(G.timerType!=='simple') renderHUD();
-      tick();
-      clearModeInterval(thisMode);
-      intervals[thisMode] = setInterval(tick, 1000);
-      document.addEventListener('visibilitychange', onVisibility, { passive:true });
-      startBtn._cleanupVisibility = ()=>document.removeEventListener('visibilitychange', onVisibility);
-    }
-
-    function startFlow(){
-      if(intervals[currentMode]) return;
-      ensureAudioUnlocked();
-      if(G.timerType!=='simple'){ rolloverWeekIfNeeded(); }
-      if(G.timerType!=='simple'){
-        if(!S.weeklyComplete && S.placed < S.leavesPerTree){
-          const idx=S.placed;
-          const layer=document.querySelector('#treeSVG #leafLayer');
-          const g=createLeafG(idx+1); placeLeaf(g, anchorForIndex(idx)); layer.appendChild(g);
-        }
-      }
-      const maxSecs = getCurrentSessionSeconds();
-      if (S.secondsLeft <= 0 || S.secondsLeft > maxSecs) { S.secondsLeft = maxSecs; }
-      startSessionWallClock();
-    }
-
-    function resetTimer(){
-      if(intervals[currentMode]){ clearModeInterval(currentMode); startBtn._cleanupVisibility?.(); }
-      setRunning(false);
-      if(G.timerType!=='simple') showRain(false);
-      if(G.timerType!=='simple'){
-        const layer=document.querySelector('#treeSVG #leafLayer');
-        const cur=layer?.lastElementChild;
-        if(cur){
-          const idx=(Number(cur.querySelector('text')?.textContent)||0)-1;
-          if(idx===S.placed){ layer.removeChild(cur); }
-        }
-      }
-      S.secondsLeft=getCurrentSessionSeconds(); setClockUIToCurrentType();
-    }
-
-    const clamp = (v)=>Math.max(1, Math.min(200, Number(v)||1));
-    lptInput.addEventListener('input', ()=>{
-      const v = clamp(lptInput.value);
-      lptVal.textContent = String(v);
-      if(G.timerType==='pomodoro'){
-        const secs = v * getCurrentSessionSeconds();
-        const h = Math.floor(secs/3600), m = Math.round((secs%3600)/60);
-        weeklyTargetEl.textContent = `Weekly target = ${h>0? h+' hrs ':''}${m} mins (as per LPT)`;
-      }
-    });
-
-    lptSetBtn.addEventListener('click', ()=>{
-      if(G.timerType==='simple') return;
-      rolloverWeekIfNeeded();
-      if(S.weeklyTargetLocked) return;
-      const v = clamp(lptInput.value);
-      S.leavesPerTree = v;
-      S.weeklyTargetLocked = true;
-      S.weeklyTargetSetValue = v;
-
-      S.placed = 0;
-      S.weeklyLeaves = 0;
-      S.secondsLeft = getCurrentSessionSeconds();
-
-      const layer=document.querySelector('#treeSVG #leafLayer'); if(layer) layer.innerHTML = '';
-      applyProgress();
-      lptVal.textContent = String(S.leavesPerTree);
-      renderHUD();
-    });
-
-    function populateTimeZonesIfNeeded(){
-      const select = document.getElementById('tzSelect'); if(!select) return;
-      if(select.options.length===0){
-        let zones=[];
-        try{ zones = Intl.supportedValuesOf('timeZone'); }
-        catch{ zones = ['UTC','Europe/London','Asia/Kolkata','America/New_York','Asia/Tokyo']; }
-        zones = Array.from(new Set(['UTC', ...zones]));
-        const frag=document.createDocumentFragment();
-        for(const z of zones){
-          const opt=document.createElement('option'); opt.value=z; opt.textContent=labelForTZ(z);
-          frag.appendChild(opt);
-        }
-        select.appendChild(frag);
-      }
-      select.value = G.timeZone || 'UTC';
-    }
-    function labelForTZ(tz){
-      try{
-        const now = new Date();
-        const short = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName:'shortOffset' }).format(now);
-        const offsetPart = short.split(', ').pop() || 'GMT';
-        return `(${offsetPart}) ${tz}`;
-      }catch{ return `(GMT) ${tz}`; }
-    }
-    document.getElementById('tzSelect')?.addEventListener('change', ()=>{
-      G.timeZone = document.getElementById('tzSelect').value || 'UTC';
-      if(G.timerType!=='simple'){ rolloverWeekIfNeeded(); renderHUD(); }
-      save();
-    });
-
-    function populateModesUI(){
-      const ids = ['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
-      if(modeSelect){
-        const curVal = modeSelect.value;
-        modeSelect.innerHTML='';
-        const frag=document.createDocumentFragment();
-        for(const id of ids){
-          const label = (CUSTOM_NAMES[id] && CUSTOM_NAMES[id].trim()) ? CUSTOM_NAMES[id] : (DEFAULT_MODE_NAMES[id]||id);
-          const opt=document.createElement('option'); opt.value=id; opt.textContent=label; frag.appendChild(opt);
-        }
-        modeSelect.appendChild(frag);
-        modeSelect.value = ids.includes(currentMode)? currentMode : ids[0];
-        if(curVal && ids.includes(curVal)) modeSelect.value = curVal;
-      }
-      if(modeNameEl){
-        const label = (CUSTOM_NAMES[currentMode] && CUSTOM_NAMES[currentMode].trim()) ? CUSTOM_NAMES[currentMode] : (DEFAULT_MODE_NAMES[currentMode]||currentMode);
-        modeNameEl.textContent = label.replace(/ mode$/i,'');
-      }
-    }
-    saveNamesBtn?.addEventListener('click', ()=>{
-      CUSTOM_NAMES['subject1'] = subject1Input.value.trim();
-      CUSTOM_NAMES['subject2'] = subject2Input.value.trim();
-      CUSTOM_NAMES['subject3'] = subject3Input.value.trim();
-      CUSTOM_NAMES['user1'] = user1Input.value.trim();
-      CUSTOM_NAMES['user2'] = user2Input.value.trim();
-      CUSTOM_NAMES['user3'] = user3Input.value.trim();
-      saveNames();
-      populateModesUI();
-      if(G.timerType!=='simple') renderHUD();
-    });
-    modeSelect?.addEventListener('change', ()=> switchMode(modeSelect.value) );
-
-    function switchMode(toId){
-      if(!toId || toId===currentMode) return;
-      if(intervals[currentMode]){ clearInterval(intervals[currentMode]); intervals[currentMode]=null; }
-      startBtn._cleanupVisibility?.();
-      if(G.timerType!=='simple') showRain(false);
-      save();
-      currentMode = toId;
-      G.selectedMode = toId;
-      S = loadState(currentMode);
-      const secs = getCurrentSessionSeconds();
-      if (S.secondsLeft <= 0 || S.secondsLeft > secs) S.secondsLeft = secs;
-      const layer=document.querySelector('#treeSVG #leafLayer'); if(layer) layer.innerHTML='';
-      renderLeavesFromState();
-      if(G.timerType!=='simple'){ rolloverWeekIfNeeded(); }
-      renderHUD();
-    }
-
-    function applyTimerTypeUI(){
-      timerTypeSelect.value = G.timerType;
-      customInputsDiv.style.display = (G.timerType==='custom' || G.timerType==='simple') ? 'block' : 'none';
-      const secs = getCurrentSessionSeconds();
-      if(S.secondsLeft <= 0 || S.secondsLeft > secs) S.secondsLeft = secs;
-      setClockUIToCurrentType();
-      if(G.timerType==='custom'){ progressBlock.classList.add('hidden'); percentLabel.classList.add('hidden'); }
-      if(G.timerType==='simple'){ progressBlock.classList.add('hidden'); percentLabel.classList.add('hidden'); }
-      if(G.timerType==='pomodoro'){ progressBlock.classList.remove('hidden'); percentLabel.classList.remove('hidden'); }
-      save();
-      renderHUD();
-    }
-
-    // Events
-    startBtn.addEventListener('click', startFlow);
-    resetBtn.addEventListener('click', resetTimer);
-
-    timerTypeSelect.addEventListener('change', ()=>{
-      G.timerType = timerTypeSelect.value;
-      if(G.timerType==='pomodoro'){ S.secondsLeft = POMODORO_SECONDS; }
-      applyTimerTypeUI();
-    });
-    applyCustomBtn.addEventListener('click', ()=>{
-      const mins = Math.max(0, Math.floor(Number(customMinInput.value)||0));
-      const secs = Math.max(0, Math.floor(Number(customSecInput.value)||0));
-      const total = Math.min(23*3600+59*60+59, mins*60 + secs);
-      G.customSeconds = Math.max(10, total||900);
-      const maxSecs = getCurrentSessionSeconds();
-      if (S.secondsLeft <= 0 || S.secondsLeft > maxSecs) S.secondsLeft = maxSecs;
-      applyTimerTypeUI();
-    });
 
     // Init
     if(!G.timeZone) G.timeZone='UTC';
     if(!G.selectedMode) G.selectedMode='maths';
-    currentMode = G.selectedMode;
-    S = loadState(currentMode);
+    populateTimeZones();
+    // Populate modes
+    const modeSelect=document.getElementById('modeSelect');
+    const ids=['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
+    const frag=document.createDocumentFragment();
+    for(const id of ids){
+      const label=(CUSTOM_NAMES[id] && CUSTOM_NAMES[id].trim()) ? CUSTOM_NAMES[id] : (DEFAULT_MODE_NAMES[id]||id);
+      const opt=document.createElement('option'); opt.value=id; opt.textContent=label; frag.appendChild(opt);
+    }
+    modeSelect.appendChild(frag);
+    modeSelect.value=currentMode;
+    modeSelect.addEventListener('change', ()=> switchMode(modeSelect.value) );
+    if(modeNameEl){
+      const label=(CUSTOM_NAMES[currentMode] && CUSTOM_NAMES[currentMode].trim()) ? CUSTOM_NAMES[currentMode] : (DEFAULT_MODE_NAMES[currentMode]||currentMode);
+      modeNameEl.textContent=label.replace(/ mode$/i,'');
+    }
 
-    populateTimeZonesIfNeeded();
-    populateModesUI();
+    // Prepare UI per type
+    timerTypeSelect.value=G.timerType;
+    customMinInput.value=String(Math.max(1, Math.floor((G.customSeconds||900)/60)));
+    rolloverWeekIfNeeded();
     applyTimerTypeUI();
-    renderLeavesFromState();
-    applyProgress();
-    renderHUD();
+    renderAll();
   </script>
 </body>
 </html>
