@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Simple Set No Lock, Custom Weekly Lock, Per-Mode LPT</title>
+  <title>Pomodoro Tree — X/Y in Pomodoro+Custom, Custom Locks Weekly, Simple No Lock</title>
   <style>
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
@@ -80,10 +80,11 @@
     .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:1; }
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:2; }
 
-    .soilPct{ position:absolute; left:14px; bottom:10px; font:900 56px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ffffff; text-shadow:0 2px 0 rgba(0,0,0,.2); z-index:var(--z-labels); }
-    /* xyLabel removed on purpose */
+    .soilPct{ position:absolute; left:14px; bottom:10px; font:900 56px/1 Inter; color:#ffffff; text-shadow:0 2px 0 rgba(0,0,0,.2); z-index:var(--z-labels); }
+    <span style="display:none"></span>
+    .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); display:none; } /* default hidden; shown for Pomodoro/Custom */
 
-    .todaySky{ position:absolute; left:14px; top:38px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
+    .todaySky{ position:absolute; left:14px; top:38px; font:800 18px/1 Inter; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
     .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:none; }
     .rainTop .drop{ position:absolute; top:-16px; width:3px; height:18px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 1.1s linear infinite; }
@@ -131,6 +132,7 @@
       .treeBox{ width:92vw; aspect-ratio:1/1; height:auto; margin:8px auto; position:relative; }
       #treeSVG, #saplingsSVG{ width:100%; height:100%; }
       .soilPct{ font-size:42px; }
+      .xyLabel{ font-size:18px; }
       .todaySky{ font-size:16px; top:36px; }
       h1{ font-size:18px; }
       .modeTag{ font-size:16px; }
@@ -156,11 +158,11 @@
 
           <!-- Custom minutes (locks per week per mode) -->
           <div id="customInputs" class="vstack" style="display:none;">
-            <span class="miniNote" id="customLabel">Editable only once per week</span>
+            <span class="miniNote">Editable only once per week</span>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input id="customMin" type="number" min="1" max="999" step="1" value="25" />
               <button id="applyCustomBtn" title="Apply custom minutes">Set</button>
-              <span id="customLockMsg" class="miniNote">Will be locked after the Set button</span>
+              <span id="customLockMsg" class="miniNote">Will be locked</span>
             </div>
           </div>
 
@@ -170,7 +172,7 @@
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input id="simpleMin" type="number" min="1" max="999" step="1" value="25" />
               <button id="applySimpleBtn" title="Apply simple minutes">Set</button>
-              <span class="miniNote">Will not lock after the Set button</span>
+              <span class="miniNote">Will not lock</span>
             </div>
           </div>
         </section>
@@ -214,6 +216,7 @@
             </svg>
 
             <div id="soilPct" class="soilPct">0%</div>
+            <div id="xyLabel" class="xyLabel">0/9 leaves</div> <!-- Visible only for pomodoro/custom -->
             <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
 
             <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="z-index:var(--z-tree);">
@@ -320,7 +323,7 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_SimpleNoLock_CustomWeeklyLock_PerModeLPT_v1';
+    const APP_KEY='pomodoroTree_XY_PomoCustom_CustomWeeklyLock_SimpleNoLock_v1';
     const GLOBAL_KEY=APP_KEY+'_global', NAMES_KEY=APP_KEY+'_names';
     const svgns='http://www.w3.org/2000/svg';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simple:'simple' };
@@ -340,7 +343,6 @@
 
     const G = load(GLOBAL_KEY, { timerType:TIMER_TYPES.pomodoro, customSeconds:25*60, simpleSeconds:25*60, selectedMode:'maths' });
 
-    // Per-mode state: includes LPT, leaves, completed grid, weekly locks (LPT and custom)
     const DEFAULT_MODE_STATE = {
       leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS,
       weeklyTargetLocked:false, weeklyTargetSetValue:9, lockWeek:undefined, lockYear:undefined,
@@ -357,12 +359,12 @@
 
     const el=id=>document.getElementById(id);
     const timerTypeSelect=el('timerTypeSelect');
-    const customInputs=el('customInputs'), customMin=el('customMin'), applyCustomBtn=el('applyCustomBtn'), customLockMsg=el('customLockMsg'), customLabel=el('customLabel');
+    const customInputs=el('customInputs'), customMin=el('customMin'), applyCustomBtn=el('applyCustomBtn'), customLockMsg=el('customLockMsg');
     const simpleInputs=el('simpleInputs'), simpleMin=el('simpleMin'), applySimpleBtn=el('applySimpleBtn');
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
     const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptLockNote=el('lptLockNote'), weeklyTargetEl=el('weeklyTarget');
     const pctRange=el('pctRange'), pctValue=el('pctValue');
-    const soilPct=el('soilPct'), todaySky=el('todaySky');
+    const soilPct=el('soilPct'), todaySky=el('todaySky'), xyLabel=el('xyLabel');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect');
     const rainTop=el('rainTop');
     const modeSelect=el('modeSelect'), modeNameHeader=el('modeName');
@@ -371,7 +373,6 @@
     const saveNamesBtn=el('saveNamesBtn');
     const treeGrid=el('treeGrid'), gridCount=el('gridCount');
 
-    // Names and list of modes
     let CUSTOM_NAMES=load(NAMES_KEY,{});
     const DEFAULT_MODE_NAMES={
       exercise:'Exercise mode', cycling:'Cycling mode', digitalDetox:'Digital detox mode', bedTime:'Bed-time mode',
@@ -416,24 +417,6 @@
       refreshModeHeader();
     });
 
-    // Tabs
-    function showPanel(id){ ['modesPanel','subPanel','syncPanel'].forEach(p=> document.getElementById(p).style.display='none'); const panel=document.getElementById(id); if(panel) panel.style.display='flex'; }
-    document.getElementById('tabs').addEventListener('click', (e)=>{ const t=e.target.closest('.tab'); if(!t) return; document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); showPanel(t.getAttribute('data-tab')); });
-
-    // Timezone (UI helper)
-    const countrySearch=el('countrySearch'), countryList=el('countryList');
-    const COUNTRY_TZ=[{name:'India',tz:'Asia/Kolkata'},{name:'United Kingdom',tz:'Europe/London'},{name:'United States',tz:'America/New_York'},{name:'Canada',tz:'America/Toronto'},{name:'Australia',tz:'Australia/Sydney'},{name:'UAE',tz:'Asia/Dubai'},{name:'Bangladesh',tz:'Asia/Dhaka'},{name:'Japan',tz:'Asia/Tokyo'},{name:'China',tz:'Asia/Shanghai'},{name:'Germany',tz:'Europe/Berlin'},{name:'France',tz:'Europe/Paris'},{name:'Brazil',tz:'America/Sao_Paulo'}].sort((a,b)=> a.name.localeCompare(b.name));
-    function renderCountryList(filter=''){
-      const q=filter.trim().toLowerCase(); const items=COUNTRY_TZ.filter(c=> c.name.toLowerCase().includes(q));
-      if(items.length===0){ countryList.style.display='none'; countryList.innerHTML=''; return; }
-      countryList.innerHTML=items.map(c=>`<div class="drop-item" data-tz="${c.tz}" data-name="${c.name}">${c.name}</div>`).join('');
-      countryList.style.display='block';
-    }
-    countrySearch.addEventListener('input', ()=> renderCountryList(countrySearch.value) );
-    countrySearch.addEventListener('focus', ()=> renderCountryList(countrySearch.value) );
-    document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
-    countryList.addEventListener('click', (e)=>{ const it=e.target.closest('.drop-item'); if(!it) return; countrySearch.value=it.getAttribute('data-name'); countryList.style.display='none'; });
-
     // Week rollover per-mode
     function rolloverWeekIfNeeded(){
       const {week,year}=isoWeekOf(new Date());
@@ -447,7 +430,7 @@
         S.weeklyLeaves=0; S.weeklyFocusSeconds=0;
         S.placed=0; leafLayer.innerHTML='';
 
-        // unlock weekly locks at new week
+        // Unlock LPT+custom weekly locks
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
         S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
 
@@ -484,6 +467,7 @@
       clockEl.textContent=format(S.secondsLeft);
       startBtn.textContent=`Start ${format(secs)}`;
     }
+
     function setFillPercent(p){
       const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
       const h=FILL_OVERSCAN*(p/100), y=CANOPY_BOTTOM-h;
@@ -499,6 +483,9 @@
       const done=Math.min(S.placed,total);
       const pct=(done/total)*100;
       setFillPercent(pct);
+      // X/Y label only for Pomodoro and Custom
+      xyLabel.style.display = (G.timerType==='pomodoro' || G.timerType==='custom') ? 'block' : 'none';
+      xyLabel.textContent = `${done}/${total} leaves`;
     }
 
     function baseAnchors(){ return [{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}]; }
@@ -558,6 +545,7 @@
       }
     }
 
+    let ticker=null;
     function stopSession(){
       if(ticker){ clearInterval(ticker); ticker=null; }
       canopyBlink(false); rain(false); stopBlinkPlaceholder();
@@ -609,7 +597,7 @@
       renderGrid();
     }
 
-    // LPT per-mode (Pomodoro/Custom share UI but state is per mode, not per type)
+    // LPT per-mode
     function updateWeeklyTargetText(){
       const per=getSessionSeconds();
       const totalSec = per * (S.leavesPerTree||0);
@@ -617,7 +605,6 @@
       weeklyTargetEl.textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
     }
     function reflectLPTLockUI(){
-      lptWrap.style.display='flex'; // shown for Pomodoro and Custom; remains visible in Simple but user desire earlier was to remove; keeping visible as per current query focus
       if(S.weeklyTargetLocked){
         lptInput.disabled=true; lptSetBtn.disabled=true; lptLockNote.textContent=`Locked (week ${S.lockWeek}, ${S.lockYear})`;
       }else{
@@ -642,21 +629,14 @@
       renderGrid();
     });
 
-    // Custom minutes lock per-mode once per week
+    // Custom minutes: lock after first set in week
     function reflectCustomLockUI(){
-      if(G.timerType!=='custom'){
-        customInputs.style.display='none';
-        return;
-      }
+      if(G.timerType!=='custom'){ customInputs.style.display='none'; return; }
       customInputs.style.display='block';
       customMin.value = Math.round((G.customSeconds||1500)/60);
-      customLabel.textContent = 'Editable only once per week';
-      customLockMsg.textContent = 'Will be locked after the Set button';
       customMin.disabled = !!S.customLocked;
       applyCustomBtn.disabled = !!S.customLocked;
-      if(S.customLocked){
-        customLockMsg.textContent = `Locked (week ${S.customLockWeek}, ${S.customLockYear})`;
-      }
+      customLockMsg.textContent = S.customLocked ? `Locked (week ${S.customLockWeek}, ${S.customLockYear})` : 'Will be locked';
     }
     applyCustomBtn.addEventListener('click', ()=>{
       if(G.timerType!=='custom') return;
@@ -673,12 +653,9 @@
       reflectCustomLockUI();
     });
 
-    // Simple minutes never lock
+    // Simple minutes: never lock
     function reflectSimpleUI(){
-      if(G.timerType!=='simple'){
-        simpleInputs.classList.add('hidden');
-        return;
-      }
+      if(G.timerType!=='simple'){ simpleInputs.classList.add('hidden'); return; }
       simpleInputs.classList.remove('hidden');
       simpleMin.value = Math.round((G.simpleSeconds||1500)/60);
     }
@@ -692,14 +669,13 @@
       updateWeeklyTargetText();
     });
 
-    // Timer type change
+    // Timer type UI
     timerTypeSelect.value=G.timerType;
     function applyTimerTypeUI(){
       reflectCustomLockUI();
       reflectSimpleUI();
-      // LPT remains visible for Pomodoro and Custom; for Simple, keep it visible or hide if preferred
-      // If hiding in Simple is desired again, uncomment next line:
-      // lptWrap.style.display = (G.timerType==='simple') ? 'none' : 'flex';
+      // x/y label visible only in Pomodoro + Custom
+      xyLabel.style.display = (G.timerType==='pomodoro' || G.timerType==='custom') ? 'block' : 'none';
       updateWeeklyTargetText();
       setClockAndButtons();
       updateProgressInstant();
@@ -708,13 +684,11 @@
       stopSession();
       G.timerType=timerTypeSelect.value; save(GLOBAL_KEY,G);
       if(G.timerType==='pomodoro') S.secondsLeft=POMODORO_SECONDS;
-      if(G.timerType==='custom'){ /* seconds from G.customSeconds */ }
-      if(G.timerType==='simple'){ /* seconds from G.simpleSeconds */ }
       applyTimerTypeUI();
       saveState(currentMode,S);
     });
 
-    // Mode switching: per-mode isolation (including LPT)
+    // Mode switching
     modeSelect.addEventListener('change', ()=>{
       stopSession();
       currentMode=modeSelect.value; G.selectedMode=currentMode; save(GLOBAL_KEY,G);
@@ -728,7 +702,7 @@
       refreshModeHeader();
     });
 
-    // Buttons
+    // Controls
     startBtn.addEventListener('click', startSession);
     resetBtn.addEventListener('click', ()=>{
       stopSession();
