@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Rain on Top + Leaf Blink</title>
+  <title>Pomodoro Tree — Run-time Rain + Leaf Blink</title>
   <style>
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
@@ -50,15 +50,17 @@
     .numWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
     .numWrap input{ width:160px; }
 
-    /* Slider under Set button */
+    /* Slider directly under Set button */
     .pctRow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:6px; }
     #pctRange{
       -webkit-appearance:none; appearance:none;
-      width:100%; max-width:360px; height:12px; border-radius:999px; outline:none; background:var(--slider-track); border:1px solid var(--line);
+      width:100%; max-width:360px; height:12px; border-radius:999px; outline:none;
+      background:var(--slider-track); border:1px solid var(--line);
     }
     #pctRange::-webkit-slider-runnable-track{ height:12px; background:transparent; border-radius:999px; }
     #pctRange::-webkit-slider-thumb{
-      -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:#2563eb; border:2px solid #fff; margin-top:-3px; cursor:pointer; box-shadow:0 0 0 1px rgba(0,0,0,.1);
+      -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+      background:#2563eb; border:2px solid #fff; margin-top:-3px; cursor:pointer; box-shadow:0 0 0 1px rgba(0,0,0,.1);
       position:relative; z-index:2;
     }
     #pctRange::-moz-range-track{ height:12px; background:var(--slider-track); border-radius:999px; }
@@ -70,27 +72,24 @@
     .treeBox{ position:relative; width:560px; max-width:100%; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
     .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, var(--soil-top) 62%, var(--soil-bottom) 100%); z-index:0; }
 
-    /* Saplings and tree */
     .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:1; }
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:2; }
 
-    /* Labels and chips */
     .soilPct{ position:absolute; left:14px; bottom:10px; font:900 56px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ffffff; text-shadow:0 2px 0 rgba(0,0,0,.2); z-index:3; }
     .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:3; }
-    /* Move chip slightly down so rain can appear above it visually */
-    .todaySky{ position:absolute; left:14px; top:42px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:3; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
+    /* Move 'Total duration' slightly down so rain sits above it visually */
+    .todaySky{ position:absolute; left:14px; top:44px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:3; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
-    /* Rain as absolute top layer (must come last in DOM and have highest z-index) */
-    .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:9999; }
+    /* Rain absolute top layer above everything (last in DOM + highest z-index) */
+    .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:9999; display:none; }
     .rainTop .drop{ position:absolute; top:-16px; width:3px; height:18px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 1.1s linear infinite; }
     .rainTop .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.4s; }
     @keyframes rainFall{ to{ transform:translateY(640px); } }
 
-    /* Canopy outline blink */
     @keyframes canopyBlink { 0%,100%{ stroke:#065f46;} 50%{ stroke:#000; } }
     .blink-canopy{ animation: canopyBlink 900ms linear infinite; }
 
-    /* Leaf blink + pop: apply on wrapper group so transforms work across browsers */
+    /* Leaf blink on wrapper g; pop on completion */
     @keyframes leafBlink { 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
     .blink-leaf{ animation: leafBlink 900ms linear infinite; }
     @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
@@ -113,16 +112,6 @@
     .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:18px; pointer-events:none; }
     .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
 
-    .tzBar{ display:flex; flex-direction:column; gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); margin-top:12px; width:560px; max-width:100%; }
-    .tzLeft{ display:flex; flex-direction:column; gap:8px; width:100%; }
-    .searchWrap{ position:relative; }
-    .searchWrap input{ width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--line); font-weight:700; }
-    .dropdown{ position:absolute; inset:unset; top:100%; left:0; right:0; background:#fff; border:1px solid #caddf8; border-radius:12px; max-height:260px; overflow:auto; box-shadow:0 10px 28px rgba(30,70,140,.1); z-index:20; display:none; }
-    .drop-item{ padding:10px 12px; cursor:pointer; }
-    .drop-item:hover{ background:#eef6ff; }
-
-    .hidden{ display:none !important; }
-
     @media (max-width: 640px){
       .wrap{ padding-bottom:80px; }
       .treePanel.fixedCard{ width:100%; max-width:92vw; }
@@ -130,7 +119,7 @@
       #treeSVG, #saplingsSVG{ width:100%; height:100%; }
       .soilPct{ font-size:42px; }
       .xyLabel{ font-size:18px; }
-      .todaySky{ font-size:16px; top:40px; }
+      .todaySky{ font-size:16px; top:42px; }
       h1{ font-size:18px; }
       .modeTag{ font-size:16px; }
     }
@@ -227,7 +216,7 @@
               </g>
             </svg>
 
-            <!-- Rain overlay LAST so it's the top layer -->
+            <!-- Topmost rain overlay -->
             <div id="rainTop" class="rainTop" aria-hidden="true"></div>
           </div>
         </section>
@@ -281,101 +270,51 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_RainTop_LeafBlink_v2';
+    const APP_KEY='pomodoroTree_RunOnlyAnim_Reset_v1';
     const GLOBAL_KEY=APP_KEY+'_global', NAMES_KEY=APP_KEY+'_names';
     const svgns='http://www.w3.org/2000/svg';
 
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simple:'simple' };
     const POMODORO_SECONDS=25*60;
 
-    const DEFAULT_MODE_NAMES={
-      exercise:'Exercise mode', cycling:'Cycling mode', digitalDetox:'Digital detox mode', bedTime:'Bed-time mode',
-      quran:'Quran mode', dikhr:'Dikhr mode', maths:'Maths mode',
-      subject1:'Subject 1 mode', subject2:'Subject 2 mode', subject3:'Subject 3 mode',
-      user1:'User 1 mode', user2:'User 2 mode', user3:'User 3 mode'
-    };
-
     const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
     const save=(k,v)=> localStorage.setItem(k, JSON.stringify(v));
 
-    const G = load(GLOBAL_KEY, { timeZone:'Etc/GMT', selectedMode:'maths', timerType:TIMER_TYPES.pomodoro, customSeconds:25*60 });
-    let CUSTOM_NAMES=load(NAMES_KEY,{});
-
-    const modeKey=(id)=> `${APP_KEY}_mode_${id}`;
-    const DEFAULT_STATE={ leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS, weeklyFocusSeconds:0, totalFocusSeconds:0, completedSessions:0, grid:[] };
-
-    let currentMode=G.selectedMode||'maths';
-    let S=load(modeKey(currentMode), DEFAULT_STATE);
+    const G = load(GLOBAL_KEY, { timerType:TIMER_TYPES.pomodoro, customSeconds:25*60 });
+    let S = load(APP_KEY+'_state', { leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS });
 
     // Els
     const el=id=>document.getElementById(id);
-    const timerTypeSelect=el('timerTypeSelect'), customInputs=el('customInputs'), customMin=el('customMin'), applyCustomBtn=el('applyCustomBtn'), customLockMsg=el('customLockMsg');
+    const timerTypeSelect=el('timerTypeSelect'), customInputs=el('customInputs'), customMin=el('customMin'), applyCustomBtn=el('applyCustomBtn');
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
     const lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptLockNote=el('lptLockNote');
     const pctRange=el('pctRange'), pctValue=el('pctValue');
     const soilPct=el('soilPct'), xyLabel=el('xyLabel'), todaySky=el('todaySky');
-    const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), saplingsG=document.getElementById('saplings');
+    const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect');
     const rainTop=el('rainTop');
-    const modeNameEl=el('modeName'), modeSelect=el('modeSelect');
-    const subject1Input=el('subject1Input'), subject2Input=el('subject2Input'), subject3Input=el('subject3Input');
-    const user1Input=el('user1Input'), user2Input=el('user2Input'), user3Input=el('user3Input');
-    const saveNamesBtn=el('saveNamesBtn');
 
-    // Modes
-    const MODE_IDS=['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
-    const nameFor=(id)=> (CUSTOM_NAMES[id]??'').trim() || (DEFAULT_MODE_NAMES[id]||id);
-    function refreshModeHeader(){
-      const opt=modeSelect.options[modeSelect.selectedIndex];
-      const label=opt? opt.text : nameFor(currentMode);
-      modeNameEl.textContent = label.replace(/ mode$/i,'');
-    }
-    function populateModeSelect(){
-      modeSelect.innerHTML='';
-      const f=document.createDocumentFragment();
-      for(const id of MODE_IDS){
-        const o=document.createElement('option');
-        o.value=id; o.textContent=nameFor(id);
-        f.appendChild(o);
-      }
-      modeSelect.appendChild(f);
-      modeSelect.value=currentMode;
-      refreshModeHeader();
-    }
-    saveNamesBtn.addEventListener('click', ()=>{
-      CUSTOM_NAMES = Object.assign({}, CUSTOM_NAMES, {
-        subject1: subject1Input.value || CUSTOM_NAMES.subject1 || '',
-        subject2: subject2Input.value || CUSTOM_NAMES.subject2 || '',
-        subject3: subject3Input.value || CUSTOM_NAMES.subject3 || '',
-        user1: user1Input.value || CUSTOM_NAMES.user1 || '',
-        user2: user2Input.value || CUSTOM_NAMES.user2 || '',
-        user3: user3Input.value || CUSTOM_NAMES.user3 || ''
-      });
-      save(NAMES_KEY, CUSTOM_NAMES);
-      for(const id of MODE_IDS){
-        const opt=modeSelect.querySelector(`option[value="${id}"]`);
-        if(opt) opt.textContent=nameFor(id);
-      }
-      refreshModeHeader();
-    });
-    modeSelect.addEventListener('change', ()=>{
-      currentMode=modeSelect.value; G.selectedMode=currentMode; save(GLOBAL_KEY,G);
-      S=load(modeKey(currentMode), DEFAULT_STATE);
-      setClockAndButtons();
-      updateWeeklyTargetText();
-      updateProgressInstant();
-      renderLeaves();
-      refreshModeHeader();
-    });
-
-    // Time helpers
+    // Timer helpers
     function getSessionSeconds(){
       if(G.timerType==='pomodoro') return 25*60;
       if(G.timerType==='custom') return Math.max(60, Number(G.customSeconds)||1500);
       return Math.max(60, Number(G.customSeconds)||1500);
     }
     function format(s){ const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return `${m}:${ss}`; }
+    function setClockAndButtons(){
+      const secs=getSessionSeconds();
+      if(S.secondsLeft<=0 || S.secondsLeft>secs) S.secondsLeft=secs;
+      clockEl.textContent=format(S.secondsLeft);
+      startBtn.textContent=`Start ${format(secs)}`;
+    }
 
-    // Slider drives completion
+    // Progress + slider
+    function setFillPercent(p){
+      const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
+      const h=FILL_OVERSCAN*(p/100), y=CANOPY_BOTTOM-h;
+      fillRect.setAttribute('y', String(y));
+      fillRect.setAttribute('height', String(h));
+      soilPct.textContent = Math.round(p)+'%';
+    }
     function updateProgressInstant(){
       const total=Math.max(1, Number(S.leavesPerTree)||1);
       const done=Math.min(S.placed,total);
@@ -386,13 +325,6 @@
       pctValue.textContent=`${pct}%`;
       pctRange.style.background = `linear-gradient(90deg, var(--slider-done) ${pct}%, var(--slider-left) ${pct}%)`;
     }
-    function setFillPercent(p){
-      const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
-      const h=FILL_OVERSCAN*(p/100), y=CANOPY_BOTTOM-h;
-      fillRect.setAttribute('y', String(y));
-      fillRect.setAttribute('height', String(h));
-      soilPct.textContent = Math.round(p)+'%';
-    }
     pctRange.addEventListener('input', ()=>{
       const pct=Math.max(0, Math.min(100, Number(pctRange.value)||0));
       pctValue.textContent=`${pct}%`;
@@ -402,10 +334,10 @@
       renderLeaves();
       setFillPercent(pct);
       xyLabel.textContent=`${S.placed}/${total} leaves`;
-      save(modeKey(currentMode), S);
+      save(APP_KEY+'_state', S);
     });
 
-    // Leaves and animations
+    // Leaves + animations
     function baseAnchors(){ return [{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}]; }
     function anchorForIndex(i){
       const b=baseAnchors();
@@ -431,31 +363,33 @@
       }
     }
 
-    // Blink placeholder control
+    // Blink placeholder lives only while running
     let blinkWrap=null;
     function startBlinkPlaceholder(){
       stopBlinkPlaceholder();
       const idx=S.placed;
       blinkWrap=makeLeafG(idx+1);
       placeLeaf(blinkWrap, anchorForIndex(idx));
-      // restart animation reliably: remove class, force reflow, add class
-      const leafInner=blinkWrap.firstElementChild;
-      leafInner.classList.remove('blink-leaf');
-      void leafInner.offsetWidth; // reflow
-      leafInner.classList.add('blink-leaf');
+      // restart CSS animation reliably by forcing reflow between class toggles
+      const inner=blinkWrap.firstElementChild;
+      inner.classList.remove('blink-leaf');
+      void inner.offsetWidth; // reflow
+      inner.classList.add('blink-leaf'); // blink starts now
       leafLayer.appendChild(blinkWrap);
     }
     function stopBlinkPlaceholder(){
       if(blinkWrap){
-        const leafInner=blinkWrap.firstElementChild;
-        leafInner.classList.remove('blink-leaf');
+        const inner=blinkWrap.firstElementChild;
+        inner.classList.remove('blink-leaf');
+        try{ leafLayer.removeChild(blinkWrap); }catch{}
+        blinkWrap=null;
       }
     }
     function finalizeLeafPop(){
       if(blinkWrap){
-        const leafInner=blinkWrap.firstElementChild;
-        leafInner.classList.remove('blink-leaf');
-        leafInner.classList.add('leaf-pop');
+        const inner=blinkWrap.firstElementChild;
+        inner.classList.remove('blink-leaf');
+        inner.classList.add('leaf-pop');
         blinkWrap=null;
       }else{
         const idx=S.placed-1;
@@ -466,10 +400,10 @@
       }
     }
 
-    // Rain generator (top-most layer)
+    // Rain (top-most) only while running
     function ensureRainDrops(){
       if(rainTop.childElementCount>0) return;
-      const make=(n, cls='')=>{
+      const mk=(n, cls='')=>{
         for(let i=0;i<n;i++){
           const d=document.createElement('div'); d.className='drop'+cls;
           d.style.left=(Math.random()*560)+'px';
@@ -478,14 +412,14 @@
           rainTop.appendChild(d);
         }
       };
-      make(160,''); make(140,' far');
+      mk(160,''); mk(140,' far');
     }
     function rain(on){
       ensureRainDrops();
       rainTop.style.display = on ? 'block' : 'none';
     }
 
-    // Canopy blink
+    // Canopy blink on run
     function canopyBlink(on){
       const outline=document.getElementById('canopyOutline');
       outline?.classList.toggle('blink-canopy', !!on);
@@ -493,12 +427,6 @@
 
     // Timer
     let ticker=null;
-    function setClockAndButtons(){
-      const secs=getSessionSeconds();
-      if(S.secondsLeft<=0 || S.secondsLeft>secs) S.secondsLeft=secs;
-      clockEl.textContent=format(S.secondsLeft);
-      startBtn.textContent=`Start ${format(secs)}`;
-    }
     function startSession(){
       if(ticker) return;
       const maxSecs=getSessionSeconds();
@@ -529,70 +457,49 @@
     }
     function onComplete(){
       const dur=getSessionSeconds();
-      S.weeklyFocusSeconds=(S.weeklyFocusSeconds||0)+dur;
-      S.totalFocusSeconds=(S.totalFocusSeconds||0)+dur;
-      S.completedSessions=(S.completedSessions||0)+1;
       S.placed+=1;
       finalizeLeafPop();
       S.secondsLeft=getSessionSeconds();
-      save(modeKey(currentMode), S);
+      save(APP_KEY+'_state', S);
       setClockAndButtons();
-      updateWeeklyTargetText();
       updateProgressInstant();
     }
 
-    // Weekly target
-    function updateWeeklyTargetText(){
-      const per=getSessionSeconds();
-      const totalSec= per*(S.leavesPerTree||0);
-      const h=Math.floor(totalSec/3600), m=Math.round((totalSec%3600)/60);
-      document.getElementById('weeklyTarget').textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
-    }
-
-    // LPT
-    lptSetBtn.addEventListener('click', ()=>{
-      const v=Math.max(1, Math.min(200, Math.floor(Number(lptInput.value)||1)));
-      S.leavesPerTree=v; lptInput.value=String(v);
-      S.placed=0; leafLayer.innerHTML='';
-      updateWeeklyTargetText(); updateProgressInstant();
-      save(modeKey(currentMode), S);
-    });
-
-    // Timer type
-    timerTypeSelect.addEventListener('change', ()=>{
-      G.timerType=timerTypeSelect.value; save(GLOBAL_KEY,G);
+    // Controls
+    const timerTypeSelectEl=timerTypeSelect;
+    timerTypeSelectEl.addEventListener('change', ()=>{
+      G.timerType=timerTypeSelectEl.value; save(GLOBAL_KEY,G);
       if(G.timerType==='pomodoro') S.secondsLeft=25*60;
-      setClockAndButtons();
-      updateWeeklyTargetText();
-      updateProgressInstant();
+      setClockAndButtons(); updateProgressInstant();
     });
     applyCustomBtn.addEventListener('click', ()=>{
       const mins=Math.max(1, Math.floor(Number(customMin.value)||0));
       if(G.timerType==='custom' || G.timerType==='simple'){ G.customSeconds=mins*60; save(GLOBAL_KEY,G); }
-      S.secondsLeft=getSessionSeconds(); setClockAndButtons(); updateWeeklyTargetText(); updateProgressInstant();
+      S.secondsLeft=getSessionSeconds(); setClockAndButtons(); updateProgressInstant();
     });
 
-    // Start/Reset
+    lptSetBtn.addEventListener('click', ()=>{
+      const v=Math.max(1, Math.min(200, Math.floor(Number(lptInput.value)||1)));
+      S.leavesPerTree=v; lptInput.value=String(v);
+      S.placed=0; leafLayer.innerHTML='';
+      updateProgressInstant();
+      save(APP_KEY+'_state', S);
+    });
+
     startBtn.addEventListener('click', startSession);
     resetBtn.addEventListener('click', ()=>{
+      // Stop everything and clear the blinking leaf
       stopSession();
+      // Reset session time and do NOT keep the placeholder
       S.secondsLeft=getSessionSeconds();
       setClockAndButtons();
+      // Reset effects: percent stays from placed; leaf blink removed
       updateProgressInstant();
-      save(modeKey(currentMode), S);
+      save(APP_KEY+'_state', S);
     });
 
-    // Names select
-    function populateNamesInputs(){
-      subject1Input.value = CUSTOM_NAMES.subject1||'';
-      subject2Input.value = CUSTOM_NAMES.subject2||'';
-      subject3Input.value = CUSTOM_NAMES.subject3||'';
-      user1Input.value = CUSTOM_NAMES.user1||'';
-      user2Input.value = CUSTOM_NAMES.user2||'';
-      user3Input.value = CUSTOM_NAMES.user3||'';
-    }
-
     // Saplings
+    const saplingsG=document.getElementById('saplings');
     function buildSaplings(){
       saplingsG.innerHTML='';
       const rows=6, cols=7, left=24, right=536;
@@ -615,13 +522,11 @@
 
     // Init
     function init(){
-      populateModeSelect();
-      populateNamesInputs();
       buildSaplings();
-      ensureRainDrops();
       setClockAndButtons();
-      updateWeeklyTargetText();
       updateProgressInstant();
+      // Prepare rain DOM (no animation until start)
+      (function ensureRain(){ if(rainTop.childElementCount===0){ const mk=(n, cls='')=>{ for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='drop'+cls; d.style.left=(Math.random()*560)+'px'; d.style.animationDelay=(Math.random()*1.0)+'s'; d.style.animationDuration=(cls? (1.1+Math.random()*0.9)+'s' : (0.8+Math.random()*0.7)+'s'); rainTop.appendChild(d);} }; mk(160,''); mk(140,' far'); } })();
     }
     init();
   </script>
