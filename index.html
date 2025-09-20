@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Simple Set No Lock, Custom Weekly Lock, Per-Mode LPT</title>
+  <title>Pomodoro Tree — Simplex No-LPT, Custom Weekly Lock, Per-Mode LPT</title>
   <style>
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
@@ -29,7 +29,7 @@
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .brand{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); }
     h1{ margin:0; font-size:22px; }
-    .modeTag{ font-weight:800; color:#14563a; font-size:20px; white-space:nowrap; }
+    .modeTag{ display:flex; align-items:center; gap:8px; font-weight:800; color:#14563a; font-size:20px; white-space:nowrap; }
     #modeName{ display:inline-block; max-width:52vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
     .topStack{ display:flex; flex-direction:column; gap:12px; margin-top:12px; }
@@ -139,7 +139,7 @@
   <div class="wrap">
     <header>
       <div class="brand"><span style="font-weight:800;">🌳</span><h1>Pomodoro Tree</h1></div>
-      <div class="modeTag">Mode: <span id="modeName">Study</span></div>
+      <div class="modeTag"><span>Mode:</span><span id="modeName">Study</span></div>
     </header>
 
     <div class="topStack">
@@ -148,7 +148,7 @@
           <select id="timerTypeSelect">
             <option value="pomodoro">Pomodoro timer (25 min)</option>
             <option value="custom">Custom timer</option>
-            <option value="simple">Simple timer</option>
+            <option value="simplex">Simplex timer</option>
           </select>
 
           <!-- Custom minutes (locks per week per mode) -->
@@ -161,11 +161,11 @@
             </div>
           </div>
 
-          <!-- Simple minutes (no text lines) -->
+          <!-- Simplex minutes (no LPT UI anywhere while active) -->
           <div id="simpleInputs" class="vstack hidden">
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input id="simpleMin" type="number" min="1" max="999" step="1" value="25" />
-              <button id="applySimpleBtn" title="Apply simple minutes">Set</button>
+              <button id="applySimpleBtn" title="Apply simplex minutes">Set</button>
             </div>
           </div>
         </section>
@@ -180,6 +180,7 @@
           </div>
 
           <div class="settings vstack" id="settingsBlock">
+            <!-- Hidden when Simplex is active -->
             <div class="numWrap" id="lptWrap">
               <label for="lptInput" class="miniNote">Leaves per week (LPT)</label>
               <div style="display:flex; gap:8px; align-items:center;">
@@ -205,11 +206,9 @@
           <div class="treeBox" id="treeBox">
             <div class="sky"></div>
 
-            <!-- Saplings layer (6 rows centered vertically in soil band) -->
+            <!-- Saplings layer (9 rows centered in soil with more spacing) -->
             <svg id="saplingsSVG" width="560" height="560" viewBox="0 0 560 560" class="saplingsLayer" aria-hidden="true">
               <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Soil band in this scene starts around y ~ 346 (62% of 560) down to bottom.
-                     We'll center rows around y: 380..470 for a mid-soil look, 6 rows spaced by 15px. -->
                 <defs>
                   <g id="sapling">
                     <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
@@ -219,66 +218,99 @@
                   </g>
                 </defs>
 
-                <!-- Row generator: manually laid out for precise positions (no JS needed) -->
-                <!-- Row 1 -->
-                <g transform="translate(80 380)"><use href="#sapling"/></g>
-                <g transform="translate(130 380) scale(0.95)"><use href="#sapling"/></g>
-                <g transform="translate(180 380) scale(1.1)"><use href="#sapling"/></g>
-                <g transform="translate(230 380)"><use href="#sapling"/></g>
-                <g transform="translate(280 380) scale(0.9)"><use href="#sapling"/></g>
-                <g transform="translate(330 380)"><use href="#sapling"/></g>
-                <g transform="translate(380 380) scale(1.05)"><use href="#sapling"/></g>
-                <g transform="translate(430 380)"><use href="#sapling"/></g>
+                <!-- Soil top ~ 346; rows at y: 380,400,420,440,460,480,500,520,540 but clamped to viewBox.
+                     Increased horizontal gap (x step 60) and vertical gap (~20). -->
+                <!-- Row y values chosen for middle soil band: 380..540 stepping 20 -->
+                <!-- Columns x: 60..500 stepping 60 -->
+                <!-- Row 1 (y=380) -->
+                <g transform="translate(60 380)"><use href="#sapling"/></g>
+                <g transform="translate(120 380)"><use href="#sapling"/></g>
+                <g transform="translate(180 380)"><use href="#sapling"/></g>
+                <g transform="translate(240 380)"><use href="#sapling"/></g>
+                <g transform="translate(300 380)"><use href="#sapling"/></g>
+                <g transform="translate(360 380)"><use href="#sapling"/></g>
+                <g transform="translate(420 380)"><use href="#sapling"/></g>
+                <g transform="translate(480 380)"><use href="#sapling"/></g>
 
-                <!-- Row 2 -->
-                <g transform="translate(100 395) scale(1.05)"><use href="#sapling"/></g>
-                <g transform="translate(150 395)"><use href="#sapling"/></g>
-                <g transform="translate(200 395) scale(0.9)"><use href="#sapling"/></g>
-                <g transform="translate(250 395)"><use href="#sapling"/></g>
-                <g transform="translate(300 395) scale(1.1)"><use href="#sapling"/></g>
-                <g transform="translate(350 395)"><use href="#sapling"/></g>
-                <g transform="translate(400 395) scale(0.95)"><use href="#sapling"/></g>
-                <g transform="translate(450 395)"><use href="#sapling"/></g>
+                <!-- Row 2 (y=400) -->
+                <g transform="translate(60 400)"><use href="#sapling"/></g>
+                <g transform="translate(120 400)"><use href="#sapling"/></g>
+                <g transform="translate(180 400)"><use href="#sapling"/></g>
+                <g transform="translate(240 400)"><use href="#sapling"/></g>
+                <g transform="translate(300 400)"><use href="#sapling"/></g>
+                <g transform="translate(360 400)"><use href="#sapling"/></g>
+                <g transform="translate(420 400)"><use href="#sapling"/></g>
+                <g transform="translate(480 400)"><use href="#sapling"/></g>
 
-                <!-- Row 3 -->
-                <g transform="translate(80 410)"><use href="#sapling"/></g>
-                <g transform="translate(130 410) scale(1.1)"><use href="#sapling"/></g>
-                <g transform="translate(180 410)"><use href="#sapling"/></g>
-                <g transform="translate(230 410) scale(0.95)"><use href="#sapling"/></g>
-                <g transform="translate(280 410)"><use href="#sapling"/></g>
-                <g transform="translate(330 410) scale(0.9)"><use href="#sapling"/></g>
-                <g transform="translate(380 410)"><use href="#sapling"/></g>
-                <g transform="translate(430 410) scale(1.05)"><use href="#sapling"/></g>
+                <!-- Row 3 (y=420) -->
+                <g transform="translate(60 420)"><use href="#sapling"/></g>
+                <g transform="translate(120 420)"><use href="#sapling"/></g>
+                <g transform="translate(180 420)"><use href="#sapling"/></g>
+                <g transform="translate(240 420)"><use href="#sapling"/></g>
+                <g transform="translate(300 420)"><use href="#sapling"/></g>
+                <g transform="translate(360 420)"><use href="#sapling"/></g>
+                <g transform="translate(420 420)"><use href="#sapling"/></g>
+                <g transform="translate(480 420)"><use href="#sapling"/></g>
 
-                <!-- Row 4 -->
-                <g transform="translate(100 425)"><use href="#sapling"/></g>
-                <g transform="translate(150 425) scale(0.95)"><use href="#sapling"/></g>
-                <g transform="translate(200 425) scale(1.05)"><use href="#sapling"/></g>
-                <g transform="translate(250 425)"><use href="#sapling"/></g>
-                <g transform="translate(300 425) scale(0.9)"><use href="#sapling"/></g>
-                <g transform="translate(350 425)"><use href="#sapling"/></g>
-                <g transform="translate(400 425) scale(1.1)"><use href="#sapling"/></g>
-                <g transform="translate(450 425)"><use href="#sapling"/></g>
+                <!-- Row 4 (y=440) -->
+                <g transform="translate(60 440)"><use href="#sapling"/></g>
+                <g transform="translate(120 440)"><use href="#sapling"/></g>
+                <g transform="translate(180 440)"><use href="#sapling"/></g>
+                <g transform="translate(240 440)"><use href="#sapling"/></g>
+                <g transform="translate(300 440)"><use href="#sapling"/></g>
+                <g transform="translate(360 440)"><use href="#sapling"/></g>
+                <g transform="translate(420 440)"><use href="#sapling"/></g>
+                <g transform="translate(480 440)"><use href="#sapling"/></g>
 
-                <!-- Row 5 -->
-                <g transform="translate(80 440)"><use href="#sapling"/></g>
-                <g transform="translate(130 440)"><use href="#sapling"/></g>
-                <g transform="translate(180 440) scale(0.95)"><use href="#sapling"/></g>
-                <g transform="translate(230 440)"><use href="#sapling"/></g>
-                <g transform="translate(280 440) scale(1.1)"><use href="#sapling"/></g>
-                <g transform="translate(330 440)"><use href="#sapling"/></g>
-                <g transform="translate(380 440) scale(0.9)"><use href="#sapling"/></g>
-                <g transform="translate(430 440)"><use href="#sapling"/></g>
+                <!-- Row 5 (y=460) -->
+                <g transform="translate(60 460)"><use href="#sapling"/></g>
+                <g transform="translate(120 460)"><use href="#sapling"/></g>
+                <g transform="translate(180 460)"><use href="#sapling"/></g>
+                <g transform="translate(240 460)"><use href="#sapling"/></g>
+                <g transform="translate(300 460)"><use href="#sapling"/></g>
+                <g transform="translate(360 460)"><use href="#sapling"/></g>
+                <g transform="translate(420 460)"><use href="#sapling"/></g>
+                <g transform="translate(480 460)"><use href="#sapling"/></g>
 
-                <!-- Row 6 -->
-                <g transform="translate(100 455) scale(1.05)"><use href="#sapling"/></g>
-                <g transform="translate(150 455)"><use href="#sapling"/></g>
-                <g transform="translate(200 455)"><use href="#sapling"/></g>
-                <g transform="translate(250 455) scale(0.95)"><use href="#sapling"/></g>
-                <g transform="translate(300 455)"><use href="#sapling"/></g>
-                <g transform="translate(350 455) scale(1.1)"><use href="#sapling"/></g>
-                <g transform="translate(400 455)"><use href="#sapling"/></g>
-                <g transform="translate(450 455) scale(0.9)"><use href="#sapling"/></g>
+                <!-- Row 6 (y=480) -->
+                <g transform="translate(60 480)"><use href="#sapling"/></g>
+                <g transform="translate(120 480)"><use href="#sapling"/></g>
+                <g transform="translate(180 480)"><use href="#sapling"/></g>
+                <g transform="translate(240 480)"><use href="#sapling"/></g>
+                <g transform="translate(300 480)"><use href="#sapling"/></g>
+                <g transform="translate(360 480)"><use href="#sapling"/></g>
+                <g transform="translate(420 480)"><use href="#sapling"/></g>
+                <g transform="translate(480 480)"><use href="#sapling"/></g>
+
+                <!-- Row 7 (y=500) -->
+                <g transform="translate(60 500)"><use href="#sapling"/></g>
+                <g transform="translate(120 500)"><use href="#sapling"/></g>
+                <g transform="translate(180 500)"><use href="#sapling"/></g>
+                <g transform="translate(240 500)"><use href="#sapling"/></g>
+                <g transform="translate(300 500)"><use href="#sapling"/></g>
+                <g transform="translate(360 500)"><use href="#sapling"/></g>
+                <g transform="translate(420 500)"><use href="#sapling"/></g>
+                <g transform="translate(480 500)"><use href="#sapling"/></g>
+
+                <!-- Row 8 (y=520) -->
+                <g transform="translate(60 520)"><use href="#sapling"/></g>
+                <g transform="translate(120 520)"><use href="#sapling"/></g>
+                <g transform="translate(180 520)"><use href="#sapling"/></g>
+                <g transform="translate(240 520)"><use href="#sapling"/></g>
+                <g transform="translate(300 520)"><use href="#sapling"/></g>
+                <g transform="translate(360 520)"><use href="#sapling"/></g>
+                <g transform="translate(420 520)"><use href="#sapling"/></g>
+                <g transform="translate(480 520)"><use href="#sapling"/></g>
+
+                <!-- Row 9 (y=540) -->
+                <g transform="translate(60 540)"><use href="#sapling"/></g>
+                <g transform="translate(120 540)"><use href="#sapling"/></g>
+                <g transform="translate(180 540)"><use href="#sapling"/></g>
+                <g transform="translate(240 540)"><use href="#sapling"/></g>
+                <g transform="translate(300 540)"><use href="#sapling"/></g>
+                <g transform="translate(360 540)"><use href="#sapling"/></g>
+                <g transform="translate(420 540)"><use href="#sapling"/></g>
+                <g transform="translate(480 540)"><use href="#sapling"/></g>
               </g>
             </svg>
 
@@ -389,10 +421,10 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_SimpleNoLock_CustomWeeklyLock_PerModeLPT_v1';
+    const APP_KEY='pomodoroTree_Simplex_NoLPT_CustomWeeklyLock_PerModeLPT_v3';
     const GLOBAL_KEY=APP_KEY+'_global', NAMES_KEY=APP_KEY+'_names';
     const svgns='http://www.w3.org/2000/svg';
-    const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simple:'simple' };
+    const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simplex:'simplex' };
     const POMODORO_SECONDS=25*60;
 
     const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
@@ -409,7 +441,6 @@
 
     const G = load(GLOBAL_KEY, { timerType:TIMER_TYPES.pomodoro, customSeconds:25*60, simpleSeconds:25*60, selectedMode:'maths' });
 
-    // Per-mode state
     const DEFAULT_MODE_STATE = {
       leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS,
       weeklyTargetLocked:false, weeklyTargetSetValue:9, lockWeek:undefined, lockYear:undefined,
@@ -434,6 +465,7 @@
     const pctRange=el('pctRange'), pctValue=el('pctValue');
     const soilPct=el('soilPct'), todaySky=el('todaySky');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect');
+    const treeSVG=document.getElementById('treeSVG');
     const rainTop=el('rainTop');
     const modeSelect=el('modeSelect'), modeNameHeader=el('modeName');
     const subject1Input=el('subject1Input'), subject2Input=el('subject2Input'), subject3Input=el('subject3Input');
@@ -441,7 +473,6 @@
     const saveNamesBtn=el('saveNamesBtn');
     const treeGrid=el('treeGrid'), gridCount=el('gridCount');
 
-    // Names and list of modes
     let CUSTOM_NAMES=load(NAMES_KEY,{});
     const DEFAULT_MODE_NAMES={
       exercise:'Exercise mode', cycling:'Cycling mode', digitalDetox:'Digital detox mode', bedTime:'Bed-time mode',
@@ -486,11 +517,9 @@
       refreshModeHeader();
     });
 
-    // Tabs
     function showPanel(id){ ['modesPanel','subPanel','syncPanel'].forEach(p=> document.getElementById(p).style.display='none'); const panel=document.getElementById(id); if(panel) panel.style.display='flex'; }
     document.getElementById('tabs').addEventListener('click', (e)=>{ const t=e.target.closest('.tab'); if(!t) return; document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); showPanel(t.getAttribute('data-tab')); });
 
-    // Timezone (UI helper)
     const countrySearch=el('countrySearch'), countryList=el('countryList');
     const COUNTRY_TZ=[{name:'India',tz:'Asia/Kolkata'},{name:'United Kingdom',tz:'Europe/London'},{name:'United States',tz:'America/New_York'},{name:'Canada',tz:'America/Toronto'},{name:'Australia',tz:'Australia/Sydney'},{name:'UAE',tz:'Asia/Dubai'},{name:'Bangladesh',tz:'Asia/Dhaka'},{name:'Japan',tz:'Asia/Tokyo'},{name:'China',tz:'Asia/Shanghai'},{name:'Germany',tz:'Europe/Berlin'},{name:'France',tz:'Europe/Paris'},{name:'Brazil',tz:'America/Sao_Paulo'}].sort((a,b)=> a.name.localeCompare(b.name));
     function renderCountryList(filter=''){
@@ -504,7 +533,6 @@
     document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
     countryList.addEventListener('click', (e)=>{ const it=e.target.closest('.drop-item'); if(!it) return; countrySearch.value=it.getAttribute('data-name'); countryList.style.display='none'; });
 
-    // Week rollover per-mode
     function rolloverWeekIfNeeded(){
       const {week,year}=isoWeekOf(new Date());
       if(S._week===undefined || S._year===undefined){ S._week=week; S._year=year; saveState(currentMode,S); return; }
@@ -517,7 +545,6 @@
         S.weeklyLeaves=0; S.weeklyFocusSeconds=0;
         S.placed=0; leafLayer.innerHTML='';
 
-        // unlock weekly locks at new week
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
         S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
 
@@ -526,7 +553,6 @@
       }
     }
 
-    // Grid
     function renderGrid(){
       treeGrid.innerHTML='';
       for(let i=0;i<52;i++){
@@ -540,7 +566,6 @@
       gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
     }
 
-    // Timer + animations
     let ticker=null, blinkWrap=null;
     function getSessionSeconds(){
       if(G.timerType==='pomodoro') return 25*60;
@@ -562,7 +587,7 @@
       soilPct.textContent = Math.round(p)+'%';
       pctRange.value=String(Math.round(p));
       pctValue.textContent=`${Math.round(p)}%`;
-      pctRange.style.background = `linear-gradient(90deg, var(--slider-done) ${p}%, var(--slider-left) ${p}%)`;
+      document.getElementById('pctRange').style.background = `linear-gradient(90deg, var(--slider-done) ${p}%, var(--slider-left) ${p}%)`;
     }
     function updateProgressInstant(){
       const total=Math.max(1, Number(S.leavesPerTree)||1);
@@ -673,14 +698,15 @@
       }
       S.secondsLeft=getSessionSeconds();
       saveState(currentMode,S);
-      updateWeeklyTargetText();
-      updateLeavesProgress();
-      updateProgressInstant();
+      if(G.timerType!=='simplex'){
+        updateWeeklyTargetText();
+        updateLeavesProgress();
+        updateProgressInstant();
+      }
       setClockAndButtons();
       renderGrid();
     }
 
-    // LPT per-mode
     function updateWeeklyTargetText(){
       const per=getSessionSeconds();
       const totalSec = per * (S.leavesPerTree||0);
@@ -690,11 +716,7 @@
     function updateLeavesProgress(){
       const total=Math.max(1, Number(S.leavesPerTree)||1);
       const done=Math.min(S.placed,total);
-      if(G.timerType==='pomodoro' || G.timerType==='custom'){
-        leavesProgress.textContent = `${done} / ${total} leaves completed`;
-      }else{
-        leavesProgress.textContent = '';
-      }
+      leavesProgress.textContent = `${done} / ${total} leaves completed`;
     }
     function reflectLPTLockUI(){
       lptWrap.style.display='flex';
@@ -723,7 +745,6 @@
       renderGrid();
     });
 
-    // Custom minutes lock per-mode once per week
     function reflectCustomLockUI(){
       if(G.timerType!=='custom'){
         customInputs.style.display='none';
@@ -739,63 +760,50 @@
         customLockMsg.textContent = `Locked (week ${S.customLockWeek}, ${S.customLockYear})`;
       }
     }
-    applyCustomBtn.addEventListener('click', ()=>{
-      if(G.timerType!=='custom') return;
-      rolloverWeekIfNeeded();
-      if(S.customLocked) return;
-      const mins=Math.max(1, Math.floor(Number(customMin.value)||0));
-      G.customSeconds=mins*60; save(GLOBAL_KEY,G);
-      const {week,year}=isoWeekOf(new Date());
-      S.customLocked=true; S.customLockWeek=week; S.customLockYear=year;
-      S.secondsLeft=getSessionSeconds();
-      saveState(currentMode,S);
-      setClockAndButtons();
-      updateWeeklyTargetText();
-      updateLeavesProgress();
-      reflectCustomLockUI();
-    });
 
-    // Simple minutes never lock UI (no extra text)
-    function reflectSimpleUI(){
-      if(G.timerType!=='simple'){
-        simpleInputs.classList.add('hidden');
-        return;
-      }
-      simpleInputs.classList.remove('hidden');
-      simpleMin.value = Math.round((G.simpleSeconds||1500)/60);
+    function reflectSimplexUI(){
+      const simplexActive = (G.timerType==='simplex');
+      lptWrap.style.display = simplexActive ? 'none' : 'flex';
+      weeklyTargetEl.style.display = simplexActive ? 'none' : 'block';
+      leavesProgress.style.display = simplexActive ? 'none' : 'block';
+      const canopyFill = document.getElementById('canopyFillGreen');
+      if(canopyFill) canopyFill.style.display = simplexActive ? 'none' : 'block';
+      const pctRow = document.querySelector('.pctRow');
+      if(pctRow) pctRow.style.display = simplexActive ? 'none' : 'flex';
+      simpleInputs.classList.toggle('hidden', !simplexActive);
+      customInputs.style.display = (G.timerType==='custom') ? 'block' : 'none';
     }
+
     applySimpleBtn.addEventListener('click', ()=>{
-      if(G.timerType!=='simple') return;
+      if(G.timerType!=='simplex') return;
       const mins=Math.max(1, Math.floor(Number(simpleMin.value)||0));
       G.simpleSeconds=mins*60; save(GLOBAL_KEY,G);
       S.secondsLeft=getSessionSeconds();
       saveState(currentMode,S);
       setClockAndButtons();
-      updateWeeklyTargetText();
-      updateLeavesProgress();
     });
 
-    // Timer type change
     timerTypeSelect.value=G.timerType;
     function applyTimerTypeUI(){
       reflectCustomLockUI();
-      reflectSimpleUI();
-      updateWeeklyTargetText();
-      updateLeavesProgress();
+      reflectSimplexUI();
+      if(G.timerType!=='simplex'){
+        updateWeeklyTargetText();
+        updateLeavesProgress();
+        updateProgressInstant();
+      }
       setClockAndButtons();
-      updateProgressInstant();
     }
     timerTypeSelect.addEventListener('change', ()=>{
       stopSession();
       G.timerType=timerTypeSelect.value; save(GLOBAL_KEY,G);
       if(G.timerType==='pomodoro') S.secondsLeft=POMODORO_SECONDS;
-      if(G.timerType==='custom'){ /* seconds from G.customSeconds */ }
-      if(G.timerType==='simple'){ /* seconds from G.simpleSeconds */ }
+      if(G.timerType==='custom'){ /* uses G.customSeconds */ }
+      if(G.timerType==='simplex'){ /* uses G.simpleSeconds */ }
       applyTimerTypeUI();
       saveState(currentMode,S);
     });
 
-    // Mode switching
     modeSelect.addEventListener('change', ()=>{
       stopSession();
       currentMode=modeSelect.value; G.selectedMode=currentMode; save(GLOBAL_KEY,G);
@@ -804,67 +812,41 @@
       setClockAndButtons();
       renderLeaves();
       renderGrid();
-      reflectLPTLockUI();
+      if(G.timerType!=='simplex'){
+        reflectLPTLockUI();
+      }
       applyTimerTypeUI();
       refreshModeHeader();
     });
 
-    // Buttons
     startBtn.addEventListener('click', startSession);
     resetBtn.addEventListener('click', ()=>{
       stopSession();
       S.secondsLeft=getSessionSeconds();
       setClockAndButtons();
-      updateProgressInstant();
+      if(G.timerType!=='simplex'){
+        updateProgressInstant();
+      }
       renderGrid();
     });
 
-    // Initialize on load
     function init(){
       populateModeSelect();
       populateNamesInputs();
       rolloverWeekIfNeeded();
       applyTimerTypeUI();
-      reflectLPTLockUI();
-      reflectCustomLockUI();
-      reflectSimpleUI();
+      if(G.timerType!=='simplex'){
+        reflectLPTLockUI();
+      }
       setClockAndButtons();
       renderLeaves();
       renderGrid();
-      updateProgressInstant();
-      updateWeeklyTargetText();
-      updateLeavesProgress();
-
-      showPanel('modesPanel');
-      document.querySelectorAll('.tab').forEach(t=>{
-        t.classList.toggle('active', t.getAttribute('data-tab')==='modesPanel');
-      });
-
-      soilPct.textContent='0%';
-      todaySky.textContent='Total duration (today): 0 mins';
+      if(G.timerType!=='simplex'){
+        updateProgressInstant();
+        updateWeeklyTargetText();
+        updateLeavesProgress();
+      }
     }
-
-    // Accessibility: keyboard for tabs
-    document.getElementById('tabs').addEventListener('keydown', (e)=>{
-      if(e.key!=='Enter' && e.key!==' ') return;
-      const t=e.target.closest('.tab'); if(!t) return;
-      e.preventDefault();
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      t.classList.add('active'); showPanel(t.getAttribute('data-tab'));
-    });
-
-    // Prevent negative/invalid mins in inputs
-    function clampInputTo(el, min, max, fallback){
-      const v=Math.floor(Number(el.value)||fallback);
-      el.value=String(Math.max(min, Math.min(max, v)));
-    }
-    customMin.addEventListener('change', ()=> clampInputTo(customMin, 1, 999, 25));
-    simpleMin.addEventListener('change', ()=> clampInputTo(simpleMin, 1, 999, 25));
-    lptInput.addEventListener('change', ()=> clampInputTo(lptInput, 1, 200, 9));
-
-    const syncStartBtnLabel=()=> setClockAndButtons();
-    customMin.addEventListener('input', syncStartBtnLabel);
-    simpleMin.addEventListener('input', syncStartBtnLabel);
 
     init();
   </script>
