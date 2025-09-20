@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Percent Slider + GMT</title>
+  <title>Pomodoro Tree — Slider + Saplings On Top + GMT</title>
 
   <style>
     :root{
@@ -14,14 +14,14 @@
       --btn-success:#16a34a; --btn-success-hover:#0f6a33;
       --btn-danger:#ef4444; --btn-danger-hover:#b91c1c;
       --btn-neutral:#334155; --btn-neutral-hover:#1f2937; --btn-focus:#0ea5e9;
-      --progress-green:#16a34a; --progress-red:#ef4444; --track-bg:#e6efff;
       --slider-fill:#16a34a; --slider-track:#e6efff;
+      --line-2:#c8d8ee;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
     .wrap{ max-width:1140px; margin:0 auto; padding:20px 16px 120px; }
 
-    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap; }
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .brand{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); white-space:nowrap; }
     h1{ margin:0; font-size:22px; }
     .modeTag{ font-weight:800; color:#14563a; font-size:20px; white-space:nowrap; }
@@ -35,7 +35,7 @@
     .vstack select, .vstack input[type=number]{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; width:100%; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
-    .timerCard{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
+    .timerCard{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow); flex-direction:column; }
     .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
     .controls{ display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
     button{
@@ -59,25 +59,36 @@
     .pctRow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     #pctRange{
       -webkit-appearance:none; appearance:none;
-      width:260px; height:10px; border-radius:999px; overflow:hidden;
-      background:var(--track-bg); border:1px solid var(--line);
-      background-image:linear-gradient(90deg, var(--slider-fill) 0%, var(--slider-track) 0%);
-      background-size:100% 100%; background-repeat:no-repeat;
+      width:260px; height:12px; border-radius:999px; outline:none;
+      background:var(--slider-track); border:1px solid var(--line);
     }
-    #pctRange::-webkit-slider-thumb{ -webkit-appearance:none; width:0; height:0; background:transparent; }
-    #pctRange::-moz-range-thumb{ width:0; height:0; background:transparent; border:none; }
+    #pctRange::-webkit-slider-runnable-track{ height:12px; background:var(--slider-track); border-radius:999px; }
+    #pctRange::-webkit-slider-thumb{
+      -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+      background:#2563eb; border:2px solid #fff; margin-top:-3px; cursor:pointer;
+      box-shadow:0 0 0 1px rgba(0,0,0,.1);
+    }
+    #pctRange::-moz-range-track{ height:12px; background:var(--slider-track); border-radius:999px; }
+    #pctRange::-moz-range-progress{ height:12px; background:var(--slider-fill); border-radius:999px; }
+    #pctRange::-moz-range-thumb{
+      width:18px; height:18px; border-radius:50%; background:#2563eb; border:2px solid #fff; cursor:pointer;
+    }
+    #pctValue{ min-width:44px; text-align:right; }
 
-    .treePanel{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
+    .treePanel{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treePanel.fixedCard{ width:760px; }
     .treeBox{ position:relative; width:560px; max-width:100%; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
-    .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, #bfeec7 62%, #8edaa0 100%); }
+    .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, #bfeec7 62%, #8edaa0 100%); z-index:0; }
 
-    .percentLabel{ position:absolute; left:14px; bottom:8px; font:900 64px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); z-index:2; }
-    .grassPct{ position:absolute; right:14px; bottom:10px; font:900 56px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#065f46; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); z-index:2; }
-    .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:2; }
-    .todaySky{ position:absolute; left:14px; top:46px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
+    /* Saplings layer above sky, below canopy and labels */
+    .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:1; }
 
-    #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; }
+    .percentLabel{ position:absolute; left:14px; bottom:8px; font:900 64px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); z-index:3; }
+    .grassPct{ position:absolute; right:14px; bottom:10px; font:900 56px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#065f46; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); z-index:3; }
+    .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:3; }
+    .todaySky{ position:absolute; left:14px; top:46px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:3; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
+
+    #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:2; }
 
     @keyframes leafBlink { 0%,100%{ fill:#166534;} 50%{ fill:#86efac;} }
     @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
@@ -105,7 +116,7 @@
     .gridWrap{ margin:14px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:420px; max-width:92vw; display:flex; flex-direction:column; align-items:center; }
     .gridHead{ display:flex; align-items:center; justify-content:space-between; gap:8px; color:#4a6894; width:100%; max-width:420px; }
     .grid{ display:grid; gap:6px; grid-template-columns:repeat(6, 1fr); width:100%; }
-    .cell{ aspect-ratio:1/1; border-radius:10px; background:#f3f8ff; border:1px dashed #c8d8ee; color:#4e6ea0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; position:relative; }
+    .cell{ aspect-ratio:1/1; border-radius:10px; background:#f3f8ff; border:1px dashed var(--line-2); color:#4e6ea0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; position:relative; }
     .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:18px; pointer-events:none; }
     .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
 
@@ -156,7 +167,8 @@
             <button id="applyCustomBtn" title="Apply minutes">Apply</button>
             <span id="customLockMsg" class="miniNote">Will be locked</span>
           </div>
-          <!-- Percent slider: visible in Pomodoro and Custom -->
+
+          <!-- Percent slider (Pomodoro + Custom) -->
           <div id="pctWrap" class="pctWrap" style="display:none;">
             <label class="miniNote">Set progress (%)</label>
             <div class="pctRow">
@@ -187,6 +199,8 @@
               <span id="lptHelper" class="miniNote">LPT = No. of timer sessions per week</span>
               <span id="lockHint" class="miniNote">Editable once per ISO week</span>
             </div>
+
+            <!-- Weekly completion removed -->
             <div id="weeklyTarget" class="miniNote">Weekly target = 3 hrs 45 mins</div>
           </div>
         </section>
@@ -198,17 +212,20 @@
           <h3 style="margin:0 0 8px 0; text-align:center;">Current Tree</h3>
           <div class="treeBox">
             <div class="sky"></div>
+
+            <!-- Saplings above green canvas -->
+            <svg id="saplingsSVG" width="560" height="560" viewBox="0 0 560 560" class="saplingsLayer">
+              <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
+            </svg>
+
+            <!-- On-grass labels -->
             <div id="percentLabel" class="percentLabel">0%</div>
             <div id="grassPct" class="grassPct">0%</div>
             <div id="xyLabel" class="xyLabel">0/9 leaves</div>
             <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
             <div id="rainLayer" class="rain"></div>
 
-            <!-- Saplings under grass percent -->
-            <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
-              <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
-            </svg>
-
+            <!-- Canopy SVG -->
             <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet">
               <defs>
                 <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="1.0" flood-color="#000" flood-opacity="0.15" /></filter>
@@ -305,7 +322,7 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_Slider_GMT_Final_v1';
+    const APP_KEY = 'pomodoroTree_Slider_SaplingsTop_GMT_v2';
     const GLOBAL_KEY = APP_KEY + '_global';
     const NAMES_KEY = APP_KEY + '_names';
     const svgns='http://www.w3.org/2000/svg';
@@ -349,14 +366,14 @@
     const timerTypeSelect=el('timerTypeSelect'), customInputs=el('customInputs'), customMinInput=el('customMin'), applyCustomBtn=el('applyCustomBtn'), customLockMsg=el('customLockMsg'), durationLabel=el('durationLabel');
     const pctWrap=el('pctWrap'), pctRange=el('pctRange'), pctValue=el('pctValue');
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
-    const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptLockNote=el('lptLockNote'), lockHint=el('lockHint'), lptHelper=el('lptHelper');
+    const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptLockNote=el('lptLockNote');
     const percentLabel=el('percentLabel'), grassPctEl=el('grassPct'), xyLabel=el('xyLabel'), todaySky=el('todaySky');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), saplingsG=document.getElementById('saplings');
-    const treeGrid=el('treeGrid'), gridCount=el('gridCount'), modeNameEl=el('modeName');
+    const treeGrid=el('treeGrid'), gridCount=el('gridCount');
     const rainLayer=el('rainLayer');
     const countrySearch=el('countrySearch'), countryList=el('countryList');
 
-    // Country tz list (short demo list; extend as needed)
+    // Country tz list (short)
     const COUNTRY_TZ = [
       { name:'India', tz:'Asia/Kolkata' }, { name:'United Kingdom', tz:'Europe/London' }, { name:'United States', tz:'America/New_York' },
       { name:'Canada', tz:'America/Toronto' }, { name:'Australia', tz:'Australia/Sydney' }, { name:'UAE', tz:'Asia/Dubai' },
@@ -485,7 +502,7 @@
       outline?.classList.toggle('blink-canopy', !!on);
     }
 
-    // Leaf animations
+    // Leaf placement / animations
     let placeholderLeaf=null;
     function baseAnchorsArr(){ return [{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}]; }
     function anchorForIndex(i){
@@ -550,28 +567,22 @@
       const pct=Math.round((done/total)*100);
       setFillPercentInstant(pct);
       xyLabel.textContent=`${done}/${total} leaves`;
-      // keep slider in sync when visible
+      // sync slider when visible
       if(pctWrap.style.display!=='none'){
         pctRange.value=String(pct);
-        const perc = pct;
-        pctRange.style.backgroundImage = `linear-gradient(90deg, var(--slider-fill) ${perc}%, var(--slider-track) ${perc}%)`;
-        pctValue.textContent = `${perc}%`;
+        pctRange.style.background = `linear-gradient(90deg, var(--slider-fill) ${pct}%, var(--slider-track) ${pct}%)`;
+        pctValue.textContent = `${pct}%`;
       }
     }
 
-    // Percent slider handlers (Pomodoro + Custom)
-    function showPctSlider(show){
-      pctWrap.style.display = show ? 'block' : 'none';
-    }
+    // Slider behavior
+    function showPctSlider(show){ pctWrap.style.display = show ? 'block' : 'none'; }
     function applyPctFromSlider(){
       const pct = Math.max(0, Math.min(100, Number(pctRange.value)||0));
       pctValue.textContent = `${pct}%`;
-      pctRange.style.backgroundImage = `linear-gradient(90deg, var(--slider-fill) ${pct}%, var(--slider-track) ${pct}%)`;
-      // derive S.placed from pct and leavesPerTree
+      pctRange.style.background = `linear-gradient(90deg, var(--slider-fill) ${pct}%, var(--slider-track) ${pct}%)`;
       const total=Math.max(1, Number(S.leavesPerTree)||1);
-      const targetPlaced = Math.round((pct/100)*total);
-      S.placed = Math.min(total, Math.max(0, targetPlaced));
-      // re-render leaves and fill
+      S.placed = Math.min(total, Math.max(0, Math.round((pct/100)*total)));
       renderLeaves();
       setFillPercentInstant(pct);
       xyLabel.textContent=`${S.placed}/${total} leaves`;
@@ -604,12 +615,12 @@
       document.getElementById('weeklyTarget').textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
     }
 
-    // Saplings 6×7 beneath grass percent
+    // Saplings 6×7
     function buildSaplings(){
       saplingsG.innerHTML='';
       const rows=6, cols=7;
       const left=24, right=536;
-      const grassTop = 360; // near grass
+      const grassTop = 360; // near grass region
       const rowGap=24;
       for(let r=0;r<rows;r++){
         for(let c=0;c<cols;c++){
@@ -654,7 +665,9 @@
 
       customInputs.style.display = (isCustom || isSimple) ? 'block' : 'none';
       durationLabel.textContent = isCustom ? 'Timer value can be edited only once per week' : (isSimple ? '' : 'Timer value');
-      showPctSlider(!isSimple); // show slider for Pomodoro + Custom
+
+      // Show slider for Pomodoro and Custom
+      showPctSlider(!isSimple);
 
       if(isCustom){
         customMinInput.value = String(Math.max(1, Math.floor((G.customSeconds||1500)/60)));
@@ -807,7 +820,7 @@
       }
       setClockAndButtons();
 
-      // reflect LPT lock state on load
+      // reflect LPT lock state
       if(S.weeklyTargetLocked){
         lptInput.disabled=true; lptSetBtn.disabled=true; lptLockNote.textContent='Locked';
         lptInput.value=String(S.leavesPerTree);
@@ -815,9 +828,9 @@
         lptInput.disabled=false; lptSetBtn.disabled=false; lptLockNote.textContent='Will be locked';
       }
 
-      // init slider gradient
+      // initialize slider gradient
       const p = Number(pctRange.value)||0;
-      pctRange.style.backgroundImage = `linear-gradient(90deg, var(--slider-fill) ${p}%, var(--slider-track) ${p}%)`;
+      pctRange.style.background = `linear-gradient(90deg, var(--slider-fill) ${p}%, var(--slider-track) ${p}%)`;
       pctValue.textContent = `${p}%`;
     }
 
@@ -825,7 +838,7 @@
     buildSaplings();
     refreshModeHeader();
 
-    // Keep GMT default; do not override with system tz
+    // Keep GMT default
     if(!G.timeZone){ G.timeZone='Etc/GMT'; save(GLOBAL_KEY,G); }
 
     timerTypeSelect.value=G.timerType;
