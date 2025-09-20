@@ -411,24 +411,22 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_Simplex_NoLPT_CustomWeeklyLock_PerModeLPT_v8_xyReflect_setValues';
+    const APP_KEY='pomodoroTree_Simplex_NoLPT_CustomWeeklyLock_PerModeLPT_v9_denseRain_blinkLeaves_canopyOnly_resetRemovesLeaf';
     const GLOBAL_KEY=APP_KEY+'_global', NAMES_KEY=APP_KEY+'_names';
     const svgns='http://www.w3.org/2000/svg';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simplex:'simplex' };
     const POMODORO_SECONDS=25*60;
 
-    // Storage helpers [web:19][web:44][web:42]
-    const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } }; /* [web:19][web:39][web:44] */
+    const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } }; /* [web:19][web:44] */
     const save=(k,v)=> localStorage.setItem(k, JSON.stringify(v)); /* [web:19][web:42] */
 
-    // ISO week helper (Thursday-based) [web:18]
-    function isoWeekOf(date){ /* [web:18] */
-      const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-      const dayNum = d.getUTCDay() || 7;
-      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-      const week = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-      return { week, year: d.getUTCFullYear() };
+    function isoWeekOf(date){
+      const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())); /* [web:18] */
+      const dayNum = d.getUTCDay() || 7; /* [web:18] */
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum); /* [web:18] */
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); /* [web:18] */
+      const week = Math.ceil((((d - yearStart) / 86400000) + 1)/7); /* [web:18] */
+      return { week, year: d.getUTCFullYear() }; /* [web:18] */
     }
 
     const G = load(GLOBAL_KEY, { timerType:TIMER_TYPES.pomodoro, customSeconds:25*60, simpleSeconds:25*60, selectedMode:'maths' });
@@ -441,8 +439,8 @@
       _week:undefined, _year:undefined
     };
     const modeKey=(id)=> `${APP_KEY}_mode_${id}`;
-    function loadState(mode){ return load(modeKey(mode), DEFAULT_MODE_STATE); } /* [web:19] */
-    function saveState(mode,S){ save(modeKey(mode), S); } /* [web:19] */
+    function loadState(mode){ return load(modeKey(mode), DEFAULT_MODE_STATE); }
+    function saveState(mode,S){ save(modeKey(mode), S); }
 
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
@@ -457,7 +455,6 @@
     const pctRange=el('pctRange'), pctValue=el('pctValue');
     const soilPct=el('soilPct'), todaySky=el('todaySky'), xySky=el('xySky');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect');
-    const treeSVG=document.getElementById('treeSVG');
     const rainTop=el('rainTop');
     const modeSelect=el('modeSelect'), modeNameHeader=el('modeName');
     const subject1Input=el('subject1Input'), subject2Input=el('subject2Input'), subject3Input=el('subject3Input');
@@ -474,6 +471,7 @@
     };
     const MODE_IDS=['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
     const nameFor=(id)=> (CUSTOM_NAMES[id]??'').trim() || (DEFAULT_MODE_NAMES[id]||id);
+
     function populateModeSelect(){
       modeSelect.innerHTML='';
       const f=document.createDocumentFragment();
@@ -558,7 +556,7 @@
       gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
     }
 
-    // Web Audio alarm (10s) [web:1][web:21][web:34][web:37][web:45]
+    // Web Audio alarm (10s) [web:21][web:1]
     let audioCtx=null, alarmGain=null;
     function unlockAudioContextOnce(){
       if(!audioCtx){
@@ -587,7 +585,7 @@
     }
 
     // Timer + visuals
-    let ticker=null;
+    let ticker=null, isRunning=false;
     function getSessionSeconds(){
       if(G.timerType==='pomodoro') return 25*60;
       if(G.timerType==='custom') return Math.max(60, Number(G.customSeconds)||1500);
@@ -616,18 +614,34 @@
       setFillPercent(pct);
     }
 
-    function baseAnchors(){ return [{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}]; }
+    // Canopy-safe anchors only (avoid trunk/branches): choose points within canopy path bounding box
+    function baseAnchors(){
+      return [
+        {x:210,y:220},{x:240,y:210},{x:270,y:205},{x:300,y:210},{x:330,y:220},
+        {x:220,y:250},{x:250,y:245},{x:290,y:245},{x:320,y:250},
+        {x:235,y:275},{x:270,y:270},{x:305,y:275},
+        {x:245,y:295},{x:280,y:300},{x:315,y:295}
+      ];
+    }
+    function canopySpiralAnchor(i){
+      // spiral within canopy extents to avoid trunk: center ~ (280,250), clamp y to 200..300 range
+      const k=i+1, a=k*137.5*Math.PI/180, r=20+0.8*Math.sqrt(k)*9, cx=280, cy=250;
+      const x = cx + r*Math.cos(a);
+      const y = cy + r*Math.sin(a)*0.7;
+      // clamp to canopy box
+      return { x: Math.max(140, Math.min(420, x)), y: Math.max(200, Math.min(300, y)) };
+    }
     function anchorForIndex(i){
       const b=baseAnchors();
       if(i<b.length) return b[i];
-      const k=i-b.length+1, a=k*137.508*Math.PI/180, r=30+0.9*Math.sqrt(k)*8, cx=280, cy=260;
-      return {x:cx+r*Math.cos(a), y:cy+r*Math.sin(a)*0.7};
+      return canopySpiralAnchor(i-b.length);
     }
+
     function makeLeafG(n){
       const wrap=document.createElementNS(svgns,'g');
       const g=document.createElementNS(svgns,'g'); g.setAttribute('class','leaf');
       const p=document.createElementNS(svgns,'path'); p.setAttribute('d','M 0 -16 C 10 -10, 12 0, 0 14 C -12 0, -10 -10, 0 -16 Z'); p.setAttribute('fill','#166534'); p.setAttribute('stroke','#0b3d22'); p.setAttribute('stroke-width','1.2');
-      const t=document.createElementNS(svgns,'text'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.setAttribute('fill','#fff'); t.setAttribute('font-weight','800'); t.setAttribute('font-size','13'); t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle'); t.textContent=String(n);
+      const t=document.createElementNS(svgns,'text'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.setAttribute('fill','#fff'); t.setAttribute('font-weight','800'); t.setAttribute('font-size','13'); t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle'); t.textContent=String(n); /* [web:52][web:46][web:49] */
       g.appendChild(p); g.appendChild(t); wrap.appendChild(g); return wrap;
     }
     function placeLeaf(wrap,a){
@@ -637,10 +651,9 @@
     function renderLeaves(){
       leafLayer.innerHTML='';
       for(let i=0;i<S.placed;i++){
-        const w=makeLeafG(i+1); placeLeaf(w, anchorForIndex(i)); leafLayer.appendChild(w);
+        const w=makeLeafG(i+1); placeLeaf(w, anchorForIndex(i)); if(isRunning){ w.querySelector('.leaf')?.classList.add('blink-leaf'); } leafLayer.appendChild(w);
       }
     }
-
     function popLeaf(index){
       const g=leafLayer.children[index];
       if(!g) return;
@@ -655,6 +668,7 @@
     function addLeaf(){
       const w=makeLeafG(S.placed+1);
       placeLeaf(w, anchorForIndex(S.placed));
+      if(isRunning) w.querySelector('.leaf')?.classList.add('blink-leaf');
       leafLayer.appendChild(w);
       popLeaf(S.placed);
       S.placed++;
@@ -665,7 +679,7 @@
       renderStats();
     }
 
-    // X/Y overlay in sky for Pomodoro & Custom: x = weeklyLeaves, y = LPT [web:18]
+    // X/Y overlay
     function updateInSkyXY(){
       const show = (G.timerType===TIMER_TYPES.pomodoro || G.timerType===TIMER_TYPES.custom);
       if(show){
@@ -689,11 +703,18 @@
       pctValue.textContent = `${pct}%`;
       pctRange.style.background = `linear-gradient(90deg, var(--slider-done) ${pct}%, var(--slider-left) ${pct}%)`;
       updateInSkyXY();
+      // Update blinking state
+      for(const node of leafLayer.querySelectorAll('.leaf')){
+        if(isRunning) node.classList.add('blink-leaf'); else node.classList.remove('blink-leaf');
+      }
     }
 
     function stopTicker(){
       if(ticker){ clearInterval(ticker); ticker=null; }
+      isRunning=false;
       rainTop.style.display='none';
+      // stop blinking when not running
+      for(const node of leafLayer.querySelectorAll('.leaf')) node.classList.remove('blink-leaf');
     }
 
     function onTimerEnd(){
@@ -708,7 +729,10 @@
 
     function startTimer(){
       unlockAudioContextOnce();
+      isRunning=true;
       rainTop.style.display='block';
+      // start blinking now
+      for(const node of leafLayer.querySelectorAll('.leaf')) node.classList.add('blink-leaf');
       if(ticker) clearInterval(ticker);
       ticker=setInterval(()=>{
         S.secondsLeft = Math.max(0, S.secondsLeft-1);
@@ -723,10 +747,18 @@
     }
 
     function resetTimer(){
+      // remove the last placed leaf (disappear on reset)
+      if(S.placed>0){
+        S.placed=Math.max(0, S.placed-1);
+        leafLayer.removeChild(leafLayer.lastElementChild);
+        updateProgressInstant();
+        updateInSkyXY();
+      }
       stopTicker();
       S.secondsLeft = getSessionSeconds();
       setClockAndButtons();
       saveState(currentMode,S);
+      renderStats();
     }
 
     startBtn.addEventListener('click', ()=>{
@@ -737,7 +769,7 @@
     });
     resetBtn.addEventListener('click', resetTimer);
 
-    // LPT set with ISO-week lock; reflect set value into input immediately
+    // LPT set, reflect set value
     lptSetBtn.addEventListener('click', ()=>{
       const v = Math.max(1, Math.min(200, Number(lptInput.value)||S.leavesPerTree));
       const {week,year}=isoWeekOf(new Date());
@@ -746,7 +778,7 @@
         S.weeklyTargetSetValue = v;
         S.weeklyTargetLocked = true;
         S.lockWeek = week; S.lockYear = year;
-        lptInput.value = String(v); // reflect set value
+        lptInput.value = String(v);
         saveState(currentMode,S);
         updateProgressInstant();
         renderStats();
@@ -756,13 +788,12 @@
           S.lockWeek=undefined; S.lockYear=undefined;
           saveState(currentMode,S);
         }else{
-          // If still locked in same week, force input to show the locked value
           lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
         }
       }
     });
 
-    // Custom Set: apply manual minutes; reflect set minutes into input immediately; lock per ISO week
+    // Custom Set
     applyCustomBtn.addEventListener('click', ()=>{
       const mins = Math.max(1, Math.min(999, Number(customMin.value)||25));
       const secs = mins*60;
@@ -774,7 +805,7 @@
         S.secondsLeft = secs;
         S.customLocked = true;
         S.customLockWeek = week; S.customLockYear = year;
-        customMin.value = String(mins); // reflect set value
+        customMin.value = String(mins);
         saveState(currentMode,S);
         timerTypeSelect.value = TIMER_TYPES.custom;
         setClockAndButtons();
@@ -786,13 +817,12 @@
           S.customLockWeek=undefined; S.customLockYear=undefined;
           saveState(currentMode,S);
         }else{
-          // If still locked, force input to show the locked set value
           customMin.value = String(Math.round((G.customSeconds||1500)/60));
         }
       }
     });
 
-    // Simplex Set: reflect set minutes into input immediately
+    // Simplex Set
     applySimpleBtn.addEventListener('click', ()=>{
       const mins = Math.max(1, Math.min(999, Number(simpleMin.value)||25));
       const secs = mins*60;
@@ -800,7 +830,7 @@
       G.simpleSeconds = secs;
       save(GLOBAL_KEY, G);
       S.secondsLeft = secs;
-      simpleMin.value = String(mins); // reflect set value
+      simpleMin.value = String(mins);
       saveState(currentMode,S);
       timerTypeSelect.value = TIMER_TYPES.simplex;
       setClockAndButtons();
@@ -822,7 +852,6 @@
       refreshModeHeader();
       updateModeVisibility();
       renderStats();
-      // Keep timer/LPT inputs showing the last set values for the new mode as well
       lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
       customMin.value = String(Math.round((G.customSeconds||1500)/60));
       simpleMin.value = String(Math.round((G.simpleSeconds||1500)/60));
@@ -854,7 +883,6 @@
       updateInSkyXY();
       setClockAndButtons();
 
-      // Enforce reflecting currently set values in inputs
       lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
       customMin.value = String(Math.round((G.customSeconds||1500)/60));
       simpleMin.value = String(Math.round((G.simpleSeconds||1500)/60));
@@ -878,6 +906,23 @@
       renderStats();
     });
 
+    // Dense rain
+    function ensureRainDrops(){
+      if(rainTop.childElementCount>0) return;
+      const mk=(n, cls='')=>{
+        for(let i=0;i<n;i++){
+          const d=document.createElement('div'); d.className=`drop ${cls}`;
+          d.style.left=Math.round(Math.random()*100)+'%';
+          d.style.animationDelay=(Math.random()*1.2).toFixed(2)+'s';
+          d.style.height = (16 + Math.random()*10).toFixed(0)+'px';
+          d.style.width = (2.5 + Math.random()*1.2).toFixed(1)+'px';
+          rainTop.appendChild(d);
+        }
+      };
+      // Increased counts for denser rain
+      mk(60); mk(48,'far'); /* denser than previous */ /* [web:55] */
+    }
+
     // Initialize
     function init(){
       populateModeSelect();
@@ -892,26 +937,21 @@
       updateModeVisibility();
       renderStats();
 
-      // Ensure inputs show last set values at boot
       lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
       customMin.value = String(Math.round((G.customSeconds||1500)/60));
       simpleMin.value = String(Math.round((G.simpleSeconds||1500)/60));
 
-      // Prepare rain elements once
-      if(rainTop.childElementCount===0){
-        const mk=(n, cls='')=>{
-          for(let i=0;i<n;i++){
-            const d=document.createElement('div'); d.className=`drop ${cls}`; d.style.left=Math.round(Math.random()*100)+'%'; d.style.animationDelay=(Math.random()*1.2).toFixed(2)+'s'; rainTop.appendChild(d);
-          }
-        };
-        mk(24); mk(18,'far');
-      }
+      ensureRainDrops(); // setup dense rain once
     }
 
     document.addEventListener('visibilitychange', ()=>{
       if(document.hidden && ticker){
         stopTicker();
       }
+    });
+
+    startBtn.addEventListener('click', ()=>{
+      if(rainTop.childElementCount===0) ensureRainDrops();
     });
 
     init();
