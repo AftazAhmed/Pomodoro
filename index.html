@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Per‑Mode State + Read‑only Slider + Grid + Auth</title>
+  <title>Pomodoro Tree — True Per‑Mode Timer + No Slider Thumb</title>
   <style>
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
@@ -56,18 +56,16 @@
     .numWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
     .numWrap input, .vstack select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; width:100%; }
 
-    /* Read-only slider under Set, no draggable thumb (blue dot removed) */
+    /* Read-only slider with no visible thumb */
     .pctRow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:6px; }
     #pctRange{
       -webkit-appearance:none; appearance:none;
       width:100%; max-width:360px; height:12px; border-radius:999px; outline:none;
       background:var(--slider-track); border:1px solid var(--line);
-      pointer-events:none; /* read-only; ignore input */
+      pointer-events:none;
     }
-    /* Hide thumb across engines */
-    #pctRange::-webkit-slider-thumb{
-      -webkit-appearance:none; appearance:none; width:0; height:0; border:none; background:transparent;
-    }
+    #pctRange::-webkit-slider-runnable-track{ height:12px; background:transparent; border-radius:999px; }
+    #pctRange::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:0; height:0; border:none; background:transparent; }
     #pctRange::-moz-range-thumb{ width:0; height:0; border:none; background:transparent; }
     #pctRange::-ms-thumb{ width:0; height:0; border:none; background:transparent; }
     #pctRange::-moz-range-track{ height:12px; background:var(--slider-track); border-radius:999px; }
@@ -113,7 +111,6 @@
     .drop-item{ padding:10px 12px; cursor:pointer; }
     .drop-item:hover{ background:#eef6ff; }
 
-    /* Completed Trees grid */
     .gridWrap{ margin:14px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:760px; max-width:100%; display:flex; flex-direction:column; align-items:center; }
     .gridHead{ display:flex; align-items:center; justify-content:space-between; gap:8px; color:#4a6894; width:100%; }
     .grid{ display:grid; gap:6px; grid-template-columns:repeat(13, 1fr); width:100%; }
@@ -121,7 +118,6 @@
     .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
     .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:16px; pointer-events:none; }
 
-    /* Bottom auth */
     .bottomAuth{ margin:18px auto 0; max-width:560px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; display:flex; flex-direction:column; align-items:stretch; }
     .bottomAuth input{ padding:10px 12px; border-radius:12px; border:1px solid var(--line); font-weight:700; }
     .authRow{ display:flex; gap:8px; flex-wrap:wrap; }
@@ -237,7 +233,6 @@
       </div>
     </div>
 
-    <!-- Time zone -->
     <div class="centerRow">
       <div class="tzBar" id="tzBar" aria-label="Time zone chooser">
         <div class="tzLeft">
@@ -250,7 +245,6 @@
       </div>
     </div>
 
-    <!-- Tabs -->
     <section class="tabsWrap" id="tabsWrap" aria-label="Settings tabs">
       <div class="tabs" id="tabs">
         <div class="tab active" data-tab="modesPanel" role="button" tabindex="0">Modes</div>
@@ -289,7 +283,6 @@
       </div>
     </section>
 
-    <!-- Completed Trees Grid (52 cells) -->
     <section class="gridWrap" id="gridWrap">
       <div class="gridHead">
         <div class="chip">Completed Trees</div>
@@ -298,7 +291,6 @@
       <div class="grid" id="treeGrid"></div>
     </section>
 
-    <!-- Bottom sign-in/out -->
     <section class="bottomAuth" id="bottomAuth">
       <div class="authRow">
         <input type="email" id="emailInputBottom" placeholder="email@example.com" />
@@ -311,18 +303,15 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_PerMode_ReadOnlySlider_NoThumb_v1';
+    const APP_KEY='pomodoroTree_PerModeTimer_Isolated_v2';
     const GLOBAL_KEY=APP_KEY+'_global', NAMES_KEY=APP_KEY+'_names';
     const svgns='http://www.w3.org/2000/svg';
-
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simple:'simple' };
     const POMODORO_SECONDS=25*60;
 
-    // Storage helpers
     const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
     const save=(k,v)=> localStorage.setItem(k, JSON.stringify(v));
 
-    // ISO week
     function isoWeekOf(date){
       const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
       const dayNum = d.getUTCDay() || 7;
@@ -332,27 +321,22 @@
       return { week, year: d.getUTCFullYear() };
     }
 
-    // Global (shared UI prefs only, not progress)
     const G = load(GLOBAL_KEY, { timerType:TIMER_TYPES.pomodoro, customSeconds:25*60, selectedMode:'maths' });
 
-    // Per-mode state
     const DEFAULT_MODE_STATE = {
       leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS,
       weeklyTargetLocked:false, weeklyTargetSetValue:9,
       lockWeek:undefined, lockYear:undefined,
       grid:[], weeklyLeaves:0, totalFocusSeconds:0, weeklyFocusSeconds:0,
-      customLocked:false, customLockWeek:undefined, customLockYear:undefined,
       _week:undefined, _year:undefined
     };
     const modeKey=(id)=> `${APP_KEY}_mode_${id}`;
     function loadState(mode){ return load(modeKey(mode), DEFAULT_MODE_STATE); }
     function saveState(mode,S){ save(modeKey(mode), S); }
 
-    // Current mode
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
 
-    // Elements
     const el=id=>document.getElementById(id);
     const timerTypeSelect=el('timerTypeSelect'), customInputs=el('customInputs'), customMin=el('customMin'), applyCustomBtn=el('applyCustomBtn'), durationLabel=el('durationLabel');
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
@@ -361,13 +345,14 @@
     const soilPct=el('soilPct'), xyLabel=el('xyLabel'), todaySky=el('todaySky');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect');
     const rainTop=el('rainTop');
+    const countrySearch=el('countrySearch'), countryList=el('countryList');
+    const tabs=el('tabs'), modesPanel=el('modesPanel'), subPanel=el('subPanel'), syncPanel=el('syncPanel');
     const modeSelect=el('modeSelect'), modeNameHeader=el('modeName');
     const subject1Input=el('subject1Input'), subject2Input=el('subject2Input'), subject3Input=el('subject3Input');
     const user1Input=el('user1Input'), user2Input=el('user2Input'), user3Input=el('user3Input');
     const saveNamesBtn=el('saveNamesBtn');
     const treeGrid=el('treeGrid'), gridCount=el('gridCount');
 
-    // Names and modes
     let CUSTOM_NAMES=load(NAMES_KEY,{});
     const DEFAULT_MODE_NAMES={
       'exercise': 'Exercise mode', 'cycling': 'Cycling mode', 'digitalDetox': 'Digital detox mode', 'bedTime': 'Bed-time mode',
@@ -414,126 +399,40 @@
       refreshModeHeader();
     });
 
-    modeSelect.addEventListener('change', ()=>{
-      // Switch mode—load that mode's own state and UI
-      currentMode=modeSelect.value; G.selectedMode=currentMode; save(GLOBAL_KEY,G);
-      S=loadState(currentMode);
-      rolloverWeekIfNeeded();
-      setClockAndButtons();
-      renderLeaves();
-      renderGrid();
-      updateWeeklyTargetText();
-      updateProgressInstant();
-      reflectLPTLockUI();
-      refreshModeHeader();
+    // Tabs
+    function showPanel(id){ [modesPanel, subPanel, syncPanel].forEach(p=> p.style.display='none'); const panel=document.getElementById(id); if(panel) panel.style.display='flex'; }
+    function activateTab(t){ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); showPanel(t.getAttribute('data-tab')); }
+    tabs.addEventListener('click', (e)=>{ const t=e.target.closest('.tab'); if(!t) return; activateTab(t); });
+
+    // Time zone dropdown
+    const COUNTRY_TZ = [
+      { name:'India', tz:'Asia/Kolkata' }, { name:'United Kingdom', tz:'Europe/London' }, { name:'United States', tz:'America/New_York' },
+      { name:'Canada', tz:'America/Toronto' }, { name:'Australia', tz:'Australia/Sydney' }, { name:'UAE', tz:'Asia/Dubai' },
+      { name:'Bangladesh', tz:'Asia/Dhaka' }, { name:'Japan', tz:'Asia/Tokyo' }, { name:'China', tz:'Asia/Shanghai' },
+      { name:'Germany', tz:'Europe/Berlin' }, { name:'France', tz:'Europe/Paris' }, { name:'Brazil', tz:'America/Sao_Paulo' }
+    ].sort((a,b)=> a.name.localeCompare(b.name));
+    function renderCountryList(filter=''){
+      const q=filter.trim().toLowerCase();
+      const items=COUNTRY_TZ.filter(c=> c.name.toLowerCase().includes(q));
+      if(items.length===0){ countryList.style.display='none'; countryList.innerHTML=''; return; }
+      countryList.innerHTML=items.map(c=>`<div class="drop-item" data-tz="${c.tz}" data-name="${c.name}">${c.name}</div>`).join('');
+      countryList.style.display='block';
+    }
+    countrySearch.addEventListener('input', ()=> renderCountryList(countrySearch.value) );
+    countrySearch.addEventListener('focus', ()=> renderCountryList(countrySearch.value) );
+    document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
+    countryList.addEventListener('click', (e)=>{
+      const item=e.target.closest('.drop-item'); if(!item) return;
+      // store in global only (not used for calc in this minimal build)
+      // kept for UI parity
+      countrySearch.value=item.getAttribute('data-name');
+      countryList.style.display='none';
     });
 
-    // Week rollover per mode
-    function rolloverWeekIfNeeded(){
-      const now=new Date();
-      const {week,year}=isoWeekOf(now);
-      if(S._week===undefined || S._year===undefined){ S._week=week; S._year=year; saveState(currentMode,S); return; }
-      if(S._week!==week || S._year!==year){
-        const completed = S.placed>=S.leavesPerTree && S.leavesPerTree>0;
-        S.grid.unshift({week:S._week,year:S._year,live:completed,ts:Date.now()});
-        if(S.grid.length>52) S.grid.pop();
-        S._week=week; S._year=year;
-        S.weeklyLeaves=0; S.weeklyFocusSeconds=0;
-        S.placed=0;
-        S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
-        S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
-        leafLayer.innerHTML='';
-        saveState(currentMode,S);
-      }
-    }
+    // Timer isolation: single global ticker bound to activeModeId
+    let ticker=null;
+    let tickerModeId=null;
 
-    // Grid
-    function renderGrid(){
-      treeGrid.innerHTML='';
-      for(let i=0;i<52;i++){
-        const cell=document.createElement('div'); cell.className='cell';
-        const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
-        const icon=document.createElement('div'); icon.className='icon';
-        const entry=S.grid[i];
-        if(entry){ icon.textContent= entry.live?'🌳':''; if(entry.live) cell.classList.add('live'); }
-        cell.appendChild(num); cell.appendChild(icon); treeGrid.appendChild(cell);
-      }
-      gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
-    }
-
-    // Rain + leaf animations (per-mode session only)
-    let ticker=null, blinkWrap=null;
-    function canopyBlink(on){ const outline=document.getElementById('canopyOutline'); outline?.classList.toggle('blink-canopy', !!on); }
-    function ensureRainDrops(){
-      if(rainTop.childElementCount>0) return;
-      const mk=(n, cls='')=>{
-        for(let i=0;i<n;i++){
-          const d=document.createElement('div'); d.className='drop'+cls;
-          d.style.left=(Math.random()*560)+'px';
-          d.style.animationDelay=(Math.random()*1.0)+'s';
-          d.style.animationDuration=(cls? (1.1+Math.random()*0.9)+'s' : (0.8+Math.random()*0.7)+'s');
-          rainTop.appendChild(d);
-        }
-      };
-      mk(160,''); mk(140,' far');
-    }
-    function rain(on){ ensureRainDrops(); rainTop.style.display = on ? 'block' : 'none'; }
-
-    function baseAnchors(){ return [{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}]; }
-    function anchorForIndex(i){
-      const b=baseAnchors();
-      if(i<b.length) return b[i];
-      const k=i-b.length+1, a=k*137.508*Math.PI/180, r=30+0.9*Math.sqrt(k)*8, cx=280, cy=260;
-      return {x:cx+r*Math.cos(a), y:cy+r*Math.sin(a)*0.7};
-    }
-    function makeLeafG(n){
-      const wrap=document.createElementNS(svgns,'g');
-      const g=document.createElementNS(svgns,'g'); g.setAttribute('class','leaf');
-      const p=document.createElementNS(svgns,'path'); p.setAttribute('d','M 0 -16 C 10 -10, 12 0, 0 14 C -12 0, -10 -10, 0 -16 Z'); p.setAttribute('fill','#166534'); p.setAttribute('stroke','#0b3d22'); p.setAttribute('stroke-width','1.2');
-      const t=document.createElementNS(svgns,'text'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.setAttribute('fill','#fff'); t.setAttribute('font-weight','800'); t.setAttribute('font-size','13'); t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle'); t.textContent=String(n);
-      g.appendChild(p); g.appendChild(t); wrap.appendChild(g); return wrap;
-    }
-    function placeLeaf(wrap,a){
-      wrap.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`);
-      wrap.style.transformBox='fill-box'; wrap.style.transformOrigin='center';
-    }
-    function renderLeaves(){
-      leafLayer.innerHTML='';
-      for(let i=0;i<S.placed;i++){
-        const w=makeLeafG(i+1); placeLeaf(w, anchorForIndex(i)); leafLayer.appendChild(w);
-      }
-    }
-    function startBlinkPlaceholder(){
-      stopBlinkPlaceholder();
-      const idx=S.placed;
-      blinkWrap=makeLeafG(idx+1);
-      placeLeaf(blinkWrap, anchorForIndex(idx));
-      const inner=blinkWrap.firstElementChild;
-      inner.classList.remove('blink-leaf'); void inner.offsetWidth; inner.classList.add('blink-leaf');
-      leafLayer.appendChild(blinkWrap);
-    }
-    function stopBlinkPlaceholder(){
-      if(blinkWrap){
-        const inner=blinkWrap.firstElementChild;
-        inner.classList.remove('blink-leaf');
-        try{ leafLayer.removeChild(blinkWrap); }catch{}
-        blinkWrap=null;
-      }
-    }
-    function finalizeLeafPop(){
-      if(blinkWrap){
-        const inner=blinkWrap.firstElementChild;
-        inner.classList.remove('blink-leaf');
-        inner.classList.add('leaf-pop');
-        blinkWrap=null;
-      }else{
-        const idx=S.placed-1;
-        const w=makeLeafG(S.placed); placeLeaf(w, anchorForIndex(idx));
-        w.firstElementChild.classList.add('leaf-pop'); leafLayer.appendChild(w);
-      }
-    }
-
-    // Timer + progress
     function getSessionSeconds(){
       if(G.timerType==='pomodoro') return 25*60;
       if(G.timerType==='custom') return Math.max(60, Number(G.customSeconds)||1500);
@@ -565,15 +464,103 @@
       xyLabel.textContent=`${done}/${total} leaves`;
     }
 
+    function baseAnchors(){ return [{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}]; }
+    function anchorForIndex(i){
+      const b=baseAnchors();
+      if(i<b.length) return b[i];
+      const k=i-b.length+1, a=k*137.508*Math.PI/180, r=30+0.9*Math.sqrt(k)*8, cx=280, cy=260;
+      return {x:cx+r*Math.cos(a), y:cy+r*Math.sin(a)*0.7};
+    }
+    function makeLeafG(n){
+      const wrap=document.createElementNS(svgns,'g');
+      const g=document.createElementNS(svgns,'g'); g.setAttribute('class','leaf');
+      const p=document.createElementNS(svgns,'path'); p.setAttribute('d','M 0 -16 C 10 -10, 12 0, 0 14 C -12 0, -10 -10, 0 -16 Z'); p.setAttribute('fill','#166534'); p.setAttribute('stroke','#0b3d22'); p.setAttribute('stroke-width','1.2');
+      const t=document.createElementNS(svgns,'text'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.setAttribute('fill','#fff'); t.setAttribute('font-weight','800'); t.setAttribute('font-size','13'); t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle'); t.textContent=String(n);
+      g.appendChild(p); g.appendChild(t); wrap.appendChild(g); return wrap;
+    }
+    function placeLeaf(wrap,a){
+      wrap.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`);
+      wrap.style.transformBox='fill-box'; wrap.style.transformOrigin='center';
+    }
+    function renderLeaves(){
+      leafLayer.innerHTML='';
+      for(let i=0;i<S.placed;i++){
+        const w=makeLeafG(i+1); placeLeaf(w, anchorForIndex(i)); leafLayer.appendChild(w);
+      }
+    }
+
+    // Blink placeholder per-mode runtime
+    let blinkWrap=null;
+    function canopyBlink(on){ const outline=document.getElementById('canopyOutline'); outline?.classList.toggle('blink-canopy', !!on); }
+    function ensureRainDrops(){
+      if(rainTop.childElementCount>0) return;
+      const mk=(n, cls='')=>{
+        for(let i=0;i<n;i++){
+          const d=document.createElement('div'); d.className='drop'+cls;
+          d.style.left=(Math.random()*560)+'px';
+          d.style.animationDelay=(Math.random()*1.0)+'s';
+          d.style.animationDuration=(cls? (1.1+Math.random()*0.9)+'s' : (0.8+Math.random()*0.7)+'s');
+          rainTop.appendChild(d);
+        }
+      };
+      mk(160,''); mk(140,' far');
+    }
+    function rain(on){ ensureRainDrops(); rainTop.style.display = on ? 'block' : 'none'; }
+    function startBlinkPlaceholder(){
+      stopBlinkPlaceholder();
+      const idx=S.placed;
+      blinkWrap=makeLeafG(idx+1);
+      placeLeaf(blinkWrap, anchorForIndex(idx));
+      const inner=blinkWrap.firstElementChild;
+      inner.classList.remove('blink-leaf'); void inner.offsetWidth; inner.classList.add('blink-leaf');
+      leafLayer.appendChild(blinkWrap);
+    }
+    function stopBlinkPlaceholder(){
+      if(blinkWrap){
+        const inner=blinkWrap.firstElementChild;
+        inner.classList.remove('blink-leaf');
+        try{ leafLayer.removeChild(blinkWrap); }catch{}
+        blinkWrap=null;
+      }
+    }
+    function finalizeLeafPop(){
+      if(blinkWrap){
+        const inner=blinkWrap.firstElementChild;
+        inner.classList.remove('blink-leaf');
+        inner.classList.add('leaf-pop');
+        blinkWrap=null;
+      }else{
+        const idx=S.placed-1;
+        const w=makeLeafG(S.placed); placeLeaf(w, anchorForIndex(idx));
+        w.firstElementChild.classList.add('leaf-pop'); leafLayer.appendChild(w);
+      }
+    }
+
+    // STRICT isolation: stop any running ticker unless it belongs to this mode
+    function stopSession(){
+      if(ticker){ clearInterval(ticker); ticker=null; }
+      tickerModeId=null;
+      canopyBlink(false); rain(false); stopBlinkPlaceholder();
+    }
     function startSession(){
-      if(ticker) return;
+      // If some other mode is running, stop it first
+      if(ticker && tickerModeId !== currentMode){
+        stopSession();
+      }
+      if(ticker){ return; }
       const maxSecs=getSessionSeconds();
       if(S.secondsLeft<=0 || S.secondsLeft>maxSecs) S.secondsLeft=maxSecs;
 
       canopyBlink(true); rain(true); startBlinkPlaceholder();
 
       const target=Date.now()+S.secondsLeft*1000;
+      tickerModeId=currentMode;
       const tick=()=>{
+        // if user switched mode, enforce isolation by halting this ticker
+        if(tickerModeId !== currentMode){
+          stopSession();
+          return;
+        }
         const msLeft=Math.max(0, target - Date.now());
         S.secondsLeft=Math.ceil(msLeft/1000);
         clockEl.textContent=format(S.secondsLeft);
@@ -585,10 +572,7 @@
       tick();
       ticker=setInterval(tick, 200);
     }
-    function stopSession(){
-      if(ticker){ clearInterval(ticker); ticker=null; }
-      canopyBlink(false); rain(false); stopBlinkPlaceholder();
-    }
+
     function onComplete(){
       const dur=getSessionSeconds();
       S.weeklyFocusSeconds=(S.weeklyFocusSeconds||0)+dur;
@@ -606,7 +590,7 @@
       renderGrid();
     }
 
-    // Weekly target + per-mode LPT lock
+    // Weekly target + LPT lock (per-mode)
     function updateWeeklyTargetText(){
       const per=getSessionSeconds();
       const totalSec = per * (S.leavesPerTree||0);
@@ -620,6 +604,21 @@
         lptInput.disabled=false; lptSetBtn.disabled=false; lptLockNote.textContent='Editable once per ISO week';
       }
     }
+    function rolloverWeekIfNeeded(){
+      const {week,year}=isoWeekOf(new Date());
+      if(S._week===undefined || S._year===undefined){ S._week=week; S._year=year; saveState(currentMode,S); return; }
+      if(S._week!==week || S._year!==year){
+        const completed = S.placed>=S.leavesPerTree && S.leavesPerTree>0;
+        S.grid.unshift({week:S._week,year:S._year,live:completed,ts:Date.now()});
+        if(S.grid.length>52) S.grid.pop();
+        S._week=week; S._year=year;
+        S.weeklyLeaves=0; S.weeklyFocusSeconds=0;
+        S.placed=0; leafLayer.innerHTML='';
+        S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
+        saveState(currentMode,S);
+        renderGrid();
+      }
+    }
     lptSetBtn.addEventListener('click', ()=>{
       rolloverWeekIfNeeded();
       if(S.weeklyTargetLocked) return;
@@ -629,7 +628,6 @@
       const {week,year}=isoWeekOf(new Date());
       S.lockWeek=week; S.lockYear=year;
       S.weeklyTargetSetValue=v;
-      // Reset weekly progress for this mode only
       S.placed=0; S.weeklyLeaves=0; leafLayer.innerHTML='';
       saveState(currentMode,S);
       reflectLPTLockUI();
@@ -638,7 +636,7 @@
       renderGrid();
     });
 
-    // Timer type + custom (shared UI, per-mode time left only)
+    // Timer type + custom (shared preference, per-mode seconds persist separately)
     timerTypeSelect.value=G.timerType;
     timerTypeSelect.addEventListener('change', ()=>{
       G.timerType=timerTypeSelect.value; save(GLOBAL_KEY,G);
@@ -655,7 +653,23 @@
       saveState(currentMode,S);
     });
 
-    // Controls
+    // Mode switching: STOP ticker from previous mode, then load selected mode state
+    modeSelect.addEventListener('change', ()=>{
+      // always stop any running session before switching
+      stopSession();
+      currentMode=modeSelect.value; G.selectedMode=currentMode; save(GLOBAL_KEY,G);
+      S=loadState(currentMode);
+      rolloverWeekIfNeeded();
+      setClockAndButtons();
+      renderLeaves();
+      renderGrid();
+      updateWeeklyTargetText();
+      updateProgressInstant();
+      reflectLPTLockUI();
+      refreshModeHeader();
+    });
+
+    // Buttons
     startBtn.addEventListener('click', startSession);
     resetBtn.addEventListener('click', ()=>{
       stopSession();
@@ -664,6 +678,8 @@
       updateProgressInstant();
       saveState(currentMode,S);
     });
+
+    // Slider is read-only — no input handlers to mutate state
 
     // Saplings
     const saplingsG=document.getElementById('saplings');
@@ -687,13 +703,27 @@
       }
     }
 
-    // Init
+    // Grid
+    function renderGrid(){
+      treeGrid.innerHTML='';
+      for(let i=0;i<52;i++){
+        const cell=document.createElement('div'); cell.className='cell';
+        const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
+        const icon=document.createElement('div'); icon.className='icon';
+        const entry=S.grid[i];
+        if(entry){ icon.textContent= entry.live?'🌳':''; if(entry.live) cell.classList.add('live'); }
+        cell.appendChild(num); cell.appendChild(icon); treeGrid.appendChild(cell);
+      }
+      gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
+    }
+
     function init(){
       buildSaplings();
       populateModeSelect();
       populateNamesInputs();
-      // prepare rain drops
+      // prepare rain drops once
       (function ensureRain(){ if(rainTop.childElementCount===0){ const mk=(n, cls='')=>{ for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='drop'+cls; d.style.left=(Math.random()*560)+'px'; d.style.animationDelay=(Math.random()*1.0)+'s'; d.style.animationDuration=(cls? (1.1+Math.random()*0.9)+'s' : (0.8+Math.random()*0.7)+'s'); rainTop.appendChild(d);} }; mk(160,''); mk(140,' far'); } })();
+      // fresh render for current mode without starting any timer
       rolloverWeekIfNeeded();
       setClockAndButtons();
       renderLeaves();
