@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — X/Y in Pomodoro+Custom, Custom Locks Weekly, Simple No Lock</title>
+  <title>Pomodoro Tree — Fixed x/y, Custom Weekly Lock, Simple No Lock, Per‑Mode State</title>
   <style>
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
@@ -81,8 +81,7 @@
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:2; }
 
     .soilPct{ position:absolute; left:14px; bottom:10px; font:900 56px/1 Inter; color:#ffffff; text-shadow:0 2px 0 rgba(0,0,0,.2); z-index:var(--z-labels); }
-    <span style="display:none"></span>
-    .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); display:none; } /* default hidden; shown for Pomodoro/Custom */
+    .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); display:none; }
 
     .todaySky{ position:absolute; left:14px; top:38px; font:800 18px/1 Inter; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
@@ -216,7 +215,7 @@
             </svg>
 
             <div id="soilPct" class="soilPct">0%</div>
-            <div id="xyLabel" class="xyLabel">0/9 leaves</div> <!-- Visible only for pomodoro/custom -->
+            <div id="xyLabel" class="xyLabel">0/9 leaves</div>
             <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
 
             <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="z-index:var(--z-tree);">
@@ -323,7 +322,7 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_XY_PomoCustom_CustomWeeklyLock_SimpleNoLock_v1';
+    const APP_KEY='pomodoroTree_Final_XY_Fixes_v1';
     const GLOBAL_KEY=APP_KEY+'_global', NAMES_KEY=APP_KEY+'_names';
     const svgns='http://www.w3.org/2000/svg';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simple:'simple' };
@@ -382,6 +381,7 @@
     };
     const MODE_IDS=['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
     const nameFor=(id)=> (CUSTOM_NAMES[id]??'').trim() || (DEFAULT_MODE_NAMES[id]||id);
+
     function populateModeSelect(){
       modeSelect.innerHTML='';
       const f=document.createDocumentFragment();
@@ -417,6 +417,20 @@
       refreshModeHeader();
     });
 
+    // Timezone (UI helper)
+    const countrySearch=el('countrySearch'), countryList=el('countryList');
+    const COUNTRY_TZ=[{name:'India',tz:'Asia/Kolkata'},{name:'United Kingdom',tz:'Europe/London'},{name:'United States',tz:'America/New_York'},{name:'Canada',tz:'America/Toronto'},{name:'Australia',tz:'Australia/Sydney'},{name:'UAE',tz:'Asia/Dubai'},{name:'Bangladesh',tz:'Asia/Dhaka'},{name:'Japan',tz:'Asia/Tokyo'},{name:'China',tz:'Asia/Shanghai'},{name:'Germany',tz:'Europe/Berlin'},{name:'France',tz:'Europe/Paris'},{name:'Brazil',tz:'America/Sao_Paulo'}].sort((a,b)=> a.name.localeCompare(b.name));
+    function renderCountryList(filter=''){
+      const q=filter.trim().toLowerCase(); const items=COUNTRY_TZ.filter(c=> c.name.toLowerCase().includes(q));
+      if(items.length===0){ countryList.style.display='none'; countryList.innerHTML=''; return; }
+      countryList.innerHTML=items.map(c=>`<div class="drop-item" data-tz="${c.tz}" data-name="${c.name}">${c.name}</div>`).join('');
+      countryList.style.display='block';
+    }
+    countrySearch.addEventListener('input', ()=> renderCountryList(countrySearch.value) );
+    countrySearch.addEventListener('focus', ()=> renderCountryList(countrySearch.value) );
+    document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
+    countryList.addEventListener('click', (e)=>{ const it=e.target.closest('.drop-item'); if(!it) return; countrySearch.value=it.getAttribute('data-name'); countryList.style.display='none'; });
+
     // Week rollover per-mode
     function rolloverWeekIfNeeded(){
       const {week,year}=isoWeekOf(new Date());
@@ -430,7 +444,7 @@
         S.weeklyLeaves=0; S.weeklyFocusSeconds=0;
         S.placed=0; leafLayer.innerHTML='';
 
-        // Unlock LPT+custom weekly locks
+        // unlock locks on new week
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
         S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
 
@@ -483,9 +497,10 @@
       const done=Math.min(S.placed,total);
       const pct=(done/total)*100;
       setFillPercent(pct);
-      // X/Y label only for Pomodoro and Custom
-      xyLabel.style.display = (G.timerType==='pomodoro' || G.timerType==='custom') ? 'block' : 'none';
-      xyLabel.textContent = `${done}/${total} leaves`;
+      // Show x/y only for Pomodoro and Custom
+      const showXY = (G.timerType==='pomodoro' || G.timerType==='custom');
+      xyLabel.style.display = showXY ? 'block' : 'none';
+      if(showXY){ xyLabel.textContent = `${done}/${total} leaves`; }
     }
 
     function baseAnchors(){ return [{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}]; }
@@ -688,7 +703,7 @@
       saveState(currentMode,S);
     });
 
-    // Mode switching
+    // Mode switching (per-mode isolation)
     modeSelect.addEventListener('change', ()=>{
       stopSession();
       currentMode=modeSelect.value; G.selectedMode=currentMode; save(GLOBAL_KEY,G);
