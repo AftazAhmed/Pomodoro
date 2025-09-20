@@ -161,7 +161,7 @@
             </div>
           </div>
 
-          <!-- Simple minutes (never locks) -->
+          <!-- Simple minutes (no text lines) -->
           <div id="simpleInputs" class="vstack hidden">
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input id="simpleMin" type="number" min="1" max="999" step="1" value="25" />
@@ -205,60 +205,80 @@
           <div class="treeBox" id="treeBox">
             <div class="sky"></div>
 
-            <!-- Saplings layer -->
+            <!-- Saplings layer (6 rows centered vertically in soil band) -->
             <svg id="saplingsSVG" width="560" height="560" viewBox="0 0 560 560" class="saplingsLayer" aria-hidden="true">
               <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Ten simple saplings positioned near soil line (y ~ 340-360 in viewBox space) -->
-                <g transform="translate(90 350) scale(1)">
-                  <path d="M0 0 C 0 -8, 6 -16, 10 -22" />
-                  <path d="M10 -22 c 8 2, 12 6, 14 12 c -8 -2, -12 -6, -14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
-                  <path d="M0 0 C 0 -6, -6 -14, -10 -20" />
-                  <path d="M-10 -20 c -8 2, -12 6, -14 12 c 8 -2, 12 -6, 14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
-                </g>
-                <g transform="translate(140 355) scale(0.9)">
-                  <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
-                  <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
-                  <path d="M0 0 C 0 -6, -5 -12, -9 -18" />
-                  <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
-                </g>
-                <g transform="translate(190 348) scale(1.05)">
-                  <path d="M0 0 C 0 -9, 6 -16, 10 -24" />
-                  <path d="M10 -24 c 8 2, 12 6, 14 12 c -8 -2, -12 -6, -14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
-                </g>
-                <g transform="translate(230 360) scale(0.85)">
-                  <path d="M0 0 C 0 -8, 6 -16, 10 -22" />
-                  <path d="M10 -22 c 8 2, 12 6, 14 12 c -8 -2, -12 -6, -14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
-                  <path d="M0 0 C 0 -6, -6 -14, -10 -20" />
-                  <path d="M-10 -20 c -8 2, -12 6, -14 12 c 8 -2, 12 -6, 14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
-                </g>
-                <g transform="translate(270 352) scale(1)">
-                  <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
-                  <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
-                </g>
-                <g transform="translate(310 356) scale(0.95)">
-                  <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
-                  <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
-                  <path d="M0 0 C 0 -6, -5 -12, -9 -18" />
-                  <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
-                </g>
-                <g transform="translate(350 350) scale(1.1)">
-                  <path d="M0 0 C 0 -8, 6 -16, 10 -22" />
-                  <path d="M10 -22 c 8 2, 12 6, 14 12 c -8 -2, -12 -6, -14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
-                </g>
-                <g transform="translate(390 358) scale(0.9)">
-                  <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
-                  <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
-                  <path d="M0 0 C 0 -6, -5 -12, -9 -18" />
-                  <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
-                </g>
-                <g transform="translate(430 346) scale(1.05)">
-                  <path d="M0 0 C 0 -8, 6 -16, 10 -22" />
-                  <path d="M10 -22 c 8 2, 12 6, 14 12 c -8 -2, -12 -6, -14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
-                </g>
-                <g transform="translate(470 354) scale(0.95)">
-                  <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
-                  <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
-                </g>
+                <!-- Soil band in this scene starts around y ~ 346 (62% of 560) down to bottom.
+                     We'll center rows around y: 380..470 for a mid-soil look, 6 rows spaced by 15px. -->
+                <defs>
+                  <g id="sapling">
+                    <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
+                    <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                    <path d="M0 0 C 0 -6, -5 -12, -9 -18" />
+                    <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                  </g>
+                </defs>
+
+                <!-- Row generator: manually laid out for precise positions (no JS needed) -->
+                <!-- Row 1 -->
+                <g transform="translate(80 380)"><use href="#sapling"/></g>
+                <g transform="translate(130 380) scale(0.95)"><use href="#sapling"/></g>
+                <g transform="translate(180 380) scale(1.1)"><use href="#sapling"/></g>
+                <g transform="translate(230 380)"><use href="#sapling"/></g>
+                <g transform="translate(280 380) scale(0.9)"><use href="#sapling"/></g>
+                <g transform="translate(330 380)"><use href="#sapling"/></g>
+                <g transform="translate(380 380) scale(1.05)"><use href="#sapling"/></g>
+                <g transform="translate(430 380)"><use href="#sapling"/></g>
+
+                <!-- Row 2 -->
+                <g transform="translate(100 395) scale(1.05)"><use href="#sapling"/></g>
+                <g transform="translate(150 395)"><use href="#sapling"/></g>
+                <g transform="translate(200 395) scale(0.9)"><use href="#sapling"/></g>
+                <g transform="translate(250 395)"><use href="#sapling"/></g>
+                <g transform="translate(300 395) scale(1.1)"><use href="#sapling"/></g>
+                <g transform="translate(350 395)"><use href="#sapling"/></g>
+                <g transform="translate(400 395) scale(0.95)"><use href="#sapling"/></g>
+                <g transform="translate(450 395)"><use href="#sapling"/></g>
+
+                <!-- Row 3 -->
+                <g transform="translate(80 410)"><use href="#sapling"/></g>
+                <g transform="translate(130 410) scale(1.1)"><use href="#sapling"/></g>
+                <g transform="translate(180 410)"><use href="#sapling"/></g>
+                <g transform="translate(230 410) scale(0.95)"><use href="#sapling"/></g>
+                <g transform="translate(280 410)"><use href="#sapling"/></g>
+                <g transform="translate(330 410) scale(0.9)"><use href="#sapling"/></g>
+                <g transform="translate(380 410)"><use href="#sapling"/></g>
+                <g transform="translate(430 410) scale(1.05)"><use href="#sapling"/></g>
+
+                <!-- Row 4 -->
+                <g transform="translate(100 425)"><use href="#sapling"/></g>
+                <g transform="translate(150 425) scale(0.95)"><use href="#sapling"/></g>
+                <g transform="translate(200 425) scale(1.05)"><use href="#sapling"/></g>
+                <g transform="translate(250 425)"><use href="#sapling"/></g>
+                <g transform="translate(300 425) scale(0.9)"><use href="#sapling"/></g>
+                <g transform="translate(350 425)"><use href="#sapling"/></g>
+                <g transform="translate(400 425) scale(1.1)"><use href="#sapling"/></g>
+                <g transform="translate(450 425)"><use href="#sapling"/></g>
+
+                <!-- Row 5 -->
+                <g transform="translate(80 440)"><use href="#sapling"/></g>
+                <g transform="translate(130 440)"><use href="#sapling"/></g>
+                <g transform="translate(180 440) scale(0.95)"><use href="#sapling"/></g>
+                <g transform="translate(230 440)"><use href="#sapling"/></g>
+                <g transform="translate(280 440) scale(1.1)"><use href="#sapling"/></g>
+                <g transform="translate(330 440)"><use href="#sapling"/></g>
+                <g transform="translate(380 440) scale(0.9)"><use href="#sapling"/></g>
+                <g transform="translate(430 440)"><use href="#sapling"/></g>
+
+                <!-- Row 6 -->
+                <g transform="translate(100 455) scale(1.05)"><use href="#sapling"/></g>
+                <g transform="translate(150 455)"><use href="#sapling"/></g>
+                <g transform="translate(200 455)"><use href="#sapling"/></g>
+                <g transform="translate(250 455) scale(0.95)"><use href="#sapling"/></g>
+                <g transform="translate(300 455)"><use href="#sapling"/></g>
+                <g transform="translate(350 455) scale(1.1)"><use href="#sapling"/></g>
+                <g transform="translate(400 455)"><use href="#sapling"/></g>
+                <g transform="translate(450 455) scale(0.9)"><use href="#sapling"/></g>
               </g>
             </svg>
 
@@ -389,7 +409,7 @@
 
     const G = load(GLOBAL_KEY, { timerType:TIMER_TYPES.pomodoro, customSeconds:25*60, simpleSeconds:25*60, selectedMode:'maths' });
 
-    // Per-mode state: includes LPT, leaves, completed grid, weekly locks (LPT and custom)
+    // Per-mode state
     const DEFAULT_MODE_STATE = {
       leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS,
       weeklyTargetLocked:false, weeklyTargetSetValue:9, lockWeek:undefined, lockYear:undefined,
@@ -735,7 +755,7 @@
       reflectCustomLockUI();
     });
 
-    // Simple minutes never lock
+    // Simple minutes never lock UI (no extra text)
     function reflectSimpleUI(){
       if(G.timerType!=='simple'){
         simpleInputs.classList.add('hidden');
@@ -822,48 +842,6 @@
 
       soilPct.textContent='0%';
       todaySky.textContent='Total duration (today): 0 mins';
-
-      window.addEventListener('storage', (e)=>{
-        if(!e) return;
-        if(e.key===GLOBAL_KEY){
-          const latest=load(GLOBAL_KEY, G);
-          G.timerType=latest.timerType||G.timerType;
-          G.customSeconds=latest.customSeconds||G.customSeconds;
-          G.simpleSeconds=latest.simpleSeconds||G.simpleSeconds;
-          if(latest.selectedMode && latest.selectedMode!==currentMode){
-            stopSession();
-            currentMode=latest.selectedMode;
-            S=loadState(currentMode);
-            populateModeSelect();
-            rolloverWeekIfNeeded();
-            renderLeaves();
-            renderGrid();
-          }
-          applyTimerTypeUI();
-          reflectCustomLockUI();
-          reflectSimpleUI();
-          setClockAndButtons();
-          updateWeeklyTargetText();
-          updateLeavesProgress();
-        }else if(e.key && e.key.startsWith(APP_KEY+'_mode_')){
-          if(e.key===modeKey(currentMode)){
-            S=loadState(currentMode);
-            rolloverWeekIfNeeded();
-            renderLeaves();
-            renderGrid();
-            reflectLPTLockUI();
-            setClockAndButtons();
-            updateWeeklyTargetText();
-            updateLeavesProgress();
-            updateProgressInstant();
-          }
-        }else if(e.key===NAMES_KEY){
-          CUSTOM_NAMES=load(NAMES_KEY,{});
-          populateModeSelect();
-          refreshModeHeader();
-          populateNamesInputs();
-        }
-      });
     }
 
     // Accessibility: keyboard for tabs
