@@ -48,7 +48,8 @@
     .customInputs input{ width:90px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
-    .timerCard{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
+    .centerBox{ width:100%; display:flex; justify-content:center; } /* keep central alignment fixed */
+    .timerCard{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; width:760px; }
     .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
     .controls{ gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
     button{
@@ -68,9 +69,8 @@
     #lptSetBtn{ background:var(--btn-primary); }
     #lptSetBtn:hover{ background:var(--btn-primary-hover); }
 
-    .settings{ gap:12px; margin-top:10px; flex-wrap:wrap; justify-content:center; color:var(--dim); flex-direction:column; align-items:center; }
+    .settings{ gap:12px; margin-top:10px; flex-wrap:wrap; justify-content:center; color:var(--dim); flex-direction:column; align-items:center; width:100%; }
     input[type=range][readonly]{ pointer-events:none; }
-
     .numWrap{ display:flex; align-items:center; gap:8px; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
 
@@ -87,10 +87,10 @@
     #lptRange::-webkit-slider-runnable-track{ height:12px; border-radius:999px; background:transparent; }
     #lptRange::-moz-range-track{ height:12px; border-radius:999px; background:transparent; }
 
-    .treePanel{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
+    .treePanel{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); width:760px; }
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
     .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, #bfeec7 62%, #8edaa0 100%); }
-    .percentLabel{ position:absolute; left:14px; bottom:8px; font:900 81px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; }
+    .percentLabel{ position:absolute; left:14px; bottom:8px; font:900 81px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; display:none; } /* hidden per requirements */
     .xyLabel{ position:absolute; left:16px; top:14px; font:900 28.35px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
     .todaySky{ position:absolute; left:16px; top:52px; font:800 21px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
@@ -105,15 +105,15 @@
     .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
     @keyframes rainFall{ to{ transform:translateY(620px); } }
 
-    .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; }
+    .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; width:760px; }
     .tzLeft{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     .tzLeft label{ color:#4a6894; font-weight:800; }
     .tzLeft select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:700; min-width:260px; }
     .stats{ gap:10px; flex-wrap:wrap; }
     .chip{ gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#4a6894; }
 
-    .tabsWrap{ margin:12px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
-    .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); }
+    .tabsWrap{ margin:12px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:980px; }
+    .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); justify-content:center; }
     .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
     .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
     .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; flex-wrap:wrap; }
@@ -125,8 +125,8 @@
     .modeEditRow input{ padding:6px 8px; border-radius:8px; border:1px solid var(--line); font-weight:700; min-width:160px; }
     .modeNote{ color:#4a6894; font-weight:700; flex-basis:100%; }
 
-    .gridWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; flex-direction:column; }
-    .gridHead{ justify-content:space-between; gap:8px; color:#4a6894; width:100%; }
+    .gridWrap{ margin:14px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:980px; display:flex; flex-direction:column; align-items:center; }
+    .gridHead{ justify-content:space-between; gap:8px; color:#4a6894; width:100%; max-width:980px; }
     .grid{ display:grid; gap:10px; grid-template-columns:repeat(13, minmax(0, 1fr)); width:100%; margin-top:10px; }
     @media (max-width:980px){ .grid{ grid-template-columns:repeat(8, minmax(0, 1fr)); } }
     .cell{ position:relative; aspect-ratio:1/1; border-radius:14px; background:#f3f8ff; border:1px dashed #c8d8ee; color:#4e6ea0; display:flex; align-items:center; justify-content:center; font-weight:800; overflow:hidden; }
@@ -150,8 +150,8 @@
         <div class="timerTypeLeft">
           <label for="timerTypeSelect">Timer</label>
           <select id="timerTypeSelect">
-            <option value="pomodoro">Pomodoro</option>
-            <option value="custom">Custom</option>
+            <option value="pomodoro">Pomodoro timer (25 min)</option>
+            <option value="custom">Custom timer</option>
             <option value="simple">Simple timer</option>
           </select>
           <div class="customInputs" id="customInputs" style="display:none;">
@@ -162,87 +162,93 @@
             <button id="applyCustomBtn" title="Apply custom duration">Apply</button>
           </div>
         </div>
-        <div class="miniNote" id="timerTypeHint">Pomodoro counts 25:00 sessions; Custom counts exact time; Simple timer tracks nothing.</div>
+        <div class="miniNote" id="timerTypeHint">Choose timer type and optional duration for Custom/Simple.</div>
       </section>
 
-      <section class="timerCard">
-        <div class="time" id="clock">25:00</div>
-        <div class="controls">
-          <button id="startBtn">Start 25:00</button>
-          <button id="resetBtn">Reset</button>
-        </div>
-        <div class="settings">
-          <div class="numWrap" style="order:1;">
-            <label for="lptInput"><strong>Leaves per tree (LPT)</strong></label>
-            <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
-            <button id="lptSetBtn">Set</button>
-            <span id="lockHint" style="color:#4a6894">Editable once per ISO week</span>
+      <div class="centerBox">
+        <section class="timerCard">
+          <div class="time" id="clock">25:00</div>
+          <div class="controls">
+            <button id="startBtn">Start 25:00</button>
+            <button id="resetBtn">Reset</button>
           </div>
+          <div class="settings" id="settingsBlock">
+            <div class="numWrap" style="order:1;">
+              <label for="lptInput"><strong>Leaves per tree (LPT)</strong></label>
+              <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
+              <button id="lptSetBtn">Set</button>
+              <span id="lockHint" style="color:#4a6894">Editable once per ISO week</span>
+            </div>
 
-          <div class="estWrap">
-            <div class="miniNote" id="lptNote">LPT = No. of sessions per week</div>
+            <div class="estWrap">
+              <div class="miniNote" id="lptNote">LPT = No. of sessions per week</div>
+            </div>
+
+            <div class="progressWrap" id="progressBlock" style="order:2;">
+              <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
+              <span id="lptVal">9</span>
+            </div>
+            <div id="weeklyTarget" class="miniNote" style="order:3;">Weekly target = 3 hrs 45 mins (as per LPT)</div>
           </div>
-
-          <div class="progressWrap" id="progressBlock" style="order:2;">
-            <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
-            <span id="lptVal">9</span>
-          </div>
-          <div id="weeklyTarget" class="miniNote" style="order:3;">Weekly target = 3 hrs 45 mins (as per LPT)</div>
-        </div>
-      </section>
-
-      <section class="treePanel">
-        <h3 style="margin:0 0 8px 0; text-align:center;">Current Tree</h3>
-        <div class="treeBox">
-          <div class="sky"></div>
-          <div id="percentLabel" class="percentLabel">0%</div>
-          <div id="xyLabel" class="xyLabel">0/9 of leaves completed</div>
-          <div id="todaySky" class="todaySky">Leaves (today) = 0 (0 mins)</div>
-          <div id="rainLayer" class="rain"></div>
-
-          <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
-            <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
-          </svg>
-
-          <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible">
-            <defs>
-              <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="1.0" flood-color="#000" flood-opacity="0.15" /></filter>
-              <mask id="fillMask" maskUnits="userSpaceOnUse" x="100" y="150" width="380" height="220">
-                <rect fill="#000" x="100" y="150" width="380" height="220"/>
-                <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
-              </mask>
-              <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#a3e3b5" />
-                <stop offset="100%" stop-color="#7fce9d" />
-              </linearGradient>
-            </defs>
-
-            <g id="canopyGroup" transform="translate(280 280) scale(1,1.2) translate(-280 -280)">
-              <path id="canopyWhite" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="url(#canopyBaseDarker)"/>
-              <path id="canopyFillGreen" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="#3aa85f" mask="url(#fillMask)"/>
-              <path id="canopyOutline" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="transparent" stroke="#065f46" stroke-width="3" />
-              <path d="M 280 380 C 280 350, 280 320, 280 284" fill="none" stroke="#4e342e" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M 280 284 C 270 270, 258 255, 248 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M 280 284 C 290 270, 302 255, 312 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
-              <g id="leafLayer" filter="url(#leafShadow)"></g>
-            </g>
-          </svg>
-        </div>
-      </section>
-    </div>
-
-    <div class="tzBar">
-      <div class="tzLeft">
-        <label for="tzSelect">Time zone</label>
-        <select id="tzSelect" aria-label="Time zone"></select>
+        </section>
       </div>
-      <div class="stats">
-        <div class="chip" id="todayChip"><strong>Pomodoro hrs (week)</strong>: 0 hrs 0 mins</div>
-        <div class="chip" id="totalTimeChip"><strong>Pomodoro hrs (overall)</strong>: 0 hrs 0 mins</div>
+
+      <div class="centerBox">
+        <section class="treePanel">
+          <h3 style="margin:0 0 8px 0; text-align:center;">Current Tree</h3>
+          <div class="treeBox">
+            <div class="sky"></div>
+            <div id="percentLabel" class="percentLabel"></div>
+            <div id="xyLabel" class="xyLabel">0/9 leaves</div>
+            <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
+            <div id="rainLayer" class="rain"></div>
+
+            <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
+              <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
+            </svg>
+
+            <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet" style="position:absolute; left:50%; transform:translateX(-50%); bottom:20px; overflow:visible">
+              <defs>
+                <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="1.0" flood-color="#000" flood-opacity="0.15" /></filter>
+                <mask id="fillMask" maskUnits="userSpaceOnUse" x="100" y="150" width="380" height="220">
+                  <rect fill="#000" x="100" y="150" width="380" height="220"/>
+                  <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
+                </mask>
+                <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#a3e3b5" />
+                  <stop offset="100%" stop-color="#7fce9d" />
+                </linearGradient>
+              </defs>
+
+              <g id="canopyGroup" transform="translate(280 280) scale(1,1.2) translate(-280 -280)">
+                <path id="canopyWhite" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="url(#canopyBaseDarker)"/>
+                <path id="canopyFillGreen" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="#3aa85f" mask="url(#fillMask)"/>
+                <path id="canopyOutline" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="transparent" stroke="#065f46" stroke-width="3" />
+                <path d="M 280 380 C 280 350, 280 320, 280 284" fill="none" stroke="#4e342e" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M 280 284 C 270 270, 258 255, 248 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M 280 284 C 290 270, 302 255, 312 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+                <g id="leafLayer" filter="url(#leafShadow)"></g>
+              </g>
+            </svg>
+          </div>
+        </section>
       </div>
     </div>
 
-    <section class="tabsWrap">
+    <div class="centerBox">
+      <div class="tzBar" id="tzBar">
+        <div class="tzLeft">
+          <label for="tzSelect">Time zone</label>
+          <select id="tzSelect" aria-label="Time zone"></select>
+        </div>
+        <div class="stats" id="statsChips">
+          <div class="chip" id="todayChip"><strong>Pomodoro hrs (week)</strong>: 0 hrs 0 mins</div>
+          <div class="chip" id="totalTimeChip"><strong>Pomodoro hrs (overall)</strong>: 0 hrs 0 mins</div>
+        </div>
+      </div>
+    </div>
+
+    <section class="tabsWrap" id="tabsWrap">
       <div class="tabs">
         <div class="tab" data-tab="subPanel">Subscription</div>
         <div class="tab" data-tab="syncPanel">Sync</div>
@@ -281,7 +287,7 @@
       </div>
     </section>
 
-    <section class="gridWrap">
+    <section class="gridWrap" id="gridWrap">
       <div class="gridHead">
         <div class="chip">Completed Trees</div>
         <div class="chip" id="gridCount">0 / 52</div>
@@ -289,7 +295,7 @@
       <div class="grid" id="treeGrid"></div>
     </section>
 
-    <div class="bottomAuth">
+    <div class="bottomAuth" id="bottomAuth">
       <input type="email" id="emailInputBottom" placeholder="email@example.com" />
       <button id="sendLinkBtnBottom">Sign in</button>
       <button id="signOutBtnBottom">Sign out</button>
@@ -297,7 +303,7 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_BedtimeSilent_V1';
+    const APP_KEY = 'pomodoroTree_SimpleCustomPomodoro_V2';
     const NAMES_KEY = APP_KEY + '_customNames';
     const GLOBAL_KEY = APP_KEY + '_global';
     const svgns='http://www.w3.org/2000/svg';
@@ -373,8 +379,8 @@
     const todayChip=el('todayChip');
     const totalTimeChip=el('totalTimeChip');
 
-    const percentLabel=document.querySelector('.percentLabel');
-    const xyLabel=document.querySelector('.xyLabel');
+    const percentLabel=document.getElementById('percentLabel');
+    const xyLabel=document.getElementById('xyLabel');
     const rainLayer=el('rainLayer');
     const treeGrid=el('treeGrid'); const gridCount=el('gridCount');
     const leafLayer=document.querySelector('#treeSVG #leafLayer');
@@ -388,6 +394,14 @@
     const customSecInput = document.getElementById('customSec');
     const applyCustomBtn = document.getElementById('applyCustomBtn');
     const timerTypeHint = document.getElementById('timerTypeHint');
+
+    const tzBar = document.getElementById('tzBar');
+    const statsChips = document.getElementById('statsChips');
+    const tabsWrap = document.getElementById('tabsWrap');
+    const gridWrap = document.getElementById('gridWrap');
+    const bottomAuth = document.getElementById('bottomAuth');
+    const settingsBlock = document.getElementById('settingsBlock');
+    const progressBlock = document.getElementById('progressBlock');
 
     const tzSelect = document.getElementById('tzSelect');
     const modeSelect = document.getElementById('modeSelect');
@@ -417,10 +431,9 @@
       if(!audioCtx){ audioCtx=new AC(); }
       if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); }
     }
-    // Alarm: skip entirely in Bed-time mode
     function playAlarm10s(){
       const isBedtime = (currentMode === 'bedTime');
-      if(isBedtime) return; // silence for Bed-time mode
+      if(isBedtime) return;
       if(!audioCtx || audioCtx.state==='suspended') return;
       const now = audioCtx.currentTime;
       const master = audioCtx.createGain();
@@ -506,7 +519,7 @@
       const targetY=CANOPY_BOTTOM-targetH;
       fillRect.setAttribute('x','110'); fillRect.setAttribute('width','360');
       fillRect.setAttribute('y', String(targetY)); fillRect.setAttribute('height', String(targetH));
-      percentLabel.textContent = Math.round(p)+'%';
+      // percentage hidden per requirements
     }
     function percentFromState(){ const denom=Math.max(1, S.leavesPerTree|0); return (S.placed/denom)*100; }
     function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
@@ -596,8 +609,10 @@
       const isCustom = (G.timerType === 'custom');
       todayChip.innerHTML = `<strong>${isCustom? 'Work hrs (week)':'Pomodoro hrs (week)'}</strong>: ${w.h} hrs ${w.m} mins`;
       totalTimeChip.innerHTML = `<strong>${isCustom? 'Work hrs (overall)':'Pomodoro hrs (overall)'}</strong>: ${o.h} hrs ${o.m} mins`;
-      const minsToday = Math.round((S.leavesToday * getCurrentSessionSeconds())/60);
-      document.getElementById('todaySky').textContent = `Leaves (today) = ${S.leavesToday||0} (${minsToday} mins)`;
+      const totalTodaySecs = (S.leavesToday * getCurrentSessionSeconds());
+      const minsToday = Math.round(totalTodaySecs/60);
+      todaySky.textContent = `Total duration (today): ${minsToday} mins`;
+      xyLabel.textContent = `${Math.min(S.placed, S.leavesPerTree)}/${S.leavesPerTree} leaves`;
     }
 
     function paintProgressUI(){
@@ -605,7 +620,6 @@
       const done = Math.max(0, Math.min(S.placed, total));
       const pct = (done/total)*100;
       lptRange.style.backgroundImage = `linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
-      xyLabel.textContent = `${done}/${total} of leaves completed`;
     }
 
     function format(sec){
@@ -615,8 +629,7 @@
     }
 
     function getCurrentSessionSeconds(){
-      if(G.timerType==='custom') return Math.max(10, Number(G.customSeconds)||900);
-      if(G.timerType==='simple') return Math.max(10, Number(G.customSeconds)||900);
+      if(G.timerType==='custom' || G.timerType==='simple') return Math.max(10, Number(G.customSeconds)||900);
       return POMODORO_SECONDS;
     }
 
@@ -625,11 +638,21 @@
       const label = format(secs);
       clockEl.textContent = format(S.secondsLeft || secs);
       startBtn.textContent = `Start ${label}`;
-      timerTypeHint.textContent = (G.timerType==='simple')
-        ? 'Simple timer runs without tracking; stats, tree, and grids are hidden.'
-        : (G.timerType==='custom'
-            ? 'Custom counts exact work time per completion; resets are ignored.'
-            : 'Pomodoro counts 25:00 sessions as leaves; resets are ignored.');
+
+      // Hide blocks in Simple; hide slider and percentage in Custom; show all in Pomodoro
+      const isSimple = (G.timerType==='simple');
+      const isCustom = (G.timerType==='custom');
+
+      // Hide/show lower UI containers
+      [tzBar, statsChips, tabsWrap, gridWrap, bottomAuth].forEach(el=>{
+        if(!el) return;
+        el.style.display = isSimple ? 'none' : '';
+      });
+
+      // Settings visibility and slider/percent per requirements
+      settingsBlock.style.display = isSimple ? 'none' : '';
+      progressBlock.style.display = (isSimple || isCustom) ? 'none' : ''; // no slider in Custom or Simple
+      percentLabel.style.display = 'none'; // never show percentage in any mode now
     }
 
     function setRunning(on){
@@ -656,8 +679,8 @@
         ? `Target locked for ISO Week ${S.week}-${S.year} at ${S.weeklyTargetSetValue}`
         : 'Editable once per ISO week';
       applyProgress();
+      if(G.timerType==='pomodoro') paintProgressUI(); // slider only in pomodoro
       updateWeeklyTarget();
-      paintProgressUI();
       renderTotals();
       populateTimeZonesIfNeeded();
       populateModesUI();
@@ -708,10 +731,17 @@
         save();
         renderHUD();
       }else{
+        // Simple: still add a leaf to visualize count, but no stats
+        S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1;
+        renderLeavesFromState();
         setRunning(false);
         S.secondsLeft=getCurrentSessionSeconds();
         clockEl.textContent=format(S.secondsLeft);
         save();
+        // Only update today's label
+        const totalTodaySecs = (S.leavesToday * getCurrentSessionSeconds());
+        const minsToday = Math.round(totalTodaySecs/60);
+        todaySky.textContent = `Total duration (today): ${minsToday} mins`;
       }
     }
 
@@ -724,7 +754,7 @@
         const remainingMs = Math.max(0, targetEpoch - Date.now());
         S.secondsLeft = Math.ceil(remainingMs / 1000);
         clockEl.textContent = format(S.secondsLeft);
-        if(G.timerType!=='simple') paintProgressUI();
+        if(G.timerType==='pomodoro') paintProgressUI();
         if (remainingMs <= 0) {
           clearModeInterval(thisMode);
           onSessionComplete();
@@ -750,6 +780,10 @@
 
       if(G.timerType!=='simple'){
         rolloverWeekIfNeeded();
+      }
+
+      // Add placeholder leaf only when tracking (custom/pomodoro)
+      if(G.timerType!=='simple'){
         if(!S.weeklyComplete && S.placed < S.leavesPerTree){
           const idx=S.placed;
           const layer=document.querySelector('#treeSVG #leafLayer');
@@ -784,7 +818,7 @@
     lptInput.addEventListener('input', ()=>{
       const v = clamp(lptInput.value);
       lptVal.textContent = String(v);
-      if(G.timerType!=='simple'){
+      if(G.timerType==='pomodoro'){
         const secs = v * getCurrentSessionSeconds();
         const h = Math.floor(secs/3600);
         const m = Math.round((secs%3600)/60);
@@ -907,12 +941,33 @@
       customInputsDiv.style.display = (G.timerType==='custom' || G.timerType==='simple') ? 'flex' : 'none';
       const secs = getCurrentSessionSeconds();
       if(S.secondsLeft <= 0 || S.secondsLeft > secs) S.secondsLeft = secs;
+
       setClockUIToCurrentType();
-      if(G.timerType!=='simple'){ renderHUD(); } else { setClockUIToCurrentType(); }
+
+      // For custom: behave like pomodoro (tracking), but no slider and no percentage
+      if(G.timerType==='custom'){
+        progressBlock.style.display='none';
+        percentLabel.style.display='none';
+      }
+
+      // For simple: large sections hidden already by setClockUIToCurrentType
+      if(G.timerType==='simple'){
+        progressBlock.style.display='none';
+        percentLabel.style.display='none';
+      }
+
+      // Pomodoro: show slider
+      if(G.timerType==='pomodoro'){
+        progressBlock.style.display='';
+      }
+
       save();
+      renderHUD();
     }
     timerTypeSelect.addEventListener('change', ()=>{
       G.timerType = timerTypeSelect.value;
+      // Enforce 25:00 in Pomodoro
+      if(G.timerType==='pomodoro'){ S.secondsLeft = POMODORO_SECONDS; }
       applyTimerTypeUI();
     });
     customMinInput.value = String(Math.floor((G.customSeconds||900)/60));
@@ -922,6 +977,9 @@
       const secs = Math.max(0, Math.floor(Number(customSecInput.value)||0));
       const total = Math.min(23*3600+59*60+59, mins*60 + secs);
       G.customSeconds = Math.max(10, total||900);
+      // If current type uses customSeconds, adjust display
+      const maxSecs = getCurrentSessionSeconds();
+      if (S.secondsLeft <= 0 || S.secondsLeft > maxSecs) S.secondsLeft = maxSecs;
       applyTimerTypeUI();
     });
 
@@ -947,13 +1005,9 @@
     populateModesUI();
     applyTimerTypeUI();
 
-    if(G.timerType!=='simple'){
-      renderLeavesFromState();
-      applyProgress();
-      renderHUD();
-    }else{
-      setClockUIToCurrentType();
-    }
+    renderLeavesFromState();
+    applyProgress();
+    renderHUD();
   </script>
 </body>
 </html>
