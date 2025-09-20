@@ -11,7 +11,6 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-G91N05XLB3');
   </script>
 
@@ -121,6 +120,12 @@
 
     .bottomAuth{ margin:18px auto 0; max-width:760px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; }
     .bottomAuth input{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); }
+
+    /* Timezone selector small UI styles */
+    .tzWrap{ gap:8px; align-items:center; flex-wrap:wrap; }
+    .tzWrap label{ color:#4a6894; font-weight:800; }
+    .tzWrap select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:700; }
+    .tzInfo{ color:#4a6894; font-weight:700; }
   </style>
 </head>
 <body data-mode="Study">
@@ -210,11 +215,17 @@
         <button id="subBtn">Unlock 48 weeks — $1</button>
       </div>
 
-      <div id="syncPanel" class="panelCard">
+      <div id="syncPanel" class="panelCard" style="display:flex;">
         <div id="authState">Signed out</div>
         <input type="email" id="emailInput" placeholder="email@example.com" />
         <button id="sendLinkBtn">Send sign-in link</button>
         <button id="signOutBtn">Sign out</button>
+
+        <!-- Timezone selector -->
+        <div class="tzWrap" style="margin-left:auto; display:flex;">
+          <label for="tzSelect">Time zone:</label>
+          <select id="tzSelect" aria-label="Time zone"></select>
+        </div>
       </div>
     </section>
 
@@ -251,7 +262,8 @@
       week:undefined, year:undefined,
       weeklyComplete:false,
       weeklyTargetLocked:false, weeklyTargetSetValue:9,
-      freeWeeksCap:4
+      freeWeeksCap:4,
+      timeZone:'UTC' // Default to Greenwich Mean Time (UTC)
     };
 
     const load=()=>JSON.parse(localStorage.getItem(KEY)||'{}');
@@ -276,6 +288,8 @@
     const leafLayer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
     const fillRect=document.getElementById('fillRect');
     const todaySky=el('todaySky');
+
+    const tzSelect=el('tzSelect');
 
     // Tabs behavior
     const tabsContainer=document.querySelector('.tabs');
@@ -316,15 +330,41 @@
       oscA.stop(now + 10.1); oscB.stop(now + 10.1); trem.stop(now + 10.1);
     }
 
-    // Week rollover
+    // Persistence
     function save(){ localStorage.setItem(KEY, JSON.stringify(S)); }
+
     function unshiftWeekToGrid(week, year, live){
       S.grid.unshift({week,year,live,ts:Date.now()});
       if(S.grid.length>52) S.grid.pop();
       save();
     }
+
+    // Week rollover based on ISO week in selected timezone
+    function nowInTZ(){
+      try{
+        // Convert current time to the selected timezone’s wall-clock components using Intl
+        const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: S.timeZone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+        const parts = fmt.formatToParts(new Date());
+        const get = k => Number(parts.find(p=>p.type===k)?.value);
+        const y=get('year'), m=get('month'), d=get('day'), hh=get('hour'), mm=get('minute'), ss=get('second');
+        return new Date(Date.UTC(y, m-1, d, hh, mm, ss));
+      }catch(e){
+        return new Date();
+      }
+    }
+
+    function isoWeekOf(date){
+      const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+      const week = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+      return { week, year: d.getUTCFullYear() };
+    }
+
     function rolloverWeekIfNeeded(){
-      const now=new Date(); const wk=now.getWeek(), yr=now.getWeekYear();
+      const nowTz = nowInTZ();
+      const { week:wk, year:yr } = isoWeekOf(nowTz);
       if(S.week===undefined || S.year===undefined){ S.week=wk; S.year=yr; save(); return; }
       if(S.week!==wk || S.year!==yr){
         const completed = (S.placed>=S.leavesPerTree && S.leavesPerTree>0);
@@ -377,7 +417,7 @@
       }
     }
 
-    // Saplings: previous style, 7 columns x 7 rows (21 + 28 new = 49)
+    // Saplings: 7 x 7
     function buildSaplings(){
       const g=document.getElementById('saplings');
       if(!g) return;
@@ -448,6 +488,15 @@
     function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
     function minutesForLeaves(n){ return n*(LEAF_SECONDS/60); }
 
+    // Format date/time labels in selected timezone (for potential future use)
+    function formatInTZ(date){
+      try{
+        return new Intl.DateTimeFormat(undefined, { dateStyle:'medium', timeStyle:'short', timeZone:S.timeZone, timeZoneName:'short' }).format(date);
+      }catch(e){
+        return date.toLocaleString();
+      }
+    }
+
     function renderTotals(){
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
       todayChip.innerHTML = `<strong>Pomodoro hrs (week)</strong>: ${w.h} hrs ${w.m} mins`;
@@ -496,6 +545,7 @@
       updateWeeklyTarget();
       paintProgressUI();
       renderTotals();
+      populateTimeZonesIfNeeded();
       save();
     }
 
@@ -606,6 +656,62 @@
       lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
     }
 
+    // Timezone selector: populate and handle changes
+    function populateTimeZonesIfNeeded(){
+      if(!tzSelect || tzSelect.options.length>0) {
+        // Ensure value reflects S.timeZone
+        if(tzSelect && tzSelect.value !== S.timeZone){
+          // If S.timeZone not in options (older browsers), append minimal choice
+          if(!Array.from(tzSelect.options).some(o=>o.value===S.timeZone)){
+            const opt=document.createElement('option');
+            opt.value=S.timeZone; opt.textContent=labelForTZ(S.timeZone);
+            tzSelect.appendChild(opt);
+          }
+          tzSelect.value = S.timeZone;
+        }
+        return;
+      }
+      let zones = [];
+      try{
+        // Modern: list supported IANA zones
+        zones = Intl.supportedValuesOf('timeZone');
+      }catch(e){
+        // Fallback minimal set including UTC
+        zones = ['UTC','Europe/London','Asia/Kolkata','America/New_York','Asia/Tokyo'];
+      }
+      // Put UTC at top as default GMT
+      zones = Array.from(new Set(['UTC', ...zones]));
+      const frag=document.createDocumentFragment();
+      for(const z of zones){
+        const opt=document.createElement('option');
+        opt.value=z;
+        opt.textContent=labelForTZ(z);
+        frag.appendChild(opt);
+      }
+      tzSelect.appendChild(frag);
+      tzSelect.value = S.timeZone || 'UTC';
+    }
+
+    function labelForTZ(tz){
+      try{
+        // Build label like "(GMT+05:30) Asia/Kolkata"
+        const now = new Date();
+        const short = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName:'shortOffset' }).format(now);
+        const offsetPart = short.split(', ').pop() || 'GMT';
+        return `(${offsetPart}) ${tz}`;
+      }catch(e){
+        return `(GMT) ${tz}`;
+      }
+    }
+
+    tzSelect?.addEventListener('change', ()=>{
+      S.timeZone = tzSelect.value || 'UTC';
+      // On timezone change, recompute current ISO week in that timezone and rollover if necessary
+      rolloverWeekIfNeeded();
+      renderHUD();
+      save();
+    });
+
     // Wire up UI
     startBtn.addEventListener('click', startFlow);
     resetBtn.addEventListener('click', resetTimer);
@@ -638,6 +744,9 @@
     });
 
     // Init
+    // Ensure default timezone is UTC (Greenwich Mean Time)
+    if(!S.timeZone) S.timeZone='UTC';
+    populateTimeZonesIfNeeded();
     rolloverWeekIfNeeded();
     renderLeavesFromState();
     applyProgress();
