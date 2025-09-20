@@ -617,7 +617,7 @@
       weeklyTargetEl.textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
     }
     function reflectLPTLockUI(){
-      lptWrap.style.display='flex'; // shown for Pomodoro and Custom; remains visible in Simple but user desire earlier was to remove; keeping visible as per current query focus
+      lptWrap.style.display='flex';
       if(S.weeklyTargetLocked){
         lptInput.disabled=true; lptSetBtn.disabled=true; lptLockNote.textContent=`Locked (week ${S.lockWeek}, ${S.lockYear})`;
       }else{
@@ -697,9 +697,6 @@
     function applyTimerTypeUI(){
       reflectCustomLockUI();
       reflectSimpleUI();
-      // LPT remains visible for Pomodoro and Custom; for Simple, keep it visible or hide if preferred
-      // If hiding in Simple is desired again, uncomment next line:
-      // lptWrap.style.display = (G.timerType==='simple') ? 'none' : 'flex';
       updateWeeklyTargetText();
       setClockAndButtons();
       updateProgressInstant();
@@ -735,58 +732,110 @@
       S.secondsLeft=getSessionSeconds();
       setClockAndButtons();
       updateProgressInstant();
-      saveState(currentMode,S);
+      renderGrid();
     });
 
-    // Saplings
-    const saplingsG=document.getElementById('saplings');
-    function buildSaplings(){
-      saplingsG.innerHTML='';
-      const rows=6, cols=7, left=24, right=536;
-      const soilTopY=Math.round(560*0.62)+14, y0=Math.max(soilTopY, 340), rowGap=24;
-      for(let r=0;r<rows;r++){
-        for(let c=0;c<cols;c++){
-          const x=Math.round(left + c*((right-left)/(cols-1)));
-          const y=y0 + r*rowGap;
-          const stem=document.createElementNS(svgns,'path');
-          stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
-          stem.setAttribute('stroke','#2f6f3a'); stem.setAttribute('stroke-width','2'); stem.setAttribute('fill','none'); stem.setAttribute('stroke-linecap','round');
-          const leafL=document.createElementNS(svgns,'path'); leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
-          leafL.setAttribute('stroke','#2f6f3a'); leafL.setAttribute('stroke-width','2'); leafL.setAttribute('fill','none'); leafL.setAttribute('stroke-linecap','round'); leafL.setAttribute('stroke-linejoin','round');
-          const leafR=document.createElementNS(svgns,'path'); leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
-          leafR.setAttribute('stroke','#2f6f3a'); leafR.setAttribute('stroke-width','2'); leafR.setAttribute('fill','none'); leafR.setAttribute('stroke-linecap','round'); leafR.setAttribute('stroke-linejoin','round');
-          saplingsG.appendChild(stem); saplingsG.appendChild(leafL); saplingsG.appendChild(leafR);
-        }
-      }
-    }
-
-    // Grid
-    function renderGrid(){
-      treeGrid.innerHTML='';
-      for(let i=0;i<52;i++){
-        const cell=document.createElement('div'); cell.className='cell';
-        const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
-        const icon=document.createElement('div'); icon.className='icon';
-        const entry=S.grid[i];
-        if(entry){ icon.textContent= entry.live?'🌳':''; if(entry.live) cell.classList.add('live'); }
-        cell.appendChild(num); cell.appendChild(icon); treeGrid.appendChild(cell);
-      }
-      gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
-    }
-
+    // Initialize on load
     function init(){
-      buildSaplings();
+      // Populate modes and names
       populateModeSelect();
       populateNamesInputs();
-      // prepare rain
-      (function ensureRain(){ const r=rainTop; if(r.childElementCount===0){ const mk=(n, cls='')=>{ for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='drop'+cls; d.style.left=(Math.random()*560)+'px'; d.style.animationDelay=(Math.random()*1.0)+'s'; d.style.animationDuration=(cls? (1.1+Math.random()*0.9)+'s' : (0.8+Math.random()*0.7)+'s'); r.appendChild(d);} }; mk(160,''); mk(140,' far'); } })();
+
+      // Ensure weekly rollover
       rolloverWeekIfNeeded();
-      reflectLPTLockUI();
+
+      // Reflect timer type UI and locks
       applyTimerTypeUI();
+      reflectLPTLockUI();
+      reflectCustomLockUI();
+      reflectSimpleUI();
+
+      // Set initial clock and visuals
+      setClockAndButtons();
       renderLeaves();
       renderGrid();
-      setClockAndButtons();
+      updateProgressInstant();
+      updateWeeklyTargetText();
+
+      // Start with tabs state correct
+      showPanel('modesPanel');
+      document.querySelectorAll('.tab').forEach(t=>{
+        t.classList.toggle('active', t.getAttribute('data-tab')==='modesPanel');
+      });
+
+      // Soil/today text
+      soilPct.textContent='0%';
+      todaySky.textContent='Total duration (today): 0 mins';
+
+      // Storage sync indicator (local only placeholder)
+      window.addEventListener('storage', (e)=>{
+        if(!e) return;
+        // If other tab updates global settings, refresh relevant UI
+        if(e.key===GLOBAL_KEY){
+          const latest=load(GLOBAL_KEY, G);
+          G.timerType=latest.timerType||G.timerType;
+          G.customSeconds=latest.customSeconds||G.customSeconds;
+          G.simpleSeconds=latest.simpleSeconds||G.simpleSeconds;
+          if(latest.selectedMode && latest.selectedMode!==currentMode){
+            // Switch mode if user changed in another tab
+            stopSession();
+            currentMode=latest.selectedMode;
+            S=loadState(currentMode);
+            populateModeSelect();
+            rolloverWeekIfNeeded();
+            renderLeaves();
+            renderGrid();
+          }
+          applyTimerTypeUI();
+          reflectCustomLockUI();
+          reflectSimpleUI();
+          setClockAndButtons();
+          updateWeeklyTargetText();
+        }else if(e.key && e.key.startsWith(APP_KEY+'_mode_')){
+          // If current mode changed elsewhere, reload its state
+          if(e.key===modeKey(currentMode)){
+            S=loadState(currentMode);
+            rolloverWeekIfNeeded();
+            renderLeaves();
+            renderGrid();
+            reflectLPTLockUI();
+            setClockAndButtons();
+            updateWeeklyTargetText();
+            updateProgressInstant();
+          }
+        }else if(e.key===NAMES_KEY){
+          CUSTOM_NAMES=load(NAMES_KEY,{});
+          populateModeSelect();
+          refreshModeHeader();
+          populateNamesInputs();
+        }
+      });
     }
+
+    // Accessibility: keyboard for tabs
+    document.getElementById('tabs').addEventListener('keydown', (e)=>{
+      if(e.key!=='Enter' && e.key!==' ') return;
+      const t=e.target.closest('.tab'); if(!t) return;
+      e.preventDefault();
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active'); showPanel(t.getAttribute('data-tab'));
+    });
+
+    // Prevent negative/invalid mins in inputs
+    function clampInputTo(el, min, max, fallback){
+      const v=Math.floor(Number(el.value)||fallback);
+      el.value=String(Math.max(min, Math.min(max, v)));
+    }
+    customMin.addEventListener('change', ()=> clampInputTo(customMin, 1, 999, 25));
+    simpleMin.addEventListener('change', ()=> clampInputTo(simpleMin, 1, 999, 25));
+    lptInput.addEventListener('change', ()=> clampInputTo(lptInput, 1, 200, 9));
+
+    // Keep the Start button label in sync even if user changes minutes before any session
+    const syncStartBtnLabel=()=> setClockAndButtons();
+    customMin.addEventListener('input', syncStartBtnLabel);
+    simpleMin.addEventListener('input', syncStartBtnLabel);
+
+    // Boot
     init();
   </script>
 </body>
