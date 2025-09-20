@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Soil + Slider + Centered Mobile</title>
+  <title>Pomodoro Tree — Slider Between LPT and Target</title>
 
   <style>
     :root{
@@ -19,7 +19,7 @@
       --slider-left:#ef4444;   /* red incomplete */
       --slider-track:#e6efff;
 
-      --soil-top:#d1a470;      /* light brown soil shades */
+      --soil-top:#d1a470;      /* light brown soil */
       --soil-bottom:#b37b3e;
     }
     *{ box-sizing:border-box; }
@@ -59,7 +59,7 @@
     .numWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
     .numWrap input{ width:160px; }
 
-    /* Percent slider (above weekly target) */
+    /* Completion slider (between LPT and Weekly target) */
     .pctWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
     .pctRow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     #pctRange{
@@ -74,7 +74,6 @@
       box-shadow:0 0 0 1px rgba(0,0,0,.1);
       position:relative; z-index:2;
     }
-    /* Firefox */
     #pctRange::-moz-range-track{ height:12px; background:var(--slider-track); border-radius:999px; }
     #pctRange::-moz-range-progress{ height:12px; background:var(--slider-done); border-radius:999px; }
     #pctRange::-moz-range-thumb{
@@ -91,13 +90,14 @@
       z-index:0;
     }
 
-    /* Saplings layer above soil, below canopy and labels */
+    /* Saplings above soil; below canopy and labels */
     .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:1; }
 
-    /* Only one percentage on soil, in white */
+    /* Only one percentage on soil, white */
     .soilPct{ position:absolute; left:14px; bottom:10px; font:900 56px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ffffff; text-shadow:0 2px 0 rgba(0,0,0,.2); z-index:3; }
     .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:3; }
-    .todaySky{ position:absolute; left:14px; top:46px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:3; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
+    /* Move the blue canvas "today" a little above */
+    .todaySky{ position:absolute; left:14px; top:40px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:3; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:2; }
 
@@ -143,23 +143,19 @@
 
     .hidden{ display:none !important; }
 
-    /* Mobile: recentre the tree box area */
+    /* Mobile centering */
     @media (max-width: 640px){
       .wrap{ padding-bottom:80px; }
       .centerRow{ display:flex; justify-content:center; }
       .treePanel.fixedCard{ width:100%; max-width:92vw; }
       .treeBox{
-        width:92vw;
-        aspect-ratio:1 / 1;   /* square box reliably */
-        height:auto;
-        margin: 8px auto;     /* recenter */
-        position:relative;
+        width:92vw; aspect-ratio:1 / 1; height:auto;
+        margin: 8px auto; position:relative;
       }
-      #treeSVG,
-      #saplingsSVG{ width:100%; height:100%; }
+      #treeSVG, #saplingsSVG{ width:100%; height:100%; }
       .soilPct{ font-size:42px; }
       .xyLabel{ font-size:18px; }
-      .todaySky{ font-size:16px; }
+      .todaySky{ font-size:16px; top:36px; } /* a bit higher on mobile too */
       h1{ font-size:18px; }
       .modeTag{ font-size:16px; }
       header{ gap:8px; }
@@ -201,15 +197,6 @@
           </div>
 
           <div class="settings vstack" id="settingsBlock">
-            <!-- Slider above weekly target -->
-            <div id="pctWrap" class="pctWrap" style="display:none;">
-              <label class="miniNote">Completion slider</label>
-              <div class="pctRow">
-                <input id="pctRange" type="range" min="0" max="100" step="1" value="0" />
-                <span id="pctValue" class="miniNote">0%</span>
-              </div>
-            </div>
-
             <div class="numWrap" id="lptWrap">
               <label for="lptInput"><strong>Leaves per week (LPT)</strong></label>
               <div style="display:flex; gap:8px; align-items:center;">
@@ -219,6 +206,15 @@
               </div>
               <span id="lptHelper" class="miniNote">LPT = No. of timer sessions per week</span>
               <span id="lockHint" class="miniNote">Editable once per ISO week</span>
+            </div>
+
+            <!-- Completion slider placed here between LPT and Weekly target -->
+            <div id="pctWrap" class="pctWrap" style="display:none;">
+              <label class="miniNote">Completion slider</label>
+              <div class="pctRow">
+                <input id="pctRange" type="range" min="0" max="100" step="1" value="0" />
+                <span id="pctValue" class="miniNote">0%</span>
+              </div>
             </div>
 
             <div id="weeklyTarget" class="miniNote">Weekly target = 3 hrs 45 mins</div>
@@ -341,7 +337,7 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_Soil_Slider_CenteredMobile_v1';
+    const APP_KEY = 'pomodoroTree_SliderBetweenLPT_Target_MoveToday_v1';
     const GLOBAL_KEY = APP_KEY + '_global';
     const NAMES_KEY = APP_KEY + '_names';
     const svgns='http://www.w3.org/2000/svg';
@@ -591,7 +587,7 @@
       }
     }
 
-    // Slider behavior: drives completion
+    // Slider behavior
     function showPctSlider(show){ pctWrap.style.display = show ? 'block' : 'none'; }
     function applyPctFromSlider(){
       const pct = Math.max(0, Math.min(100, Number(pctRange.value)||0));
@@ -637,7 +633,6 @@
       const rows=6, cols=7;
       const left=24, right=536;
       const soilTopY = Math.round(560*0.62)+14;
-      const grassTop = 360; // close to soil boundary for consistency
       const y0 = Math.max(soilTopY, 340);
       const rowGap=24;
       for(let r=0;r<rows;r++){
