@@ -33,20 +33,35 @@
       --xy-font: 28.35px;
       --info-font: 9px;
       --info-line: 1.25;
-      --soil1:#8a6a47; --soil2:#6f5539; --soil3:#a17d56; --tree-emoji-size:26px;
     }
     *{ box-sizing:border-box; }
-    body{ margin:0; background:var(--bg); color:#0b1a33; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
     .wrap{ max-width:1140px; margin:0 auto; padding:20px 16px 120px; }
-    header,.stats,.chip,.timerCard,.controls,.settings,.treePanel,.tabs,.tab,.panelCard,.gridWrap,.gridHead,.grid,.bottomAuth { display:flex; align-items:center; }
+    header,.stats,.chip,.timerCard,.controls,.settings,.treePanel,.tabs,.tab,.panelCard,.gridWrap,.gridHead,.grid,.bottomAuth,.tzBar,.modesBar,.modeEditRow { display:flex; align-items:center; }
 
     header{ justify-content:space-between; gap:12px; flex-wrap:wrap; }
     h1{ margin:0; font-size:22px; }
     .brand{ gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); }
     .modeTag{ font-weight:800; color:#14563a; }
 
-    .stats{ gap:10px; flex-wrap:wrap; }
+    .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; }
+    .tzLeft{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .tzLeft label{ color:#4a6894; font-weight:800; }
+    .tzLeft select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:700; min-width:260px; }
+    .tzRight{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .chip{ gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#4a6894; }
+
+    .tabsWrap{ margin:12px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
+    .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); }
+    .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
+    .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
+    .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; flex-wrap:wrap; }
+
+    .modesBar{ gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin:12px auto; max-width:980px; }
+    .modesBar select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; color:#0b1a33; min-width:260px; }
+    .modeEditRow{ gap:8px; }
+    .modeEditRow input{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:700; min-width:200px; }
+    .modeNote{ color:#4a6894; font-weight:700; }
 
     .timerCard{ margin:16px auto 12px; max-width:760px; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
     .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
@@ -73,27 +88,19 @@
     .numWrap{ display:flex; align-items:center; gap:8px; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
 
-    .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; font-size:var(--info-font); line-height:var(--info-line); text-align:center; min-height: calc(2 * var(--info-font) * var(--info-line)); display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; order:-1; width:100%; }
+    .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; font-size:9px; line-height:1.25; text-align:center; min-height: 22px; display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; order:-1; width:100%; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
-    .progressWrap{ display:flex; align-items:center; gap:10px; }
-    #lptRange{ -webkit-appearance:none; appearance:none; width:260px; height:12px; border-radius:999px; overflow:hidden; background:var(--track-bg); border:1px solid var(--line); }
-    #lptRange::-webkit-slider-thumb{ -webkit-appearance:none; width:0; height:0; border:none; background:transparent; }
-    #lptRange::-moz-range-thumb{ width:0; height:0; border:none; background:transparent; }
-    #lptRange::-ms-thumb{ width:0; height:0; border:none; background:transparent; }
-    #lptRange::-webkit-slider-runnable-track{ height:12px; border-radius:999px; background:transparent; }
-    #lptRange::-moz-range-track{ height:12px; border-radius:999px; background:transparent; }
-
-    .treePanel{ margin:14px auto; max-width:760px; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
+    .treePanel{ margin:14px auto; max-width:760px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
-    .sky{ position:absolute; inset:0; background:linear-gradient(180deg,var(--sky1) 0%, var(--sky2) 62%, var(--grass1) 62%, var(--grass2) 100%); }
+    .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, #bfeec7 62%, #8edaa0 100%); }
 
     .percentLabel{ position:absolute; left:14px; bottom:8px; font: 900 81px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; }
-    .xyLabel{ position:absolute; left:16px; top:14px; font: 900 var(--xy-font)/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
-    .todaySky{ position:absolute; left:16px; top:52px; font: 800 calc(var(--xy-font) * 0.75)/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
+    .xyLabel{ position:absolute; left:16px; top:14px; font: 900 28.35px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
+    .todaySky{ position:absolute; left:16px; top:52px; font: 800 21px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
-    @keyframes canopyBlink { 0%,100%{ stroke: var(--canopy-stroke-idle);} 50%{ stroke: #000; } }
-    @keyframes leafBlink { 0%,100%{ fill: var(--leaf-dark);} 50%{ fill: var(--leaf-light);} }
+    @keyframes canopyBlink { 0%,100%{ stroke:#065f46;} 50%{ stroke:#000; } }
+    @keyframes leafBlink { 0%,100%{ fill:#166534;} 50%{ fill:#86efac;} }
     .blink-canopy{ animation: canopyBlink 900ms linear infinite; }
     .blink-leaf{ animation: leafBlink 900ms linear infinite; }
     .leaf-number{ font: 800 13px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:#ffffff; text-anchor:middle; dominant-baseline:middle; }
@@ -102,12 +109,6 @@
     .rain .drop{ position:absolute; top:-12px; width:3px; height:14px; background:rgba(14,42,112,.45); border-radius:2px; animation:rainFall 0.8s linear infinite; }
     .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
     @keyframes rainFall{ to{ transform:translateY(620px); } }
-
-    .tabsWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
-    .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); }
-    .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
-    .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
-    .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; }
 
     .gridWrap{ margin:14px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; flex-direction:column; }
     .gridHead{ justify-content:space-between; gap:8px; color:#4a6894; width:100%; }
@@ -120,12 +121,6 @@
 
     .bottomAuth{ margin:18px auto 0; max-width:760px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; }
     .bottomAuth input{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); }
-
-    /* Timezone selector small UI styles */
-    .tzWrap{ gap:8px; align-items:center; flex-wrap:wrap; }
-    .tzWrap label{ color:#4a6894; font-weight:800; }
-    .tzWrap select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:700; }
-    .tzInfo{ color:#4a6894; font-weight:700; }
   </style>
 </head>
 <body data-mode="Study">
@@ -133,11 +128,68 @@
     <header>
       <div class="brand"><span style="font-weight:800;">🌳</span><h1>Pomodoro Tree</h1></div>
       <div class="modeTag">Mode: <span id="modeName">Study</span></div>
-      <div class="stats">
+    </header>
+
+    <!-- Timezone bar (above tabs) -->
+    <div class="tzBar">
+      <div class="tzLeft">
+        <label for="tzSelect">Time zone</label>
+        <select id="tzSelect" aria-label="Time zone"></select>
+      </div>
+      <!-- Pomodoro hours moved under timezone -->
+      <div class="tzRight">
         <div class="chip" id="todayChip"><strong>Pomodoro hrs (week)</strong>: 0 hrs 0 mins</div>
         <div class="chip" id="totalTimeChip"><strong>Pomodoro hrs (overall)</strong>: 0 hrs 0 mins</div>
       </div>
-    </header>
+    </div>
+
+    <section class="tabsWrap">
+      <div class="tabs">
+        <div class="tab active" data-tab="subPanel">Subscription</div>
+        <div class="tab" data-tab="syncPanel">Sync</div>
+        <div class="tab" data-tab="modesPanel">Modes</div>
+      </div>
+
+      <div id="subPanel" class="panelCard" style="display:flex;">
+        <div id="subStatus">Plan: Free — 4 weeks cap. Unlock remaining 48 weeks for $1/year.</div>
+        <button id="subBtn">Unlock 48 weeks — $1</button>
+      </div>
+
+      <div id="syncPanel" class="panelCard">
+        <div id="authState">Signed out</div>
+        <input type="email" id="emailInput" placeholder="email@example.com" />
+        <button id="sendLinkBtn">Send sign-in link</button>
+        <button id="signOutBtn">Sign out</button>
+      </div>
+
+      <div id="modesPanel" class="panelCard">
+        <div class="modesBar" style="width:100%;">
+          <div class="modeEditRow">
+            <label for="modeSelect" class="modeNote">Select mode</label>
+            <select id="modeSelect"></select>
+            <button id="applyModeBtn" title="Switch to mode">Switch</button>
+          </div>
+          <div class="modeEditRow" id="editableNamesRow">
+            <input id="subject1Input" placeholder="Subject 1 name" />
+            <input id="subject2Input" placeholder="Subject 2 name" />
+            <input id="user1Input" placeholder="User 1 name" />
+            <input id="user2Input" placeholder="User 2 name" />
+            <input id="user3Input" placeholder="User 3 name" />
+            <button id="saveNamesBtn">Save names</button>
+          </div>
+          <div class="modeNote">Switching modes opens a fresh timer and separate data per mode. Names persist across sessions.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modes selector duplicated above timer for quick access (as requested "place it above the timer") -->
+    <section class="modesBar" aria-label="Quick mode switch">
+      <div class="modeEditRow">
+        <label for="modeSelectTop" class="modeNote">Mode</label>
+        <select id="modeSelectTop"></select>
+        <button id="applyModeBtnTop" title="Switch to mode">Switch</button>
+      </div>
+    </section>
 
     <section class="timerCard">
       <div class="time" id="clock">25:00</div>
@@ -150,7 +202,7 @@
           <label for="lptInput"><strong>Leaves per tree (LPT)</strong></label>
           <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
           <button id="lptSetBtn">Set</button>
-          <span id="lockHint" style="color:var(--dim)">Editable once per ISO week</span>
+          <span id="lockHint" style="color:#4a6894">Editable once per ISO week</span>
         </div>
 
         <div class="estWrap">
@@ -186,46 +238,21 @@
               <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
             </mask>
             <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="var(--canopy-base-1)" />
-              <stop offset="100%" stop-color="var(--canopy-base-2)" />
+              <stop offset="0%" stop-color="#a3e3b5" />
+              <stop offset="100%" stop-color="#7fce9d" />
             </linearGradient>
           </defs>
 
           <g id="canopyGroup" transform="translate(280 280) scale(1,1.2) translate(-280 -280)">
             <path id="canopyWhite" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="url(#canopyBaseDarker)"/>
-            <path id="canopyFillGreen" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="var(--canopy-fill-green)" mask="url(#fillMask)"/>
-            <path id="canopyOutline" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="transparent" stroke="var(--canopy-stroke-idle)" stroke-width="3" />
-            <path d="M 280 380 C 280 350, 280 320, 280 284" fill="none" stroke="var(--trunk-brown)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M 280 284 C 270 270, 258 255, 248 238" fill="none" stroke="var(--trunk-brown)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M 280 284 C 290 270, 302 255, 312 238" fill="none" stroke="var(--trunk-brown)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+            <path id="canopyFillGreen" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="#3aa85f" mask="url(#fillMask)"/>
+            <path id="canopyOutline" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="transparent" stroke="#065f46" stroke-width="3" />
+            <path d="M 280 380 C 280 350, 280 320, 280 284" fill="none" stroke="#4e342e" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M 280 284 C 270 270, 258 255, 248 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M 280 284 C 290 270, 302 255, 312 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
             <g id="leafLayer" filter="url(#leafShadow)"></g>
           </g>
         </svg>
-      </div>
-    </section>
-
-    <section class="tabsWrap">
-      <div class="tabs">
-        <div class="tab active" data-tab="subPanel">Subscription</div>
-        <div class="tab" data-tab="syncPanel">Sync</div>
-      </div>
-
-      <div id="subPanel" class="panelCard" style="display:flex;">
-        <div id="subStatus">Plan: Free — 4 weeks cap. Unlock remaining 48 weeks for $1/year.</div>
-        <button id="subBtn">Unlock 48 weeks — $1</button>
-      </div>
-
-      <div id="syncPanel" class="panelCard" style="display:flex;">
-        <div id="authState">Signed out</div>
-        <input type="email" id="emailInput" placeholder="email@example.com" />
-        <button id="sendLinkBtn">Send sign-in link</button>
-        <button id="signOutBtn">Sign out</button>
-
-        <!-- Timezone selector -->
-        <div class="tzWrap" style="margin-left:auto; display:flex;">
-          <label for="tzSelect">Time zone:</label>
-          <select id="tzSelect" aria-label="Time zone"></select>
-        </div>
       </div>
     </section>
 
@@ -245,15 +272,44 @@
   </div>
 
   <script>
-    const KEY='pomodoroTree_SingleMode_25min_V4';
+    // Storage keys are namespaced per mode for clean separation
+    const APP_KEY = 'pomodoroTree_SingleMode_25min_V5';
+    const NAMES_KEY = APP_KEY + '_customNames';
+    const GLOBAL_KEY = APP_KEY + '_global';
     const svgns='http://www.w3.org/2000/svg';
     const LEAF_SECONDS=1500; // 25 minutes
 
-    // ISO week helpers
-    Date.prototype.getWeek=function(){var d=new Date(this.getTime());d.setHours(0,0,0,0);d.setDate(d.getDate()+3-(d.getDay()+6)%7);var w1=new Date(d.getFullYear(),0,4);return 1+Math.round(((d-w1)/86400000-3+(w1.getDay()+6)%7)/7);};
-    Date.prototype.getWeekYear=function(){var d=new Date(this.getTime());d.setDate(d.getDate()+3-(d.getDay()+6)%7);return d.getFullYear();};
+    // Mode catalog with editable slots
+    const DEFAULT_MODE_NAMES = {
+      'exercise': 'Exercise mode',
+      'cycling': 'Cycling mode',
+      'digitalDetox': 'Digital detox mode',
+      'bedTime': 'Bed-time mode',
+      'quran': 'Quran mode',
+      'dikhr': 'Dikhr mode',
+      'maths': 'Maths mode',
+      'subject1': 'Subject 1 mode',
+      'subject2': 'Subject 2 mode',
+      'user1': 'User 1 mode',
+      'user2': 'User 2 mode',
+      'user3': 'User 3 mode'
+    };
+    const EDITABLE_KEYS = ['subject1','subject2','user1','user2','user3'];
 
-    const DEFAULT_STATE={
+    // Global settings (timezone, selected mode, editable names)
+    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}');
+    const G = Object.assign({ timeZone:'UTC', selectedMode:'exercise' }, loadGlobal());
+    const loadNames = () => JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
+    const CUSTOM_NAMES = Object.assign({}, loadNames());
+
+    function saveGlobal(){ localStorage.setItem(GLOBAL_KEY, JSON.stringify(G)); }
+    function saveNames(){ localStorage.setItem(NAMES_KEY, JSON.stringify(CUSTOM_NAMES)); }
+
+    // Compute a storage key per mode
+    const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
+
+    // State per mode
+    const DEFAULT_STATE = {
       leavesPerTree:9, placed:0, secondsLeft:LEAF_SECONDS, running:false,
       leavesTotal:0, leavesToday:0, weeklyLeaves:0,
       weeklyFocusSeconds:0, totalFocusSeconds:0,
@@ -262,12 +318,21 @@
       week:undefined, year:undefined,
       weeklyComplete:false,
       weeklyTargetLocked:false, weeklyTargetSetValue:9,
-      freeWeeksCap:4,
-      timeZone:'UTC' // Default to Greenwich Mean Time (UTC)
+      freeWeeksCap:4
     };
 
-    const load=()=>JSON.parse(localStorage.getItem(KEY)||'{}');
-    let S=Object.assign({}, DEFAULT_STATE, load());
+    function loadState(modeId){
+      const raw = localStorage.getItem(modeKey(modeId));
+      try{ return Object.assign({}, DEFAULT_STATE, raw? JSON.parse(raw): {}); }
+      catch{ return Object.assign({}, DEFAULT_STATE); }
+    }
+    function saveState(modeId, S){
+      localStorage.setItem(modeKey(modeId), JSON.stringify(S));
+    }
+
+    // Active in-memory state for current mode
+    let currentMode = G.selectedMode || 'exercise';
+    let S = loadState(currentMode);
 
     // UI refs
     const el=id=>document.getElementById(id);
@@ -285,11 +350,10 @@
     const xyLabel=document.querySelector('.xyLabel');
     const rainLayer=el('rainLayer');
     const treeGrid=el('treeGrid'); const gridCount=el('gridCount');
-    const leafLayer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+    const leafLayer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer');
     const fillRect=document.getElementById('fillRect');
     const todaySky=el('todaySky');
-
-    const tzSelect=el('tzSelect');
+    const modeNameEl=document.getElementById('modeName');
 
     // Tabs behavior
     const tabsContainer=document.querySelector('.tabs');
@@ -330,20 +394,10 @@
       oscA.stop(now + 10.1); oscB.stop(now + 10.1); trem.stop(now + 10.1);
     }
 
-    // Persistence
-    function save(){ localStorage.setItem(KEY, JSON.stringify(S)); }
-
-    function unshiftWeekToGrid(week, year, live){
-      S.grid.unshift({week,year,live,ts:Date.now()});
-      if(S.grid.length>52) S.grid.pop();
-      save();
-    }
-
-    // Week rollover based on ISO week in selected timezone
+    // Timezone helpers (global)
     function nowInTZ(){
       try{
-        // Convert current time to the selected timezone’s wall-clock components using Intl
-        const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: S.timeZone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+        const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: G.timeZone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
         const parts = fmt.formatToParts(new Date());
         const get = k => Number(parts.find(p=>p.type===k)?.value);
         const y=get('year'), m=get('month'), d=get('day'), hh=get('hour'), mm=get('minute'), ss=get('second');
@@ -352,7 +406,6 @@
         return new Date();
       }
     }
-
     function isoWeekOf(date){
       const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
       const dayNum = d.getUTCDay() || 7;
@@ -362,6 +415,16 @@
       return { week, year: d.getUTCFullYear() };
     }
 
+    // Persistence
+    function save(){ saveState(currentMode, S); saveGlobal(); }
+
+    function unshiftWeekToGrid(week, year, live){
+      S.grid.unshift({week,year,live,ts:Date.now()});
+      if(S.grid.length>52) S.grid.pop();
+      save();
+    }
+
+    // Week rollover based on ISO week in selected timezone
     function rolloverWeekIfNeeded(){
       const nowTz = nowInTZ();
       const { week:wk, year:yr } = isoWeekOf(nowTz);
@@ -378,7 +441,7 @@
       }
     }
 
-    // Leaf anchors
+    // Leaves / positions
     const baseAnchors=[{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}];
     function anchorForIndex(i){
       if(i<baseAnchors.length) return baseAnchors[i];
@@ -389,8 +452,8 @@
       const g=document.createElementNS(svgns,'g'); g.setAttribute('filter','url(#leafShadow)');
       const p=document.createElementNS(svgns,'path');
       p.setAttribute('d','M 0 -16 C 10 -10, 12 0, 0 14 C -12 0, -10 -10, 0 -16 Z');
-      p.setAttribute('fill','var(--leaf-dark)');
-      p.setAttribute('stroke','var(--leaf-stroke)'); p.setAttribute('stroke-width','1.2');
+      p.setAttribute('fill','#166534');
+      p.setAttribute('stroke','#0b3d22'); p.setAttribute('stroke-width','1.2');
       const t=document.createElementNS(svgns,'text'); t.setAttribute('class','leaf-number'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.textContent=String(n);
       g.appendChild(p); g.appendChild(t); return g;
     }
@@ -409,7 +472,7 @@
     function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
 
     function renderLeavesFromState(){
-      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer');
       if(!layer) return;
       layer.innerHTML='';
       for(let i=0;i<S.placed;i++){
@@ -417,7 +480,7 @@
       }
     }
 
-    // Saplings: 7 x 7
+    // Saplings
     function buildSaplings(){
       const g=document.getElementById('saplings');
       if(!g) return;
@@ -488,15 +551,6 @@
     function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
     function minutesForLeaves(n){ return n*(LEAF_SECONDS/60); }
 
-    // Format date/time labels in selected timezone (for potential future use)
-    function formatInTZ(date){
-      try{
-        return new Intl.DateTimeFormat(undefined, { dateStyle:'medium', timeStyle:'short', timeZone:S.timeZone, timeZoneName:'short' }).format(date);
-      }catch(e){
-        return date.toLocaleString();
-      }
-    }
-
     function renderTotals(){
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
       todayChip.innerHTML = `<strong>Pomodoro hrs (week)</strong>: ${w.h} hrs ${w.m} mins`;
@@ -509,7 +563,7 @@
       const total = Math.max(1, Number(S.leavesPerTree)||1);
       const done = Math.max(0, Math.min(S.placed, total));
       const pct = (done/total)*100;
-      lptRange.style.background = `linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
+      lptRange.style.background = `linear-gradient(90deg, #16a34a ${pct}%, #ef4444 ${pct}%)`;
       xyLabel.textContent = `${done}/${total} of leaves completed`;
     }
     function format(sec){
@@ -523,7 +577,7 @@
       S.running=on;
       const canopyOutline = document.getElementById('canopyOutline');
       if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
-      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer');
       const cur=layer?.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
       startBtn.textContent = on ? 'Running…' : 'Start 25:00';
       startBtn.disabled = !!on;
@@ -546,6 +600,7 @@
       paintProgressUI();
       renderTotals();
       populateTimeZonesIfNeeded();
+      populateModesUI();
       save();
     }
 
@@ -585,10 +640,9 @@
         }
       }else{
         S.secondsLeft=LEAF_SECONDS;
-        clockEl.textContent=format(S.secondsLeft);
-        save();
       }
-
+      clockEl.textContent=format(S.secondsLeft);
+      save();
       renderHUD();
     }
 
@@ -623,7 +677,7 @@
 
       if(!S.weeklyComplete && S.placed < S.leavesPerTree){
         const idx=S.placed;
-        const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+        const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer');
         const g=createLeafG(idx+1); placeLeaf(g, anchorForIndex(idx)); layer.appendChild(g);
       }
 
@@ -638,7 +692,7 @@
       if(interval){ clearInterval(interval); interval=null; startBtn._cleanupVisibility?.(); }
       setRunning(false);
       showRain(false);
-      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer');
       const cur=layer?.lastElementChild;
       if(cur){
         const idx=(Number(cur.querySelector('text')?.textContent)||0)-1;
@@ -656,63 +710,7 @@
       lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
     }
 
-    // Timezone selector: populate and handle changes
-    function populateTimeZonesIfNeeded(){
-      if(!tzSelect || tzSelect.options.length>0) {
-        // Ensure value reflects S.timeZone
-        if(tzSelect && tzSelect.value !== S.timeZone){
-          // If S.timeZone not in options (older browsers), append minimal choice
-          if(!Array.from(tzSelect.options).some(o=>o.value===S.timeZone)){
-            const opt=document.createElement('option');
-            opt.value=S.timeZone; opt.textContent=labelForTZ(S.timeZone);
-            tzSelect.appendChild(opt);
-          }
-          tzSelect.value = S.timeZone;
-        }
-        return;
-      }
-      let zones = [];
-      try{
-        // Modern: list supported IANA zones
-        zones = Intl.supportedValuesOf('timeZone');
-      }catch(e){
-        // Fallback minimal set including UTC
-        zones = ['UTC','Europe/London','Asia/Kolkata','America/New_York','Asia/Tokyo'];
-      }
-      // Put UTC at top as default GMT
-      zones = Array.from(new Set(['UTC', ...zones]));
-      const frag=document.createDocumentFragment();
-      for(const z of zones){
-        const opt=document.createElement('option');
-        opt.value=z;
-        opt.textContent=labelForTZ(z);
-        frag.appendChild(opt);
-      }
-      tzSelect.appendChild(frag);
-      tzSelect.value = S.timeZone || 'UTC';
-    }
-
-    function labelForTZ(tz){
-      try{
-        // Build label like "(GMT+05:30) Asia/Kolkata"
-        const now = new Date();
-        const short = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName:'shortOffset' }).format(now);
-        const offsetPart = short.split(', ').pop() || 'GMT';
-        return `(${offsetPart}) ${tz}`;
-      }catch(e){
-        return `(GMT) ${tz}`;
-      }
-    }
-
-    tzSelect?.addEventListener('change', ()=>{
-      S.timeZone = tzSelect.value || 'UTC';
-      // On timezone change, recompute current ISO week in that timezone and rollover if necessary
-      rolloverWeekIfNeeded();
-      renderHUD();
-      save();
-    });
-
-    // Wire up UI
+    // Wire up timer UI
     startBtn.addEventListener('click', startFlow);
     resetBtn.addEventListener('click', resetTimer);
 
@@ -735,7 +733,7 @@
       S.weeklyLeaves = 0;
       S.secondsLeft = LEAF_SECONDS;
 
-      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer') || document.querySelector('.leafLayer');
+      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer');
       if(layer) layer.innerHTML = '';
       applyProgress();
 
@@ -743,10 +741,143 @@
       renderHUD();
     });
 
+    // Timezone selector
+    const tzSelect = document.getElementById('tzSelect');
+    function populateTimeZonesIfNeeded(){
+      if(!tzSelect) return;
+      if(tzSelect.options.length===0){
+        let zones=[];
+        try{ zones = Intl.supportedValuesOf('timeZone'); }
+        catch{ zones = ['UTC','Europe/London','Asia/Kolkata','America/New_York','Asia/Tokyo']; }
+        zones = Array.from(new Set(['UTC', ...zones]));
+        const frag=document.createDocumentFragment();
+        for(const z of zones){
+          const opt=document.createElement('option');
+          opt.value=z;
+          opt.textContent=labelForTZ(z);
+          frag.appendChild(opt);
+        }
+        tzSelect.appendChild(frag);
+      }
+      tzSelect.value = G.timeZone || 'UTC';
+    }
+    function labelForTZ(tz){
+      try{
+        const now = new Date();
+        const short = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName:'shortOffset' }).format(now);
+        const offsetPart = short.split(', ').pop() || 'GMT';
+        return `(${offsetPart}) ${tz}`;
+      }catch{ return `(GMT) ${tz}`; }
+    }
+    tzSelect?.addEventListener('change', ()=>{
+      G.timeZone = tzSelect.value || 'UTC';
+      rolloverWeekIfNeeded();
+      renderHUD();
+      save();
+    });
+
+    // Modes UI
+    const modeSelect = document.getElementById('modeSelect');
+    const modeSelectTop = document.getElementById('modeSelectTop');
+    const applyModeBtn = document.getElementById('applyModeBtn');
+    const applyModeBtnTop = document.getElementById('applyModeBtnTop');
+
+    const subject1Input = document.getElementById('subject1Input');
+    const subject2Input = document.getElementById('subject2Input');
+    const user1Input = document.getElementById('user1Input');
+    const user2Input = document.getElementById('user2Input');
+    const user3Input = document.getElementById('user3Input');
+    const saveNamesBtn = document.getElementById('saveNamesBtn');
+
+    function modeLabel(id){
+      const custom = CUSTOM_NAMES[id];
+      if(custom && String(custom).trim().length>0) return custom;
+      return DEFAULT_MODE_NAMES[id] || id;
+    }
+    function allModeIds(){
+      return ['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','user1','user2','user3'];
+    }
+    function populateModesUI(){
+      const ids = allModeIds();
+      function fillSelect(sel){
+        if(!sel) return;
+        const curVal = sel.value;
+        sel.innerHTML='';
+        const frag=document.createDocumentFragment();
+        for(const id of ids){
+          const opt=document.createElement('option');
+          opt.value=id; opt.textContent=modeLabel(id);
+          frag.appendChild(opt);
+        }
+        sel.appendChild(frag);
+        sel.value = ids.includes(currentMode)? currentMode : ids[0];
+        // Keep prior selection if possible
+        if(curVal && ids.includes(curVal)) sel.value = curVal;
+      }
+      fillSelect(modeSelect);
+      fillSelect(modeSelectTop);
+
+      // Editable fields
+      subject1Input.value = CUSTOM_NAMES['subject1'] || '';
+      subject2Input.value = CUSTOM_NAMES['subject2'] || '';
+      user1Input.value = CUSTOM_NAMES['user1'] || '';
+      user2Input.value = CUSTOM_NAMES['user2'] || '';
+      user3Input.value = CUSTOM_NAMES['user3'] || '';
+
+      // Visible mode name at header
+      if(modeNameEl) modeNameEl.textContent = modeLabel(currentMode).replace(/ mode$/i,'');
+    }
+
+    function switchMode(toId){
+      if(!toId || toId===currentMode) return;
+      // Stop any running timer
+      if(interval){ clearInterval(interval); interval=null; startBtn._cleanupVisibility?.(); }
+      S.running=false;
+      showRain(false);
+
+      // Persist current mode state
+      save();
+
+      // Load new mode state
+      currentMode = toId;
+      G.selectedMode = toId;
+      S = loadState(currentMode);
+
+      // Fresh timer and data on enter: reset placed and seconds for a new session visual
+      S.secondsLeft = LEAF_SECONDS;
+      // Note: historical totals for that mode remain in its own S
+
+      // Rerender leaf layer for that mode
+      const layer=document.querySelector('#treeSVG #leafLayer') || document.getElementById('leafLayer');
+      if(layer) layer.innerHTML='';
+      renderLeavesFromState();
+      rolloverWeekIfNeeded();
+      renderHUD();
+    }
+
+    applyModeBtn?.addEventListener('click', ()=>{
+      switchMode(modeSelect.value);
+    });
+    applyModeBtnTop?.addEventListener('click', ()=>{
+      switchMode(modeSelectTop.value);
+    });
+
+    saveNamesBtn?.addEventListener('click', ()=>{
+      CUSTOM_NAMES['subject1'] = subject1Input.value.trim();
+      CUSTOM_NAMES['subject2'] = subject2Input.value.trim();
+      CUSTOM_NAMES['user1'] = user1Input.value.trim();
+      CUSTOM_NAMES['user2'] = user2Input.value.trim();
+      CUSTOM_NAMES['user3'] = user3Input.value.trim();
+      saveNames();
+      populateModesUI();
+      renderHUD();
+    });
+
     // Init
-    // Ensure default timezone is UTC (Greenwich Mean Time)
-    if(!S.timeZone) S.timeZone='UTC';
+    if(!G.timeZone) G.timeZone='UTC';
+    if(!G.selectedMode) G.selectedMode='exercise';
     populateTimeZonesIfNeeded();
+    populateModesUI();
     rolloverWeekIfNeeded();
     renderLeavesFromState();
     applyProgress();
