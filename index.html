@@ -56,7 +56,6 @@
     .numWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
     .numWrap input, .vstack select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; width:100%; }
 
-    /* Read-only slider with no thumb */
     .pctRow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:6px; }
     #pctRange{
       -webkit-appearance:none; appearance:none;
@@ -81,8 +80,6 @@
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:2; }
 
     .soilPct{ position:absolute; left:14px; bottom:10px; font:900 56px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ffffff; text-shadow:0 2px 0 rgba(0,0,0,.2); z-index:var(--z-labels); }
-    /* xyLabel removed on purpose */
-
     .todaySky{ position:absolute; left:14px; top:38px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
     .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:none; }
@@ -166,11 +163,9 @@
 
           <!-- Simple minutes (never locks) -->
           <div id="simpleInputs" class="vstack hidden">
-            <span class="miniNote">Minutes will not lock</span>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input id="simpleMin" type="number" min="1" max="999" step="1" value="25" />
               <button id="applySimpleBtn" title="Apply simple minutes">Set</button>
-              <span class="miniNote">Will not lock after the Set button</span>
             </div>
           </div>
         </section>
@@ -199,6 +194,7 @@
               <span id="lptHelper" class="miniNote">LPT = No. of timer sessions per week</span>
             </div>
             <div id="weeklyTarget" class="miniNote">Weekly target = 3 hrs 45 mins</div>
+            <div id="leavesProgress" class="miniNote"></div>
           </div>
         </section>
       </div>
@@ -209,8 +205,61 @@
           <div class="treeBox" id="treeBox">
             <div class="sky"></div>
 
-            <svg id="saplingsSVG" width="560" height="560" viewBox="0 0 560 560" class="saplingsLayer">
-              <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
+            <!-- Saplings layer -->
+            <svg id="saplingsSVG" width="560" height="560" viewBox="0 0 560 560" class="saplingsLayer" aria-hidden="true">
+              <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Ten simple saplings positioned near soil line (y ~ 340-360 in viewBox space) -->
+                <g transform="translate(90 350) scale(1)">
+                  <path d="M0 0 C 0 -8, 6 -16, 10 -22" />
+                  <path d="M10 -22 c 8 2, 12 6, 14 12 c -8 -2, -12 -6, -14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
+                  <path d="M0 0 C 0 -6, -6 -14, -10 -20" />
+                  <path d="M-10 -20 c -8 2, -12 6, -14 12 c 8 -2, 12 -6, 14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
+                </g>
+                <g transform="translate(140 355) scale(0.9)">
+                  <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
+                  <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                  <path d="M0 0 C 0 -6, -5 -12, -9 -18" />
+                  <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                </g>
+                <g transform="translate(190 348) scale(1.05)">
+                  <path d="M0 0 C 0 -9, 6 -16, 10 -24" />
+                  <path d="M10 -24 c 8 2, 12 6, 14 12 c -8 -2, -12 -6, -14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
+                </g>
+                <g transform="translate(230 360) scale(0.85)">
+                  <path d="M0 0 C 0 -8, 6 -16, 10 -22" />
+                  <path d="M10 -22 c 8 2, 12 6, 14 12 c -8 -2, -12 -6, -14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
+                  <path d="M0 0 C 0 -6, -6 -14, -10 -20" />
+                  <path d="M-10 -20 c -8 2, -12 6, -14 12 c 8 -2, 12 -6, 14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
+                </g>
+                <g transform="translate(270 352) scale(1)">
+                  <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
+                  <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                </g>
+                <g transform="translate(310 356) scale(0.95)">
+                  <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
+                  <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                  <path d="M0 0 C 0 -6, -5 -12, -9 -18" />
+                  <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                </g>
+                <g transform="translate(350 350) scale(1.1)">
+                  <path d="M0 0 C 0 -8, 6 -16, 10 -22" />
+                  <path d="M10 -22 c 8 2, 12 6, 14 12 c -8 -2, -12 -6, -14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
+                </g>
+                <g transform="translate(390 358) scale(0.9)">
+                  <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
+                  <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                  <path d="M0 0 C 0 -6, -5 -12, -9 -18" />
+                  <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                </g>
+                <g transform="translate(430 346) scale(1.05)">
+                  <path d="M0 0 C 0 -8, 6 -16, 10 -22" />
+                  <path d="M10 -22 c 8 2, 12 6, 14 12 c -8 -2, -12 -6, -14 -12 z" fill="#2e7d32" stroke="#1b5e20"/>
+                </g>
+                <g transform="translate(470 354) scale(0.95)">
+                  <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
+                  <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                </g>
+              </g>
             </svg>
 
             <div id="soilPct" class="soilPct">0%</div>
@@ -361,6 +410,7 @@
     const simpleInputs=el('simpleInputs'), simpleMin=el('simpleMin'), applySimpleBtn=el('applySimpleBtn');
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
     const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptLockNote=el('lptLockNote'), weeklyTargetEl=el('weeklyTarget');
+    const leavesProgress=el('leavesProgress');
     const pctRange=el('pctRange'), pctValue=el('pctValue');
     const soilPct=el('soilPct'), todaySky=el('todaySky');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect');
@@ -604,17 +654,27 @@
       S.secondsLeft=getSessionSeconds();
       saveState(currentMode,S);
       updateWeeklyTargetText();
+      updateLeavesProgress();
       updateProgressInstant();
       setClockAndButtons();
       renderGrid();
     }
 
-    // LPT per-mode (Pomodoro/Custom share UI but state is per mode, not per type)
+    // LPT per-mode
     function updateWeeklyTargetText(){
       const per=getSessionSeconds();
       const totalSec = per * (S.leavesPerTree||0);
       const h=Math.floor(totalSec/3600), m=Math.round((totalSec%3600)/60);
       weeklyTargetEl.textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
+    }
+    function updateLeavesProgress(){
+      const total=Math.max(1, Number(S.leavesPerTree)||1);
+      const done=Math.min(S.placed,total);
+      if(G.timerType==='pomodoro' || G.timerType==='custom'){
+        leavesProgress.textContent = `${done} / ${total} leaves completed`;
+      }else{
+        leavesProgress.textContent = '';
+      }
     }
     function reflectLPTLockUI(){
       lptWrap.style.display='flex';
@@ -638,6 +698,7 @@
       saveState(currentMode,S);
       reflectLPTLockUI();
       updateWeeklyTargetText();
+      updateLeavesProgress();
       updateProgressInstant();
       renderGrid();
     });
@@ -670,6 +731,7 @@
       saveState(currentMode,S);
       setClockAndButtons();
       updateWeeklyTargetText();
+      updateLeavesProgress();
       reflectCustomLockUI();
     });
 
@@ -690,6 +752,7 @@
       saveState(currentMode,S);
       setClockAndButtons();
       updateWeeklyTargetText();
+      updateLeavesProgress();
     });
 
     // Timer type change
@@ -698,6 +761,7 @@
       reflectCustomLockUI();
       reflectSimpleUI();
       updateWeeklyTargetText();
+      updateLeavesProgress();
       setClockAndButtons();
       updateProgressInstant();
     }
@@ -711,7 +775,7 @@
       saveState(currentMode,S);
     });
 
-    // Mode switching: per-mode isolation (including LPT)
+    // Mode switching
     modeSelect.addEventListener('change', ()=>{
       stopSession();
       currentMode=modeSelect.value; G.selectedMode=currentMode; save(GLOBAL_KEY,G);
@@ -737,47 +801,36 @@
 
     // Initialize on load
     function init(){
-      // Populate modes and names
       populateModeSelect();
       populateNamesInputs();
-
-      // Ensure weekly rollover
       rolloverWeekIfNeeded();
-
-      // Reflect timer type UI and locks
       applyTimerTypeUI();
       reflectLPTLockUI();
       reflectCustomLockUI();
       reflectSimpleUI();
-
-      // Set initial clock and visuals
       setClockAndButtons();
       renderLeaves();
       renderGrid();
       updateProgressInstant();
       updateWeeklyTargetText();
+      updateLeavesProgress();
 
-      // Start with tabs state correct
       showPanel('modesPanel');
       document.querySelectorAll('.tab').forEach(t=>{
         t.classList.toggle('active', t.getAttribute('data-tab')==='modesPanel');
       });
 
-      // Soil/today text
       soilPct.textContent='0%';
       todaySky.textContent='Total duration (today): 0 mins';
 
-      // Storage sync indicator (local only placeholder)
       window.addEventListener('storage', (e)=>{
         if(!e) return;
-        // If other tab updates global settings, refresh relevant UI
         if(e.key===GLOBAL_KEY){
           const latest=load(GLOBAL_KEY, G);
           G.timerType=latest.timerType||G.timerType;
           G.customSeconds=latest.customSeconds||G.customSeconds;
           G.simpleSeconds=latest.simpleSeconds||G.simpleSeconds;
           if(latest.selectedMode && latest.selectedMode!==currentMode){
-            // Switch mode if user changed in another tab
             stopSession();
             currentMode=latest.selectedMode;
             S=loadState(currentMode);
@@ -791,8 +844,8 @@
           reflectSimpleUI();
           setClockAndButtons();
           updateWeeklyTargetText();
+          updateLeavesProgress();
         }else if(e.key && e.key.startsWith(APP_KEY+'_mode_')){
-          // If current mode changed elsewhere, reload its state
           if(e.key===modeKey(currentMode)){
             S=loadState(currentMode);
             rolloverWeekIfNeeded();
@@ -801,6 +854,7 @@
             reflectLPTLockUI();
             setClockAndButtons();
             updateWeeklyTargetText();
+            updateLeavesProgress();
             updateProgressInstant();
           }
         }else if(e.key===NAMES_KEY){
@@ -830,12 +884,10 @@
     simpleMin.addEventListener('change', ()=> clampInputTo(simpleMin, 1, 999, 25));
     lptInput.addEventListener('change', ()=> clampInputTo(lptInput, 1, 200, 9));
 
-    // Keep the Start button label in sync even if user changes minutes before any session
     const syncStartBtnLabel=()=> setClockAndButtons();
     customMin.addEventListener('input', syncStartBtnLabel);
     simpleMin.addEventListener('input', syncStartBtnLabel);
 
-    // Boot
     init();
   </script>
 </body>
