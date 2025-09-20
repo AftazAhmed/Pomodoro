@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Country Time Zone Picker</title>
+  <title>Pomodoro Tree — Modes + Country Time Zone</title>
 
   <style>
     :root{
@@ -14,21 +14,105 @@
       --btn-success:#16a34a; --btn-success-hover:#0f6a33;
       --btn-danger:#ef4444; --btn-danger-hover:#b91c1c;
       --btn-neutral:#334155; --btn-neutral-hover:#1f2937; --btn-focus:#0ea5e9;
+      --progress-green:#16a34a; --progress-red:#ef4444; --track-bg:#e6efff;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    .wrap{ max-width:900px; margin:0 auto; padding:20px 16px 80px; }
+    .wrap{ max-width:1140px; margin:0 auto; padding:20px 16px 120px; }
 
+    /* Header in one line on mobile too */
     header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap; }
     .brand{ display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); white-space:nowrap; }
     h1{ margin:0; font-size:22px; }
-    .modeTag{ font-weight:800; color:#14563a; font-size:18px; white-space:nowrap; }
+    .modeTag{ font-weight:800; color:#14563a; font-size:20px; white-space:nowrap; }
 
-    .card{ background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:var(--shadow); }
+    .topStack{ display:flex; flex-direction:column; gap:12px; margin-top:12px; width:100%; }
+    .centerRow{ width:100%; display:flex; justify-content:center; }
+    .fixedCard{ width:760px; max-width:100%; }
 
-    .tzBar{ display:flex; flex-direction:column; gap:10px; margin-top:16px; }
-    .tzRow{ display:flex; flex-direction:column; gap:8px; }
+    /* Controls vertical stacks */
+    .timerTypeBar{ display:flex; flex-direction:column; gap:10px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px; box-shadow:var(--shadow); }
+    .vstack{ display:flex; flex-direction:column; gap:10px; }
+    .vstack select, .vstack input[type=number]{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; width:100%; }
     .miniNote{ color:#4a6894; font-weight:700; }
+
+    /* Timer card */
+    .timerCard{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
+    .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
+    .controls{ display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
+    button{
+      border:none; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;
+      color:#fff; background:var(--btn-neutral);
+      box-shadow:0 1px 0 rgba(0,0,0,.06), 0 6px 14px rgba(15,23,42,.14);
+      transition:background-color .18s ease, transform .08s ease, box-shadow .18s ease;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    #startBtn{ background:var(--btn-success); }
+    #resetBtn{ background:var(--btn-danger); }
+    #applyCustomBtn, #lptSetBtn{ background:var(--btn-primary); }
+    #applyCustomBtn:hover, #lptSetBtn:hover{ background:var(--btn-primary-hover); }
+
+    .settings{ display:flex; flex-direction:column; gap:12px; margin-top:10px; color:var(--dim); width:100%; }
+    .numWrap{ display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+    .numWrap input{ width:160px; }
+
+    /* Weekly progress slider (Pomodoro/Custom only) */
+    .progressWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+    #progressRange{
+      -webkit-appearance:none; appearance:none; width:260px; height:10px; border-radius:999px; overflow:hidden; background:var(--track-bg); border:1px solid var(--line);
+      background-image:linear-gradient(90deg, #16a34a 0%, #ef4444 0%); background-size:100% 100%; background-repeat:no-repeat;
+    }
+    #progressRange::-webkit-slider-thumb{ -webkit-appearance:none; width:0; height:0; background:transparent; }
+    #progressRange::-moz-range-thumb{ width:0; height:0; background:transparent; border:none; }
+
+    /* Tree canvas */
+    .treePanel{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
+    .treePanel.fixedCard{ width:760px; }
+    .treeBox{ position:relative; width:560px; max-width:100%; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
+    .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, #bfeec7 62%, #8edaa0 100%); }
+
+    .percentLabel{ position:absolute; left:14px; bottom:8px; font:900 64px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); z-index:2; }
+    .xyLabel{ position:absolute; left:14px; top:12px; font:900 24px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:2; }
+    .todaySky{ position:absolute; left:14px; top:46px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
+
+    /* Tree enlarged by 20% via scale */
+    #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; }
+
+    /* Leaf and canopy animations */
+    @keyframes leafBlink { 0%,100%{ fill:#166534;} 50%{ fill:#86efac;} }
+    @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
+    .blink-leaf path{ animation: leafBlink 900ms linear infinite; }
+    .leaf-pop{ animation: leafPop 380ms ease-out forwards; }
+
+    @keyframes canopyBlink { 0%,100%{ stroke:#065f46;} 50%{ stroke:#000; } }
+    .blink-canopy{ animation: canopyBlink 900ms linear infinite; }
+
+    .rain{ position:absolute; inset:0; pointer-events:none; display:none; z-index:30; }
+    .rain .drop{ position:absolute; top:-12px; width:3px; height:14px; background:rgba(14,42,112,.45); border-radius:2px; animation:rainFall 0.9s linear infinite; }
+    .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.3s; }
+    @keyframes rainFall{ to{ transform:translateY(620px); } }
+
+    /* Tabs + Modes vertical */
+    .tabsWrap{ margin:12px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:760px; max-width:100%; }
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); justify-content:center; }
+    .tab{ display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
+    .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
+    .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; flex-direction:column; }
+    .modesBar{ display:flex; flex-direction:column; gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); }
+    .modeEditRow{ display:flex; flex-direction:column; gap:10px; }
+    .modeEditRow .editGroup{ display:flex; align-items:center; gap:6px; background:#f8fbff; border:1px solid var(--line); padding:6px 8px; border-radius:10px; }
+    .modeEditRow input{ padding:6px 8px; border-radius:8px; border:1px solid var(--line); font-weight:700; width:100%; }
+
+    /* Completed Trees: 6 columns */
+    .gridWrap{ margin:14px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:420px; max-width:92vw; display:flex; flex-direction:column; align-items:center; }
+    .gridHead{ display:flex; align-items:center; justify-content:space-between; gap:8px; color:#4a6894; width:100%; max-width:420px; }
+    .grid{ display:grid; gap:6px; grid-template-columns:repeat(6, 1fr); width:100%; }
+    .cell{ aspect-ratio:1/1; border-radius:10px; background:#f3f8ff; border:1px dashed #c8d8ee; color:#4e6ea0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; position:relative; }
+    .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:18px; pointer-events:none; }
+    .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
+
+    .tzBar{ display:flex; flex-direction:column; gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); margin-top:12px; width:560px; max-width:100%; }
+    .tzLeft{ display:flex; flex-direction:column; gap:8px; width:100%; }
     .searchWrap{ position:relative; }
     .searchWrap input{
       width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--line); font-weight:700;
@@ -44,213 +128,285 @@
     .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
     .chip{ padding:8px 12px; border-radius:999px; border:1px solid var(--line); background:#fff; color:#4a6894; }
 
-    .controls{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-    button{
-      border:none; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;
-      color:#fff; background:var(--btn-neutral);
-      box-shadow:0 1px 0 rgba(0,0,0,.06), 0 6px 14px rgba(15,23,42,.14);
-    }
-    .btn-primary{ background:var(--btn-primary); }
-    .btn-primary:hover{ background:var(--btn-primary-hover); }
+    .bottomAuth{ margin:18px auto 0; max-width:560px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; display:flex; flex-direction:column; align-items:stretch; }
 
-    @media (max-width:480px){
+    .hidden{ display:none !important; }
+
+    /* Mobile prevent clipping */
+    @media (max-width: 640px){
+      .treeBox{ width:92vw; height:92vw; max-width:92vw; }
+      #treeSVG{ width:92vw; height:auto; left:50%; transform:translateX(-50%) scale(1.2); }
+      .percentLabel{ font-size:48px; }
+      .xyLabel{ font-size:18px; }
+      .todaySky{ font-size:16px; }
       h1{ font-size:18px; }
       .modeTag{ font-size:16px; }
+      header{ gap:8px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="brand">
-        <span style="font-weight:800;">🌍</span>
-        <h1>Country Time Zone Picker</h1>
-      </div>
-      <div class="modeTag">Local time: <span id="localTime">--:--</span></div>
+      <div class="brand"><span style="font-weight:800;">🌳</span><h1>Pomodoro Tree</h1></div>
+      <div class="modeTag">Mode: <span id="modeName">Study</span></div>
     </header>
 
-    <section class="card tzBar">
-      <div class="tzRow">
-        <label for="countrySearch" class="miniNote">Country</label>
-        <div class="searchWrap">
-          <input id="countrySearch" type="text" placeholder="Type country name..." autocomplete="off" />
-          <div id="countryList" class="dropdown"></div>
-        </div>
-        <div class="chips">
-          <div class="chip">Selected country: <span id="selCountry">None</span></div>
-          <div class="chip">IANA zone: <span id="selZone">None</span></div>
-          <div class="chip">UTC offset now: <span id="selOffset">--</span></div>
+    <div class="topStack">
+      <!-- Timer type and minutes input -->
+      <div class="centerRow">
+        <section class="timerTypeBar fixedCard vstack" aria-label="Timer type and minutes">
+          <select id="timerTypeSelect">
+            <option value="pomodoro">Pomodoro timer (25 min)</option>
+            <option value="custom">Custom timer</option>
+            <option value="simple">Simple timer</option>
+          </select>
+          <div id="customInputs" class="vstack" style="display:none;">
+            <span class="miniNote" id="durationLabel">Duration (minutes)</span>
+            <input id="customMin" type="number" min="1" max="999" step="1" value="25" />
+            <button id="applyCustomBtn" title="Apply minutes">Apply</button>
+            <span id="customLockMsg" class="miniNote"></span>
+          </div>
+        </section>
+      </div>
+
+      <!-- Timer -->
+      <div class="centerRow">
+        <section class="timerCard fixedCard">
+          <div class="time" id="clock">25:00</div>
+          <div class="controls">
+            <button id="startBtn">Start 25:00</button>
+            <button id="resetBtn">Reset</button>
+          </div>
+          <div class="settings vstack" id="settingsBlock">
+            <div class="numWrap" id="lptWrap">
+              <label for="lptInput"><strong>Leaves per week (LPT)</strong></label>
+              <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
+              <button id="lptSetBtn">Set</button>
+              <span id="lockHint" class="miniNote">Editable once per ISO week</span>
+            </div>
+            <div class="progressWrap" id="progressWrap">
+              <label class="miniNote">Weekly completion</label>
+              <input type="range" id="progressRange" min="0" max="100" step="1" value="0" readonly />
+              <span id="progressPct">0%</span>
+            </div>
+            <div id="weeklyTarget" class="miniNote">Weekly target = 3 hrs 45 mins</div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Tree canvas -->
+      <div class="centerRow">
+        <section class="treePanel fixedCard">
+          <h3 style="margin:0 0 8px 0; text-align:center;">Current Tree</h3>
+          <div class="treeBox">
+            <div class="sky"></div>
+            <div id="percentLabel" class="percentLabel">0%</div>
+            <div id="xyLabel" class="xyLabel">0/9 leaves</div>
+            <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
+            <div id="rainLayer" class="rain"></div>
+
+            <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
+              <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
+            </svg>
+
+            <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1" stdDeviation="1.0" flood-color="#000" flood-opacity="0.15" /></filter>
+                <mask id="fillMask" maskUnits="userSpaceOnUse" x="100" y="150" width="380" height="220">
+                  <rect fill="#000" x="100" y="150" width="380" height="220"/>
+                  <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
+                </mask>
+                <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#a3e3b5" />
+                  <stop offset="100%" stop-color="#7fce9d" />
+                </linearGradient>
+              </defs>
+
+              <g id="canopyGroup" transform="translate(280 280) scale(1,1.2) translate(-280 -280)">
+                <path id="canopyWhite" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="url(#canopyBaseDarker)"/>
+                <path id="canopyFillGreen" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="#3aa85f" mask="url(#fillMask)"/>
+                <path id="canopyOutline" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="transparent" stroke="#065f46" stroke-width="3" />
+                <path d="M 280 380 C 280 350, 280 320, 280 284" fill="none" stroke="#4e342e" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M 280 284 C 270 270, 258 255, 248 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M 280 284 C 290 270, 302 255, 312 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+                <g id="leafLayer" filter="url(#leafShadow)"></g>
+              </g>
+            </svg>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Country-based time zone picker -->
+    <div class="centerRow">
+      <div class="tzBar" id="tzBar">
+        <div class="tzLeft">
+          <label for="countrySearch" class="miniNote">Country (sets IANA time zone)</label>
+          <div class="searchWrap">
+            <input id="countrySearch" type="text" placeholder="Type country name..." autocomplete="off" />
+            <div id="countryList" class="dropdown"></div>
+          </div>
+          <div class="chips">
+            <div class="chip">Selected country: <span id="selCountry">None</span></div>
+            <div class="chip">IANA zone: <span id="selZone">None</span></div>
+            <div class="chip">UTC offset now: <span id="selOffset">--</span></div>
+          </div>
         </div>
       </div>
-      <div class="controls">
-        <button id="useSystemBtn" class="btn-primary">Use system time zone</button>
-        <button id="clearBtn">Clear selection</button>
+    </div>
+
+    <!-- Tabs -->
+    <section class="tabsWrap" id="tabsWrap">
+      <div class="tabs">
+        <div class="tab active" data-tab="modesPanel">Modes</div>
+        <div class="tab" data-tab="subPanel">Subscription</div>
+        <div class="tab" data-tab="syncPanel">Sync</div>
+      </div>
+
+      <div id="modesPanel" class="panelCard" style="display:flex;">
+        <div class="modesBar">
+          <div class="modeEditRow">
+            <select id="modeSelect" title="Switch mode"></select>
+          </div>
+          <div class="modeEditRow" id="editableNamesRow">
+            <div class="editGroup"><span>Subject 1</span><input id="subject1Input" placeholder="Edit name" /></div>
+            <div class="editGroup"><span>Subject 2</span><input id="subject2Input" placeholder="Edit name" /></div>
+            <div class="editGroup"><span>Subject 3</span><input id="subject3Input" placeholder="Edit name" /></div>
+            <div class="editGroup"><span>User 1</span><input id="user1Input" placeholder="Edit name" /></div>
+            <div class="editGroup"><span>User 2</span><input id="user2Input" placeholder="Edit name" /></div>
+            <div class="editGroup"><span>User 3</span><input id="user3Input" placeholder="Edit name" /></div>
+            <button id="saveNamesBtn">Save names</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="subPanel" class="panelCard">
+        <div id="subStatus">Plan: Free — 4 weeks cap. Unlock remaining 48 weeks for $1/year.</div>
+        <button id="subBtn">Unlock 48 weeks — $1</button>
+      </div>
+
+      <div id="syncPanel" class="panelCard">
+        <div id="authState">Signed out</div>
+        <input type="email" id="emailInput" placeholder="email@example.com" />
+        <button id="sendLinkBtn">Send sign-in link</button>
+        <button id="signOutBtn">Sign out</button>
       </div>
     </section>
 
-    <section class="card" style="margin-top:14px;">
-      <div class="miniNote">Notes</div>
-      <ul>
-        <li>Each country maps to one representative IANA time zone (policy choices for multi-zone countries like US, CA, AU, BR, RU, etc.).</li>
-        <li>Start typing a country name, then click a suggestion to set the time zone.</li>
-        <li>This can be swapped to a library-backed list like countries-and-timezones for automatic data updates.</li>
-      </ul>
+    <!-- Completed Trees (6 columns) -->
+    <section class="gridWrap" id="gridWrap">
+      <div class="gridHead">
+        <div class="chip">Completed Trees</div>
+        <div class="chip" id="gridCount">0 / 52</div>
+      </div>
+      <div class="grid" id="treeGrid"></div>
     </section>
+
+    <div class="bottomAuth" id="bottomAuth">
+      <input type="email" id="emailInputBottom" placeholder="email@example.com" />
+      <button id="sendLinkBtnBottom">Sign in</button>
+      <button id="signOutBtnBottom">Sign out</button>
+    </div>
   </div>
 
   <script>
-    // Persistent config
-    const APP_KEY='country_tz_picker_v1';
-    const GLOBAL_KEY=APP_KEY+'_global';
-    const G = JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{"timeZone":""}');
+    const APP_KEY = 'pomodoroTree_Consolidated_Final_v1';
+    const GLOBAL_KEY = APP_KEY + '_global';
+    const NAMES_KEY = APP_KEY + '_names';
+    const svgns='http://www.w3.org/2000/svg';
 
-    // One canonical time zone per country (curated representatives)
-    // This can be replaced or generated from countries-and-timezones in the future.
-    // For brevity, a focused but broad set is included; extend as needed.
+    const TIMER_TYPES = { pomodoro:'pomodoro', custom:'custom', simple:'simple' };
+    const POMODORO_SECONDS = 25*60;
+
+    const DEFAULT_MODE_NAMES = {
+      'exercise': 'Exercise mode', 'cycling': 'Cycling mode', 'digitalDetox': 'Digital detox mode', 'bedTime': 'Bed-time mode',
+      'quran': 'Quran mode', 'dikhr': 'Dikhr mode', 'maths': 'Maths mode',
+      'subject1': 'Subject 1 mode', 'subject2': 'Subject 2 mode', 'subject3': 'Subject 3 mode',
+      'user1': 'User 1 mode', 'user2': 'User 2 mode', 'user3': 'User 3 mode'
+    };
+
+    const load = (k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
+    const save = (k,v)=> localStorage.setItem(k, JSON.stringify(v));
+
+    const G = load(GLOBAL_KEY, { timeZone:'', selectedMode:'maths', timerType:TIMER_TYPES.pomodoro, customSeconds: 25*60 });
+    const CUSTOM_NAMES = load(NAMES_KEY, {});
+
+    const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
+    const DEFAULT_STATE = {
+      leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS, running:false,
+      leavesTotal:0, leavesToday:0, weeklyLeaves:0,
+      weeklyFocusSeconds:0, totalFocusSeconds:0, completedSessions:0,
+      grid:[], week:undefined, year:undefined,
+      weeklyComplete:false, weeklyTargetLocked:false, weeklyTargetSetValue:9,
+      customLocked:false, customLockWeek:undefined, customLockYear:undefined
+    };
+
+    function loadState(modeId){ return load(modeKey(modeId), DEFAULT_STATE); }
+    function saveState(modeId,S){ save(modeKey(modeId), S); }
+    function saveAll(){ saveState(currentMode,S); save(GLOBAL_KEY,G); }
+
+    let currentMode = G.selectedMode || 'maths';
+    let S = loadState(currentMode);
+
+    // Elements
+    const el=id=>document.getElementById(id);
+    const timerTypeSelect=el('timerTypeSelect'), customInputs=el('customInputs'), customMinInput=el('customMin'), applyCustomBtn=el('applyCustomBtn'), customLockMsg=el('customLockMsg'), durationLabel=el('durationLabel');
+    const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
+    const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lockHint=el('lockHint');
+    const progressWrap=el('progressWrap'), progressRange=el('progressRange'), progressPct=el('progressPct'), weeklyTargetEl=el('weeklyTarget');
+    const percentLabel=el('percentLabel'), xyLabel=el('xyLabel'), todaySky=el('todaySky');
+    const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), saplingsG=document.getElementById('saplings');
+    const treeGrid=el('treeGrid'), gridCount=el('gridCount'), modeNameEl=el('modeName');
+    const rainLayer=el('rainLayer');
+
+    // Country-based TZ picker
+    const countrySearch=el('countrySearch'), countryList=el('countryList'), selCountry=el('selCountry'), selZone=el('selZone'), selOffset=el('selOffset');
+
     const COUNTRY_TZ = [
-      { name:'Afghanistan', tz:'Asia/Kabul' },
-      { name:'Albania', tz:'Europe/Tirane' },
-      { name:'Algeria', tz:'Africa/Algiers' },
-      { name:'Andorra', tz:'Europe/Andorra' },
-      { name:'Angola', tz:'Africa/Luanda' },
-      { name:'Argentina', tz:'America/Argentina/Buenos_Aires' },
-      { name:'Armenia', tz:'Asia/Yerevan' },
-      { name:'Australia', tz:'Australia/Sydney' },     // policy: Sydney
-      { name:'Austria', tz:'Europe/Vienna' },
-      { name:'Azerbaijan', tz:'Asia/Baku' },
-      { name:'Bahrain', tz:'Asia/Bahrain' },
-      { name:'Bangladesh', tz:'Asia/Dhaka' },
-      { name:'Belgium', tz:'Europe/Brussels' },
-      { name:'Bhutan', tz:'Asia/Thimphu' },
-      { name:'Bolivia', tz:'America/La_Paz' },
-      { name:'Bosnia and Herzegovina', tz:'Europe/Sarajevo' },
-      { name:'Botswana', tz:'Africa/Gaborone' },
-      { name:'Brazil', tz:'America/Sao_Paulo' },       // policy: São Paulo
-      { name:'Brunei', tz:'Asia/Brunei' },
-      { name:'Bulgaria', tz:'Europe/Sofia' },
-      { name:'Cambodia', tz:'Asia/Phnom_Penh' },
-      { name:'Cameroon', tz:'Africa/Douala' },
-      { name:'Canada', tz:'America/Toronto' },         // policy: Toronto (ET)
-      { name:'Chile', tz:'America/Santiago' },
-      { name:'China', tz:'Asia/Shanghai' },
-      { name:'Colombia', tz:'America/Bogota' },
-      { name:'Congo (DRC)', tz:'Africa/Kinshasa' },
-      { name:'Costa Rica', tz:'America/Costa_Rica' },
-      { name:'Croatia', tz:'Europe/Zagreb' },
-      { name:'Cyprus', tz:'Asia/Nicosia' },
-      { name:'Czechia', tz:'Europe/Prague' },
-      { name:'Denmark', tz:'Europe/Copenhagen' },
-      { name:'Dominican Republic', tz:'America/Santo_Domingo' },
-      { name:'Ecuador', tz:'America/Guayaquil' },
-      { name:'Egypt', tz:'Africa/Cairo' },
-      { name:'El Salvador', tz:'America/El_Salvador' },
-      { name:'Estonia', tz:'Europe/Tallinn' },
-      { name:'Ethiopia', tz:'Africa/Addis_Ababa' },
-      { name:'Fiji', tz:'Pacific/Fiji' },
-      { name:'Finland', tz:'Europe/Helsinki' },
-      { name:'France', tz:'Europe/Paris' },
-      { name:'Gabon', tz:'Africa/Libreville' },
-      { name:'Georgia', tz:'Asia/Tbilisi' },
-      { name:'Germany', tz:'Europe/Berlin' },
-      { name:'Ghana', tz:'Africa/Accra' },
-      { name:'Greece', tz:'Europe/Athens' },
-      { name:'Guatemala', tz:'America/Guatemala' },
-      { name:'Honduras', tz:'America/Tegucigalpa' },
-      { name:'Hong Kong', tz:'Asia/Hong_Kong' },
-      { name:'Hungary', tz:'Europe/Budapest' },
-      { name:'Iceland', tz:'Atlantic/Reykjavik' },
-      { name:'India', tz:'Asia/Kolkata' },
-      { name:'Indonesia', tz:'Asia/Jakarta' },         // policy: Jakarta
-      { name:'Iran', tz:'Asia/Tehran' },
-      { name:'Iraq', tz:'Asia/Baghdad' },
-      { name:'Ireland', tz:'Europe/Dublin' },
-      { name:'Israel', tz:'Asia/Jerusalem' },
-      { name:'Italy', tz:'Europe/Rome' },
-      { name:'Japan', tz:'Asia/Tokyo' },
-      { name:'Jordan', tz:'Asia/Amman' },
-      { name:'Kazakhstan', tz:'Asia/Almaty' },         // policy: Almaty
-      { name:'Kenya', tz:'Africa/Nairobi' },
-      { name:'Kuwait', tz:'Asia/Kuwait' },
-      { name:'Kyrgyzstan', tz:'Asia/Bishkek' },
-      { name:'Laos', tz:'Asia/Vientiane' },
-      { name:'Latvia', tz:'Europe/Riga' },
-      { name:'Lebanon', tz:'Asia/Beirut' },
-      { name:'Libya', tz:'Africa/Tripoli' },
-      { name:'Lithuania', tz:'Europe/Vilnius' },
-      { name:'Luxembourg', tz:'Europe/Luxembourg' },
-      { name:'Madagascar', tz:'Indian/Antananarivo' },
-      { name:'Malawi', tz:'Africa/Blantyre' },
-      { name:'Malaysia', tz:'Asia/Kuala_Lumpur' },
-      { name:'Maldives', tz:'Indian/Maldives' },
-      { name:'Mali', tz:'Africa/Bamako' },
-      { name:'Malta', tz:'Europe/Malta' },
-      { name:'Mexico', tz:'America/Mexico_City' },     // policy: CDMX
-      { name:'Moldova', tz:'Europe/Chisinau' },
-      { name:'Mongolia', tz:'Asia/Ulaanbaatar' },
-      { name:'Montenegro', tz:'Europe/Podgorica' },
-      { name:'Morocco', tz:'Africa/Casablanca' },
-      { name:'Mozambique', tz:'Africa/Maputo' },
-      { name:'Myanmar', tz:'Asia/Yangon' },
-      { name:'Namibia', tz:'Africa/Windhoek' },
-      { name:'Nepal', tz:'Asia/Kathmandu' },
-      { name:'Netherlands', tz:'Europe/Amsterdam' },
-      { name:'New Zealand', tz:'Pacific/Auckland' },
-      { name:'Nicaragua', tz:'America/Managua' },
-      { name:'Niger', tz:'Africa/Niamey' },
-      { name:'Nigeria', tz:'Africa/Lagos' },
-      { name:'North Macedonia', tz:'Europe/Skopje' },
-      { name:'Norway', tz:'Europe/Oslo' },
-      { name:'Oman', tz:'Asia/Muscat' },
-      { name:'Pakistan', tz:'Asia/Karachi' },
-      { name:'Panama', tz:'America/Panama' },
-      { name:'Paraguay', tz:'America/Asuncion' },
-      { name:'Peru', tz:'America/Lima' },
-      { name:'Philippines', tz:'Asia/Manila' },
-      { name:'Poland', tz:'Europe/Warsaw' },
-      { name:'Portugal', tz:'Europe/Lisbon' },
-      { name:'Qatar', tz:'Asia/Qatar' },
-      { name:'Romania', tz:'Europe/Bucharest' },
-      { name:'Russia', tz:'Europe/Moscow' },           // policy: Moscow
-      { name:'Rwanda', tz:'Africa/Kigali' },
-      { name:'Saudi Arabia', tz:'Asia/Riyadh' },
-      { name:'Senegal', tz:'Africa/Dakar' },
-      { name:'Serbia', tz:'Europe/Belgrade' },
-      { name:'Singapore', tz:'Asia/Singapore' },
-      { name:'Slovakia', tz:'Europe/Bratislava' },
-      { name:'Slovenia', tz:'Europe/Ljubljana' },
-      { name:'South Africa', tz:'Africa/Johannesburg' },
-      { name:'South Korea', tz:'Asia/Seoul' },
-      { name:'Spain', tz:'Europe/Madrid' },
-      { name:'Sri Lanka', tz:'Asia/Colombo' },
-      { name:'Sweden', tz:'Europe/Stockholm' },
-      { name:'Switzerland', tz:'Europe/Zurich' },
-      { name:'Syria', tz:'Asia/Damascus' },
-      { name:'Taiwan', tz:'Asia/Taipei' },
-      { name:'Tanzania', tz:'Africa/Dar_es_Salaam' },
-      { name:'Thailand', tz:'Asia/Bangkok' },
-      { name:'Tunisia', tz:'Africa/Tunis' },
-      { name:'Türkiye', tz:'Europe/Istanbul' },
-      { name:'Uganda', tz:'Africa/Kampala' },
-      { name:'Ukraine', tz:'Europe/Kyiv' },
-      { name:'United Arab Emirates', tz:'Asia/Dubai' },
-      { name:'United Kingdom', tz:'Europe/London' },
-      { name:'United States', tz:'America/New_York' }, // policy: New York (ET)
-      { name:'Uruguay', tz:'America/Montevideo' },
-      { name:'Uzbekistan', tz:'Asia/Tashkent' },
-      { name:'Venezuela', tz:'America/Caracas' },
-      { name:'Vietnam', tz:'Asia/Ho_Chi_Minh' },
-      { name:'Zambia', tz:'Africa/Lusaka' },
-      { name:'Zimbabwe', tz:'Africa/Harare' }
+      { name:'Afghanistan', tz:'Asia/Kabul' },{ name:'Albania', tz:'Europe/Tirane' },{ name:'Algeria', tz:'Africa/Algiers' },
+      { name:'Argentina', tz:'America/Argentina/Buenos_Aires' },{ name:'Armenia', tz:'Asia/Yerevan' },{ name:'Australia', tz:'Australia/Sydney' },
+      { name:'Austria', tz:'Europe/Vienna' },{ name:'Azerbaijan', tz:'Asia/Baku' },{ name:'Bahrain', tz:'Asia/Bahrain' },
+      { name:'Bangladesh', tz:'Asia/Dhaka' },{ name:'Belgium', tz:'Europe/Brussels' },{ name:'Bhutan', tz:'Asia/Thimphu' },
+      { name:'Bolivia', tz:'America/La_Paz' },{ name:'Bosnia and Herzegovina', tz:'Europe/Sarajevo' },{ name:'Botswana', tz:'Africa/Gaborone' },
+      { name:'Brazil', tz:'America/Sao_Paulo' },{ name:'Brunei', tz:'Asia/Brunei' },{ name:'Bulgaria', tz:'Europe/Sofia' },
+      { name:'Cambodia', tz:'Asia/Phnom_Penh' },{ name:'Cameroon', tz:'Africa/Douala' },{ name:'Canada', tz:'America/Toronto' },
+      { name:'Chile', tz:'America/Santiago' },{ name:'China', tz:'Asia/Shanghai' },{ name:'Colombia', tz:'America/Bogota' },
+      { name:'Congo (DRC)', tz:'Africa/Kinshasa' },{ name:'Costa Rica', tz:'America/Costa_Rica' },{ name:'Croatia', tz:'Europe/Zagreb' },
+      { name:'Cyprus', tz:'Asia/Nicosia' },{ name:'Czechia', tz:'Europe/Prague' },{ name:'Denmark', tz:'Europe/Copenhagen' },
+      { name:'Dominican Republic', tz:'America/Santo_Domingo' },{ name:'Ecuador', tz:'America/Guayaquil' },{ name:'Egypt', tz:'Africa/Cairo' },
+      { name:'El Salvador', tz:'America/El_Salvador' },{ name:'Estonia', tz:'Europe/Tallinn' },{ name:'Ethiopia', tz:'Africa/Addis_Ababa' },
+      { name:'Finland', tz:'Europe/Helsinki' },{ name:'France', tz:'Europe/Paris' },{ name:'Gabon', tz:'Africa/Libreville' },
+      { name:'Georgia', tz:'Asia/Tbilisi' },{ name:'Germany', tz:'Europe/Berlin' },{ name:'Ghana', tz:'Africa/Accra' },
+      { name:'Greece', tz:'Europe/Athens' },{ name:'Guatemala', tz:'America/Guatemala' },{ name:'Honduras', tz:'America/Tegucigalpa' },
+      { name:'Hong Kong', tz:'Asia/Hong_Kong' },{ name:'Hungary', tz:'Europe/Budapest' },{ name:'Iceland', tz:'Atlantic/Reykjavik' },
+      { name:'India', tz:'Asia/Kolkata' },{ name:'Indonesia', tz:'Asia/Jakarta' },{ name:'Iran', tz:'Asia/Tehran' },
+      { name:'Iraq', tz:'Asia/Baghdad' },{ name:'Ireland', tz:'Europe/Dublin' },{ name:'Israel', tz:'Asia/Jerusalem' },
+      { name:'Italy', tz:'Europe/Rome' },{ name:'Japan', tz:'Asia/Tokyo' },{ name:'Jordan', tz:'Asia/Amman' },
+      { name:'Kazakhstan', tz:'Asia/Almaty' },{ name:'Kenya', tz:'Africa/Nairobi' },{ name:'Kuwait', tz:'Asia/Kuwait' },
+      { name:'Kyrgyzstan', tz:'Asia/Bishkek' },{ name:'Laos', tz:'Asia/Vientiane' },{ name:'Latvia', tz:'Europe/Riga' },
+      { name:'Lebanon', tz:'Asia/Beirut' },{ name:'Libya', tz:'Africa/Tripoli' },{ name:'Lithuania', tz:'Europe/Vilnius' },
+      { name:'Luxembourg', tz:'Europe/Luxembourg' },{ name:'Malaysia', tz:'Asia/Kuala_Lumpur' },{ name:'Maldives', tz:'Indian/Maldives' },
+      { name:'Mexico', tz:'America/Mexico_City' },{ name:'Moldova', tz:'Europe/Chisinau' },{ name:'Mongolia', tz:'Asia/Ulaanbaatar' },
+      { name:'Montenegro', tz:'Europe/Podgorica' },{ name:'Morocco', tz:'Africa/Casablanca' },{ name:'Mozambique', tz:'Africa/Maputo' },
+      { name:'Myanmar', tz:'Asia/Yangon' },{ name:'Namibia', tz:'Africa/Windhoek' },{ name:'Nepal', tz:'Asia/Kathmandu' },
+      { name:'Netherlands', tz:'Europe/Amsterdam' },{ name:'New Zealand', tz:'Pacific/Auckland' },{ name:'Nicaragua', tz:'America/Managua' },
+      { name:'Niger', tz:'Africa/Niamey' },{ name:'Nigeria', tz:'Africa/Lagos' },{ name:'North Macedonia', tz:'Europe/Skopje' },
+      { name:'Norway', tz:'Europe/Oslo' },{ name:'Oman', tz:'Asia/Muscat' },{ name:'Pakistan', tz:'Asia/Karachi' },
+      { name:'Panama', tz:'America/Panama' },{ name:'Paraguay', tz:'America/Asuncion' },{ name:'Peru', tz:'America/Lima' },
+      { name:'Philippines', tz:'Asia/Manila' },{ name:'Poland', tz:'Europe/Warsaw' },{ name:'Portugal', tz:'Europe/Lisbon' },
+      { name:'Qatar', tz:'Asia/Qatar' },{ name:'Romania', tz:'Europe/Bucharest' },{ name:'Russia', tz:'Europe/Moscow' },
+      { name:'Rwanda', tz:'Africa/Kigali' },{ name:'Saudi Arabia', tz:'Asia/Riyadh' },{ name:'Senegal', tz:'Africa/Dakar' },
+      { name:'Serbia', tz:'Europe/Belgrade' },{ name:'Singapore', tz:'Asia/Singapore' },{ name:'Slovakia', tz:'Europe/Bratislava' },
+      { name:'Slovenia', tz:'Europe/Ljubljana' },{ name:'South Africa', tz:'Africa/Johannesburg' },{ name:'South Korea', tz:'Asia/Seoul' },
+      { name:'Spain', tz:'Europe/Madrid' },{ name:'Sri Lanka', tz:'Asia/Colombo' },{ name:'Sweden', tz:'Europe/Stockholm' },
+      { name:'Switzerland', tz:'Europe/Zurich' },{ name:'Syria', tz:'Asia/Damascus' },{ name:'Taiwan', tz:'Asia/Taipei' },
+      { name:'Tanzania', tz:'Africa/Dar_es_Salaam' },{ name:'Thailand', tz:'Asia/Bangkok' },{ name:'Tunisia', tz:'Africa/Tunis' },
+      { name:'Türkiye', tz:'Europe/Istanbul' },{ name:'Uganda', tz:'Africa/Kampala' },{ name:'Ukraine', tz:'Europe/Kyiv' },
+      { name:'United Arab Emirates', tz:'Asia/Dubai' },{ name:'United Kingdom', tz:'Europe/London' },{ name:'United States', tz:'America/New_York' },
+      { name:'Uruguay', tz:'America/Montevideo' },{ name:'Uzbekistan', tz:'Asia/Tashkent' },{ name:'Venezuela', tz:'America/Caracas' },
+      { name:'Vietnam', tz:'Asia/Ho_Chi_Minh' },{ name:'Zambia', tz:'Africa/Lusaka' },{ name:'Zimbabwe', tz:'Africa/Harare' }
     ].sort((a,b)=> a.name.localeCompare(b.name));
-
-    const countrySearch = document.getElementById('countrySearch');
-    const countryList = document.getElementById('countryList');
-    const selCountry = document.getElementById('selCountry');
-    const selZone = document.getElementById('selZone');
-    const selOffset = document.getElementById('selOffset');
-    const useSystemBtn = document.getElementById('useSystemBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const localTimeEl = document.getElementById('localTime');
 
     function formatOffset(tz){
       try{
@@ -260,16 +416,16 @@
         return tzName;
       }catch{ return '--'; }
     }
-
     function setTimeZone(tz, countryName){
       G.timeZone = tz;
-      localStorage.setItem(GLOBAL_KEY, JSON.stringify(G));
+      save(GLOBAL_KEY,G);
       selCountry.textContent = countryName || (COUNTRY_TZ.find(c=>c.tz===tz)?.name || '—');
       selZone.textContent = tz;
       selOffset.textContent = formatOffset(tz);
       countrySearch.value = selCountry.textContent;
+      rolloverWeekIfNeeded();
+      renderAll();
     }
-
     function renderCountryList(filter=''){
       const q = filter.trim().toLowerCase();
       const items = COUNTRY_TZ.filter(c => c.name.toLowerCase().includes(q));
@@ -277,7 +433,6 @@
       countryList.innerHTML = items.map(c=>`<div class="drop-item" data-tz="${c.tz}" data-name="${c.name}">${c.name}</div>`).join('');
       countryList.style.display='block';
     }
-
     countrySearch.addEventListener('input', ()=> renderCountryList(countrySearch.value) );
     countrySearch.addEventListener('focus', ()=> renderCountryList(countrySearch.value) );
     countryList.addEventListener('click', (e)=>{
@@ -286,45 +441,456 @@
       setTimeZone(tz, name);
       countryList.style.display='none';
     });
-    document.addEventListener('click', (e)=>{
-      if(!countryList.contains(e.target) && e.target!==countrySearch){ countryList.style.display='none'; }
-    });
+    document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
 
-    useSystemBtn.addEventListener('click', ()=>{
-      const sys = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-      const match = COUNTRY_TZ.find(c=>c.tz===sys);
-      setTimeZone(sys, match?.name || '');
-    });
-    clearBtn.addEventListener('click', ()=>{
-      countrySearch.value=''; countryList.style.display='none';
-      selCountry.textContent='None'; selZone.textContent='None'; selOffset.textContent='--';
-      G.timeZone=''; localStorage.setItem(GLOBAL_KEY, JSON.stringify(G));
-    });
-
-    function tickLocal(){
+    // Time helpers
+    function nowInTZ(){
       try{
-        const tz = G.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const fmt = new Intl.DateTimeFormat('en-GB',{ timeZone: tz, hour:'2-digit', minute:'2-digit', second:'2-digit' });
-        localTimeEl.textContent = fmt.format(new Date());
-      }catch{
-        localTimeEl.textContent = new Date().toLocaleTimeString();
+        const tz= G.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+        const parts = fmt.formatToParts(new Date());
+        const get = k => Number(parts.find(p=>p.type===k)?.value);
+        const y=get('year'), m=get('month'), d=get('day'), hh=get('hour'), mm=get('minute'), ss=get('second');
+        return new Date(Date.UTC(y, m-1, d, hh, mm, ss));
+      }catch{ return new Date(); }
+    }
+    function isoWeekOf(date){
+      const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+      const week = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+      return { week, year: d.getUTCFullYear() };
+    }
+    function rolloverWeekIfNeeded(){
+      const {week,year}=isoWeekOf(nowInTZ());
+      if(S.week===undefined || S.year===undefined){ S.week=week; S.year=year; saveAll(); return; }
+      if(S.week!==week || S.year!==year){
+        const completed = S.placed>=S.leavesPerTree && S.leavesPerTree>0;
+        S.grid.unshift({week:S.week,year:S.year,live:completed,ts:Date.now()});
+        if(S.grid.length>52) S.grid.pop();
+        S.week=week; S.year=year;
+        S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0; S.weeklyComplete=false;
+        S.weeklyTargetLocked=false; S.weeklyTargetSetValue=S.leavesPerTree;
+        S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
+        S.placed=0; S.secondsLeft=getSessionSeconds();
+        leafLayer.innerHTML='';
+        saveAll();
       }
     }
-    setInterval(tickLocal, 1000);
-    tickLocal();
 
-    // Prefill if saved
-    (function init(){
+    function getSessionSeconds(){
+      if(G.timerType==='pomodoro') return POMODORO_SECONDS;
+      if(G.timerType==='custom') return Math.max(60, Number(G.customSeconds)||1500);
+      if(G.timerType==='simple') return Math.max(60, Number(G.customSeconds)||1500);
+      return POMODORO_SECONDS;
+    }
+    function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
+
+    // Accurate countdown via wall clock
+    const intervals={};
+    function clearTicker(){ if(intervals[currentMode]){ clearInterval(intervals[currentMode]); intervals[currentMode]=null; } }
+    function startSession(){
+      if(intervals[currentMode]) return;
+      const maxSecs=getSessionSeconds();
+      if(S.secondsLeft<=0 || S.secondsLeft>maxSecs) S.secondsLeft=maxSecs;
+
+      if(G.timerType!=='simple'){ canopyBlink(true); rain(true); addPlaceholderLeafBlink(); }
+
+      const target = Date.now() + S.secondsLeft*1000;
+      const tick = ()=>{
+        const msLeft = Math.max(0, target - Date.now());
+        S.secondsLeft = Math.ceil(msLeft/1000);
+        clockEl.textContent = format(S.secondsLeft);
+        if(msLeft<=0){
+          clearTicker();
+          onComplete();
+        }
+      };
+      tick();
+      clearTicker();
+      intervals[currentMode]=setInterval(tick, 200);
+    }
+    function stopSession(){
+      clearTicker();
+      if(G.timerType!=='simple'){ canopyBlink(false); rain(false); stopPlaceholderBlink(); }
+    }
+
+    function onComplete(){
+      if(G.timerType==='simple'){
+        S.placed += 1; S.leavesTotal += 1; S.leavesToday += 1;
+        finalizeLeafPop();
+      }else{
+        const dur=getSessionSeconds();
+        S.weeklyFocusSeconds=(S.weeklyFocusSeconds||0)+dur;
+        S.totalFocusSeconds=(S.totalFocusSeconds||0)+dur;
+        S.completedSessions=(S.completedSessions||0)+1;
+        S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
+        if(S.placed>=S.leavesPerTree){ S.weeklyComplete=true; }
+        animateProgress();
+        finalizeLeafPop();
+      }
+      S.secondsLeft=getSessionSeconds();
+      clockEl.textContent=format(S.secondsLeft);
+      saveAll();
+      renderAll();
+      if(G.timerType!=='simple'){ canopyBlink(false); rain(false); }
+    }
+
+    function canopyBlink(on){
+      const outline=document.getElementById('canopyOutline');
+      outline?.classList.toggle('blink-canopy', !!on);
+    }
+
+    // Leaf animations
+    let placeholderLeaf=null;
+    function baseAnchorsArr(){ return [{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}]; }
+    function anchorForIndex(i){
+      const base=baseAnchorsArr();
+      if(i<base.length) return base[i];
+      const k=i-base.length+1, a=k*137.508*Math.PI/180, r=30+0.9*Math.sqrt(k)*8, cx=280, cy=260;
+      return {x:cx+r*Math.cos(a), y:cy+r*Math.sin(a)*0.7};
+    }
+    function createLeafG(n){
+      const g=document.createElementNS(svgns,'g'); g.setAttribute('filter','url(#leafShadow)');
+      const p=document.createElementNS(svgns,'path'); p.setAttribute('d','M 0 -16 C 10 -10, 12 0, 0 14 C -12 0, -10 -10, 0 -16 Z'); p.setAttribute('fill','#166534'); p.setAttribute('stroke','#0b3d22'); p.setAttribute('stroke-width','1.2');
+      const t=document.createElementNS(svgns,'text'); t.setAttribute('x','0'); t.setAttribute('y','0'); t.setAttribute('fill','#fff'); t.setAttribute('font-weight','800'); t.setAttribute('font-size','13'); t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle'); t.textContent=String(n);
+      g.appendChild(p); g.appendChild(t); return g;
+    }
+    function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
+
+    function addPlaceholderLeafBlink(){
+      if(S.weeklyComplete || (G.timerType!=='simple' && S.placed>=S.leavesPerTree)) return;
+      const idx=S.placed;
+      placeholderLeaf = createLeafG(idx+1);
+      placeholderLeaf.classList.add('blink-leaf');
+      placeLeaf(placeholderLeaf, anchorForIndex(idx));
+      leafLayer.appendChild(placeholderLeaf);
+    }
+    function stopPlaceholderBlink(){ if(placeholderLeaf){ placeholderLeaf.classList.remove('blink-leaf'); } }
+    function finalizeLeafPop(){
+      if(placeholderLeaf){
+        placeholderLeaf.classList.remove('blink-leaf');
+        placeholderLeaf.classList.add('leaf-pop');
+        placeholderLeaf=null;
+      }else{
+        const idx=S.placed-1;
+        const g=createLeafG(S.placed);
+        placeLeaf(g, anchorForIndex(idx));
+        g.classList.add('leaf-pop');
+        leafLayer.appendChild(g);
+      }
+    }
+    function renderLeaves(){
+      leafLayer.innerHTML='';
+      for(let i=0;i<S.placed;i++){
+        const g=createLeafG(i+1);
+        placeLeaf(g, anchorForIndex(i));
+        leafLayer.appendChild(g);
+      }
+    }
+
+    // Canopy fill animation
+    const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
+    function setFillPercentInstant(pct){
+      const p=Math.max(0, Math.min(100, Number(pct)||0));
+      const targetH=FILL_OVERSCAN*(p/100);
+      const targetY=CANOPY_BOTTOM-targetH;
+      fillRect.setAttribute('y', String(targetY));
+      fillRect.setAttribute('height', String(targetH));
+      percentLabel.textContent = Math.round(p)+'%';
+    }
+    function animateFillTo(pct){
+      const p=Math.max(0, Math.min(100, Number(pct)||0));
+      const currentH = Number(fillRect.getAttribute('height')||0);
+      const targetH = FILL_OVERSCAN*(p/100);
+      const startH=currentH, delta=targetH-startH;
+      const start=performance.now(), dur=420;
+      function step(ts){
+        const t=Math.min(1, (ts-start)/dur);
+        const ease = t<0.5 ? 2*t*t : -1+(4-2*t)*t;
+        const h = startH + delta*ease;
+        const y = CANOPY_BOTTOM - h;
+        fillRect.setAttribute('y', String(y));
+        fillRect.setAttribute('height', String(h));
+        percentLabel.textContent = Math.round((h/FILL_OVERSCAN)*100)+'%';
+        if(t<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    function animateProgress(){
+      const total=Math.max(1, Number(S.leavesPerTree)||1);
+      const done=Math.min(S.placed,total);
+      const pct=Math.round((done/total)*100);
+      progressRange.value=String(pct);
+      progressRange.style.backgroundImage=`linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
+      progressPct.textContent=`${pct}%`;
+      xyLabel.textContent=`${done}/${total} leaves`;
+      animateFillTo(pct);
+    }
+    function updateProgressInstant(){
+      const total=Math.max(1, Number(S.leavesPerTree)||1);
+      const done=Math.min(S.placed,total);
+      const pct=Math.round((done/total)*100);
+      progressRange.value=String(pct);
+      progressRange.style.backgroundImage=`linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
+      progressPct.textContent=`${pct}%`;
+      setFillPercentInstant(pct);
+      xyLabel.textContent=`${done}/${total} leaves`;
+    }
+
+    // Rain
+    function rain(on){
+      rainLayer.style.display=on?'block':'none';
+      if(on && rainLayer.childElementCount===0){
+        const mk=(n, cls='')=>{
+          for(let i=0;i<n;i++){
+            const d=document.createElement('div'); d.className='drop'+cls;
+            d.style.left=(Math.random()*560)+'px';
+            d.style.animationDelay=(Math.random()*0.9)+'s';
+            d.style.animationDuration=(cls? (1.0+Math.random()*0.9)+'s' : (0.6+Math.random()*0.6)+'s');
+            rainLayer.appendChild(d);
+          }
+        };
+        mk(160,''); mk(120,' far');
+      }
+    }
+
+    // Weekly target / labels
+    function updateWeeklyTargetText(){
+      const per=getSessionSeconds();
+      const totalSec = per * (S.leavesPerTree||0);
+      const h=Math.floor(totalSec/3600), m=Math.round((totalSec%3600)/60);
+      weeklyTargetEl.textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
+    }
+
+    // Saplings 7×8
+    function buildSaplings(){
+      saplingsG.innerHTML='';
+      const rows=7, cols=8;
+      const left=24, right=536;
+      const grassTop = Math.round(560*0.62)+14;
+      const rowGap=26;
+      for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+          const x = Math.round(left + c*((right-left)/(cols-1)));
+          const y = grassTop + r*rowGap;
+          const stem = document.createElementNS(svgns,'path');
+          stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
+          stem.setAttribute('stroke','#2f6f3a'); stem.setAttribute('stroke-width','2'); stem.setAttribute('fill','none'); stem.setAttribute('stroke-linecap','round');
+          const leafL = document.createElementNS(svgns,'path'); leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
+          leafL.setAttribute('stroke','#2f6f3a'); leafL.setAttribute('stroke-width','2'); leafL.setAttribute('fill','none'); leafL.setAttribute('stroke-linecap','round'); leafL.setAttribute('stroke-linejoin','round');
+          const leafR = document.createElementNS(svgns,'path'); leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
+          leafR.setAttribute('stroke','#2f6f3a'); leafR.setAttribute('stroke-width','2'); leafR.setAttribute('fill','none'); leafR.setAttribute('stroke-linecap','round'); leafR.setAttribute('stroke-linejoin','round');
+          saplingsG.appendChild(stem); saplingsG.appendChild(leafL); saplingsG.appendChild(leafR);
+        }
+      }
+    }
+
+    // Grid
+    function renderGrid(){
+      treeGrid.innerHTML='';
+      for(let i=0;i<52;i++){
+        const cell=document.createElement('div'); cell.className='cell';
+        const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
+        const icon=document.createElement('div'); icon.className='icon';
+        const entry=S.grid[i];
+        if(entry){ icon.textContent= entry.live?'🌳':''; if(entry.live) cell.classList.add('live'); }
+        cell.appendChild(num); cell.appendChild(icon); treeGrid.appendChild(cell);
+      }
+      gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
+    }
+
+    // UI state
+    function setClockAndButtons(){
+      const secs=getSessionSeconds();
+      if(S.secondsLeft<=0 || S.secondsLeft>secs) S.secondsLeft=secs;
+      clockEl.textContent=format(S.secondsLeft);
+      startBtn.textContent=`Start ${format(secs)}`;
+    }
+
+    function applyTimerTypeUI(){
+      const isSimple=(G.timerType==='simple');
+      const isCustom=(G.timerType==='custom');
+
+      customInputs.style.display = (isCustom || isSimple) ? 'block' : 'none';
+      durationLabel.textContent = isSimple ? 'Duration (minutes — can change anytime)' : (isCustom ? 'Duration (minutes — change once per ISO week)' : 'Duration (minutes)');
+      if(isCustom){
+        customMinInput.value = String(Math.max(1, Math.floor((G.customSeconds||1500)/60)));
+        const locked = !!S.customLocked && S.customLockWeek===S.week && S.customLockYear===S.year;
+        customMinInput.disabled = locked; applyCustomBtn.disabled = locked;
+        customLockMsg.textContent = locked ? `Custom minutes locked for ISO Week ${S.week}-${S.year}` : 'Not locked yet';
+      }else if(isSimple){
+        customMinInput.disabled=false; applyCustomBtn.disabled=false; customLockMsg.textContent='Not locked';
+      }else{
+        customLockMsg.textContent='';
+      }
+
+      lptWrap.style.display = isSimple ? 'none' : 'flex';
+      progressWrap.style.display = isSimple ? 'none' : 'flex';
+      weeklyTargetEl.style.display = isSimple ? 'none' : 'block';
+
+      if(isSimple){
+        xyLabel.textContent = `${S.placed} leaves`;
+        percentLabel.textContent = '';
+        setFillPercentInstant(0);
+      }else{
+        updateProgressInstant();
+      }
+
+      setClockAndButtons();
+      if(!isSimple){ updateWeeklyTargetText(); }
+    }
+
+    // Events
+    startBtn.addEventListener('click', startSession);
+    resetBtn.addEventListener('click', ()=>{ stopSession(); S.secondsLeft=getSessionSeconds(); setClockAndButtons(); saveAll(); });
+
+    timerTypeSelect.addEventListener('change', ()=>{
+      G.timerType=timerTypeSelect.value;
+      if(G.timerType==='pomodoro') S.secondsLeft=POMODORO_SECONDS;
+      applyTimerTypeUI();
+      saveAll();
+    });
+
+    applyCustomBtn.addEventListener('click', ()=>{
+      const mins = Math.max(1, Math.floor(Number(customMinInput.value)||0));
+      if(G.timerType==='simple'){
+        G.customSeconds = mins*60;
+        S.secondsLeft = getSessionSeconds();
+        setClockAndButtons();
+      }else if(G.timerType==='custom'){
+        rolloverWeekIfNeeded();
+        if(S.customLocked && S.customLockWeek===S.week && S.customLockYear===S.year) return;
+        G.customSeconds = mins*60;
+        S.customLocked = true; S.customLockWeek=S.week; S.customLockYear=S.year;
+        S.secondsLeft = getSessionSeconds();
+      }
+      applyTimerTypeUI();
+      if(G.timerType!=='simple'){ updateWeeklyTargetText(); }
+      saveAll();
+    });
+
+    lptSetBtn.addEventListener('click', ()=>{
+      if(G.timerType==='simple') return;
+      rolloverWeekIfNeeded();
+      if(S.weeklyTargetLocked) return;
+      const v = Math.max(1, Math.min(200, Math.floor(Number(lptInput.value)||1)));
+      S.leavesPerTree=v;
+      S.weeklyTargetLocked=true;
+      S.weeklyTargetSetValue=v;
+      lptInput.value=String(v);
+      S.placed=0;
+      leafLayer.innerHTML='';
+      updateWeeklyTargetText();
+      updateProgressInstant();
+      saveAll();
+      renderAll();
+    });
+
+    // Tabs
+    document.querySelector('.tabs').addEventListener('click', (e)=>{
+      const t=e.target.closest('.tab'); if(!t) return;
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      const id=t.getAttribute('data-tab');
+      document.querySelectorAll('.panelCard').forEach(p=>p.style.display='none');
+      const panel=document.getElementById(id);
+      if(panel) panel.style.display='flex';
+    });
+
+    // Modes UI
+    const modeSelect=document.getElementById('modeSelect');
+    const ids=['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
+    const frag=document.createDocumentFragment();
+    for(const id of ids){
+      const label=(CUSTOM_NAMES[id] && CUSTOM_NAMES[id].trim()) ? CUSTOM_NAMES[id] : (DEFAULT_MODE_NAMES[id]||id);
+      const opt=document.createElement('option'); opt.value=id; opt.textContent=label; frag.appendChild(opt);
+    }
+    modeSelect.appendChild(frag);
+    modeSelect.value=currentMode;
+    modeSelect.addEventListener('change', ()=>{
+      stopSession();
+      currentMode=modeSelect.value; G.selectedMode=currentMode; save(GLOBAL_KEY,G);
+      S=loadState(currentMode);
+      rolloverWeekIfNeeded();
+      setClockAndButtons();
+      applyTimerTypeUI();
+      renderAll();
+    });
+
+    // Misc helpers
+    function updateStatsChips(){
+      const wH=Math.floor((S.weeklyFocusSeconds||0)/3600), wM=Math.floor(((S.weeklyFocusSeconds||0)%3600)/60);
+      const oH=Math.floor((S.totalFocusSeconds||0)/3600), oM=Math.floor(((S.totalFocusSeconds||0)%3600)/60);
+      // Could place these chips near tzBar if needed
+    }
+
+    // Render
+    function renderAll(){
+      renderLeaves();
+      renderGrid();
+      const isSimple=(G.timerType==='simple');
+      if(isSimple){
+        const minsToday = Math.round((S.leavesToday * Math.max(60, Number(G.customSeconds)||900))/60);
+        todaySky.textContent = `Total duration (today): ${minsToday} mins`;
+        xyLabel.textContent = `${S.placed} leaves`;
+        percentLabel.textContent = '';
+      }else{
+        updateWeeklyTargetText();
+        updateProgressInstant();
+      }
+      setClockAndButtons();
+    }
+
+    // Animations toggle helpers
+    function showRain(on){ rain(on); }
+    function canopyBlinking(on){ canopyBlink(on); }
+
+    // Rain builder alias used in start/stop
+    function rain(on){
+      rainLayer.style.display=on?'block':'none';
+      if(on && rainLayer.childElementCount===0){
+        const mk=(n, cls='')=>{
+          for(let i=0;i<n;i++){
+            const d=document.createElement('div'); d.className='drop'+cls;
+            d.style.left=(Math.random()*560)+'px';
+            d.style.animationDelay=(Math.random()*0.9)+'s';
+            d.style.animationDuration=(cls? (1.0+Math.random()*0.9)+'s' : (0.6+Math.random()*0.6)+'s');
+            rainLayer.appendChild(d);
+          }
+        };
+        mk(160,''); mk(120,' far');
+      }
+    }
+
+    // Header mode label
+    function refreshModeHeader(){
+      const label=(CUSTOM_NAMES[currentMode] && CUSTOM_NAMES[currentMode].trim()) ? CUSTOM_NAMES[currentMode] : (DEFAULT_MODE_NAMES[currentMode]||currentMode);
+      if(modeNameEl) modeNameEl.textContent=label.replace(/ mode$/i,'');
+    }
+
+    // Initialize
+    buildSaplings();
+
+    // Country prefill from saved or system tz
+    (function initCountry(){
       if(G.timeZone){
         const match = COUNTRY_TZ.find(c=>c.tz===G.timeZone);
         setTimeZone(G.timeZone, match?.name || '');
+      }else{
+        const sys = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        const match = COUNTRY_TZ.find(c=>c.tz===sys);
+        if(match) setTimeZone(sys, match.name);
       }
     })();
-  </script>
 
-  <!-- Optional: swap curated list for a maintained DB in-browser
-       <script src="https://cdn.jsdelivr.net/gh/manuelmhtr/countries-and-timezones@latest/dist/index.min.js"></script>
-       You can then generate one tz per country (e.g., first or preferred), feeding COUNTRY_TZ dynamically.
-  -->
+    refreshModeHeader();
+    timerTypeSelect.value=G.timerType;
+    customMinInput.value=String(Math.max(1, Math.floor((G.customSeconds||1500)/60)));
+    rolloverWeekIfNeeded();
+    applyTimerTypeUI();
+    renderAll();
+  </script>
 </body>
 </html>
