@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Study Mode (25:00)</title>
+  <title>Pomodoro Tree — Study Mode (01:00)</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G91N05XLB3"></script>
@@ -20,16 +20,13 @@
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
       --text:#0b1a33; --dim:#4a6894;
-      --leaf-dark:#166534; --leaf-light:#86efac; --leaf-stroke:#0b3d22; --trunk-brown:#4e342e;
-      --canopy-stroke-idle:#065f46;
-      --sky1:#cfe8ff; --sky2:#8ec5ff; --grass1:#bfeec7; --grass2:#8edaa0;
       --radius-lg:18px; --shadow:0 10px 28px rgba(30,70,140,.1);
       --btn-text:#ffffff; --btn-primary:#2563eb; --btn-primary-hover:#1e40af;
       --btn-success:#16a34a; --btn-success-hover:#0f6a33;
       --btn-danger:#ef4444; --btn-danger-hover:#b91c1c;
       --btn-neutral:#334155; --btn-neutral-hover:#1f2937; --btn-focus:#0ea5e9;
       --progress-green:#16a34a; --progress-red:#ef4444; --track-bg:#e6efff;
-      --xy-font: 28.35px;
+      --xy-font:28.35px;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
@@ -68,22 +65,21 @@
     input[type=range][readonly]{ pointer-events:none; }
     .numWrap{ display:flex; align-items:center; gap:8px; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
-
     .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; font-size:9px; line-height:1.25; text-align:center; min-height:22px; display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; order:-1; width:100%; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
     .treePanel{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
     .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, #bfeec7 62%, #8edaa0 100%); }
-    .percentLabel{ position:absolute; left:14px; bottom:8px; font: 900 81px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; }
-    .xyLabel{ position:absolute; left:16px; top:14px; font: 900 28.35px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
-    .todaySky{ position:absolute; left:16px; top:52px; font: 800 21px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
+    .percentLabel{ position:absolute; left:14px; bottom:8px; font:900 81px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; }
+    .xyLabel{ position:absolute; left:16px; top:14px; font:900 28.35px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
+    .todaySky{ position:absolute; left:16px; top:52px; font:800 21px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
     @keyframes canopyBlink { 0%,100%{ stroke:#065f46;} 50%{ stroke:#000; } }
     @keyframes leafBlink { 0%,100%{ fill:#166534;} 50%{ fill:#86efac;} }
     .blink-canopy{ animation: canopyBlink 900ms linear infinite; }
     .blink-leaf{ animation: leafBlink 900ms linear infinite; }
-    .leaf-number{ font: 800 13px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:#ffffff; text-anchor:middle; dominant-baseline:middle; }
+    .leaf-number{ font:800 13px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:#ffffff; text-anchor:middle; dominant-baseline:middle; }
 
     .rain{ position:absolute; inset:0; pointer-events:none; display:none; z-index:9999; }
     .rain .drop{ position:absolute; top:-12px; width:3px; height:14px; background:rgba(14,42,112,.45); border-radius:2px; animation:rainFall 0.8s linear infinite; }
@@ -91,14 +87,14 @@
     @keyframes rainFall{ to{ transform:translateY(620px); } }
 
     /* Timezone bar (below timer/tree) */
-    .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; }
+    .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; }
     .tzLeft{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     .tzLeft label{ color:#4a6894; font-weight:800; }
     .tzLeft select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:700; min-width:260px; }
     .stats{ gap:10px; flex-wrap:wrap; }
     .chip{ gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#4a6894; }
 
-    /* Tabs come after timezone */
+    /* Tabs after timezone */
     .tabsWrap{ margin:12px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
     .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); }
     .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
@@ -121,9 +117,6 @@
     .num{ position:relative; z-index:1; font-size:18px; color:#4e6ea0; }
     .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; z-index:2; pointer-events:none; }
     .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
-
-    .bottomAuth{ margin:18px auto 0; max-width:760px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; }
-    .bottomAuth input{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); }
   </style>
 </head>
 <body data-mode="Study">
@@ -136,9 +129,9 @@
     <!-- TOP: Timer and Tree directly under header -->
     <div class="topStack">
       <section class="timerCard">
-        <div class="time" id="clock">25:00</div>
+        <div class="time" id="clock">01:00</div>
         <div class="controls">
-          <button id="startBtn">Start 25:00</button>
+          <button id="startBtn">Start 01:00</button>
           <button id="resetBtn">Reset</button>
         </div>
         <div class="settings">
@@ -150,14 +143,14 @@
           </div>
 
           <div class="estWrap">
-            <div class="miniNote" id="lptNote">LPT = No. of 25 min sessions per week</div>
+            <div class="miniNote" id="lptNote">LPT = No. of 1 min sessions per week</div>
           </div>
 
           <div class="progressWrap" id="progressBlock" style="order:2;">
             <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
             <span id="lptVal">9</span>
           </div>
-          <div id="weeklyTarget" class="miniNote" style="order:3;">Weekly target = 3 hrs 45 mins (as per LPT)</div>
+          <div id="weeklyTarget" class="miniNote" style="order:3;">Weekly target = 9 mins (as per LPT)</div>
         </div>
       </section>
 
@@ -202,7 +195,7 @@
     </div>
 
     <!-- BELOW: Timezone bar -->
-    <div class="tzBar" style="margin-top:12px;">
+    <div class="tzBar">
       <div class="tzLeft">
         <label for="tzSelect">Time zone</label>
         <select id="tzSelect" aria-label="Time zone"></select>
@@ -248,7 +241,7 @@
             <div class="editGroup"><span>User 3</span><input id="user3Input" placeholder="Edit name" /></div>
             <button id="saveNamesBtn">Save names</button>
           </div>
-          <div class="modeNote">Each mode has its own timer and data. Selecting a mode from the dropdown switches instantly.</div>
+          <div class="modeNote">Each mode has its own timer and data. Selecting a mode switches instantly.</div>
         </div>
       </div>
     </section>
@@ -269,14 +262,12 @@
   </div>
 
   <script>
-    // Namespaced keys and per-mode isolation
-    const APP_KEY = 'pomodoroTree_SingleMode_25min_V6';
+    const APP_KEY = 'pomodoroTree_SingleMode_1min_V1';
     const NAMES_KEY = APP_KEY + '_customNames';
     const GLOBAL_KEY = APP_KEY + '_global';
     const svgns='http://www.w3.org/2000/svg';
-    const LEAF_SECONDS=1500; // 25 minutes
+    const LEAF_SECONDS=60; // 1 minute session
 
-    // Mode catalog (Subject 3 added)
     const DEFAULT_MODE_NAMES = {
       'exercise': 'Exercise mode',
       'cycling': 'Cycling mode',
@@ -294,18 +285,15 @@
     };
     const EDITABLE_KEYS = ['subject1','subject2','subject3','user1','user2','user3'];
 
-    // Global settings (timezone, selected mode)
     const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}');
     const G = Object.assign({ timeZone:'UTC', selectedMode:'maths' }, loadGlobal());
 
-    // Custom names
     const loadNames = () => JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
     const CUSTOM_NAMES = Object.assign({}, loadNames());
 
     function saveGlobal(){ localStorage.setItem(GLOBAL_KEY, JSON.stringify(G)); }
     function saveNames(){ localStorage.setItem(NAMES_KEY, JSON.stringify(CUSTOM_NAMES)); }
 
-    // Per-mode state storage
     const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
     const DEFAULT_STATE = {
       leavesPerTree:9, placed:0, secondsLeft:LEAF_SECONDS, running:false,
@@ -327,17 +315,14 @@
       localStorage.setItem(modeKey(modeId), JSON.stringify(S));
     }
 
-    // Active mode and its state
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
 
-    // Independent timer handle per mode (isolate running intervals)
-    const intervals = {}; // map: modeId -> intervalId
+    const intervals = {}; // modeId -> interval handle
     function clearModeInterval(modeId){
       if(intervals[modeId]){ clearInterval(intervals[modeId]); intervals[modeId]=null; }
     }
 
-    // UI refs
     const el=id=>document.getElementById(id);
     const clockEl=el('clock');
     const startBtn=el('startBtn');
@@ -358,7 +343,6 @@
     const todaySky=el('todaySky');
     const modeNameEl=document.getElementById('modeName');
 
-    // Tabs behavior
     const tabsContainer=document.querySelector('.tabs');
     tabsContainer?.addEventListener('click', (e)=>{
       const t=e.target.closest('.tab'); if(!t) return;
@@ -370,7 +354,6 @@
       if(panel) panel.style.display='flex';
     });
 
-    // Audio
     let audioCtx=null;
     function ensureAudioUnlocked(){
       const AC=window.AudioContext||window.webkitAudioContext;
@@ -397,7 +380,6 @@
       oscA.stop(now + 10.1); oscB.stop(now + 10.1); trem.stop(now + 10.1);
     }
 
-    // Timezone helpers
     function nowInTZ(){
       try{
         const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: G.timeZone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
@@ -418,7 +400,6 @@
       return { week, year: d.getUTCFullYear() };
     }
 
-    // Save helpers
     function save(){ saveState(currentMode, S); saveGlobal(); }
     function unshiftWeekToGrid(week, year, live){
       S.grid.unshift({week,year,live,ts:Date.now()});
@@ -426,7 +407,6 @@
       save();
     }
 
-    // Rollover by timezone ISO week
     function rolloverWeekIfNeeded(){
       const nowTz = nowInTZ();
       const { week:wk, year:yr } = isoWeekOf(nowTz);
@@ -443,7 +423,6 @@
       }
     }
 
-    // Tree leaves
     const baseAnchors=[{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}];
     function anchorForIndex(i){
       if(i<baseAnchors.length) return baseAnchors[i];
@@ -482,7 +461,6 @@
       }
     }
 
-    // Saplings grid background
     function buildSaplings(){
       const g=document.getElementById('saplings');
       if(!g) return;
@@ -544,14 +522,12 @@
     }
 
     function updateWeeklyTarget(){
-      const hours = (S.leavesPerTree * (LEAF_SECONDS/3600));
-      const h = Math.floor(hours);
-      const m = Math.round((hours - h)*60);
-      weeklyTargetEl.textContent = `Weekly target = ${h>0? h+' hrs ':''}${m} mins (as per LPT)`;
-      lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
+      const mins = S.leavesPerTree; // 1 min per leaf
+      weeklyTargetEl.textContent = `Weekly target = ${mins} mins (as per LPT)`;
+      lptNoteEl.textContent = 'LPT = No. of 1 min sessions per week';
     }
     function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
-    function minutesForLeaves(n){ return n*(LEAF_SECONDS/60); }
+    function minutesForLeaves(n){ return n; } // 1 minute per leaf
 
     function renderTotals(){
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
@@ -574,14 +550,14 @@
       return `${m}:${s}`;
     }
 
-    // Timer control strictly scoped to currentMode via S and intervals[currentMode]
+    let audioRunningCleanup=null;
     function setRunning(on){
       S.running=on;
       const canopyOutline = document.getElementById('canopyOutline');
       if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
       const layer=document.querySelector('#treeSVG #leafLayer');
       const cur=layer?.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
-      startBtn.textContent = on ? 'Running…' : 'Start 25:00';
+      startBtn.textContent = on ? 'Running…' : 'Start 01:00';
       startBtn.disabled = !!on;
       showRain(!!on);
       save();
@@ -650,12 +626,10 @@
     }
 
     function startSessionWallClock(){
-      // Only for the active mode
       const thisMode = currentMode;
       const targetEpoch = Date.now() + (S.secondsLeft * 1000);
 
       const tick = ()=>{
-        // Guard: if mode changed, stop this interval
         if(thisMode !== currentMode){ clearModeInterval(thisMode); return; }
         const remainingMs = Math.max(0, targetEpoch - Date.now());
         S.secondsLeft = Math.ceil(remainingMs / 1000);
@@ -699,7 +673,6 @@
     }
 
     function resetTimer(){
-      // Only affect current mode
       if(intervals[currentMode]){ clearModeInterval(currentMode); startBtn._cleanupVisibility?.(); }
       setRunning(false);
       showRain(false);
@@ -714,14 +687,11 @@
 
     function updateWeeklyTargetPreview(nextLPT){
       const v = Math.max(1, Math.min(200, Number(nextLPT)||1));
-      const mins = v * (LEAF_SECONDS/60);
-      const h = Math.floor(mins/60);
-      const m = Math.round(mins - h*60);
-      weeklyTargetEl.textContent = `Weekly target = ${h>0? h+' hrs ':''}${m} mins (as per LPT)`;
-      lptNoteEl.textContent = 'LPT = No. of 25 min sessions per week';
+      const mins = v; // 1 min each
+      weeklyTargetEl.textContent = `Weekly target = ${mins} mins (as per LPT)`;
+      lptNoteEl.textContent = 'LPT = No. of 1 min sessions per week';
     }
 
-    // Wire up timer UI
     startBtn.addEventListener('click', startFlow);
     resetBtn.addEventListener('click', resetTimer);
 
@@ -752,7 +722,6 @@
       renderHUD();
     });
 
-    // Timezone selector
     const tzSelect = document.getElementById('tzSelect');
     function populateTimeZonesIfNeeded(){
       if(!tzSelect) return;
@@ -787,7 +756,6 @@
       save();
     });
 
-    // Modes UI
     const modeSelect = document.getElementById('modeSelect');
     const subject1Input = document.getElementById('subject1Input');
     const subject2Input = document.getElementById('subject2Input');
@@ -820,7 +788,6 @@
         modeSelect.value = ids.includes(currentMode)? currentMode : ids[0];
         if(curVal && ids.includes(curVal)) modeSelect.value = curVal;
       }
-      // Editable fields
       subject1Input.value = CUSTOM_NAMES['subject1'] || '';
       subject2Input.value = CUSTOM_NAMES['subject2'] || '';
       subject3Input.value = CUSTOM_NAMES['subject3'] || '';
@@ -831,30 +798,24 @@
       if(modeNameEl) modeNameEl.textContent = modeLabel(currentMode).replace(/ mode$/i,'');
     }
 
-    // Switch mode instantly on dropdown change (no separate button)
     modeSelect?.addEventListener('change', ()=>{
       switchMode(modeSelect.value);
     });
 
     function switchMode(toId){
       if(!toId || toId===currentMode) return;
-      // Stop timer of old mode only
       clearModeInterval(currentMode);
       startBtn._cleanupVisibility?.();
       showRain(false);
 
-      // Persist old mode
       save();
 
-      // Load new mode
       currentMode = toId;
       G.selectedMode = toId;
       S = loadState(currentMode);
 
-      // Ensure reasonable seconds range
       if (S.secondsLeft <= 0 || S.secondsLeft > LEAF_SECONDS) S.secondsLeft = LEAF_SECONDS;
 
-      // Repaint tree for new mode
       const layer=document.querySelector('#treeSVG #leafLayer');
       if(layer) layer.innerHTML='';
       renderLeavesFromState();
@@ -874,7 +835,6 @@
       renderHUD();
     });
 
-    // Init
     if(!G.timeZone) G.timeZone='UTC';
     if(!G.selectedMode) G.selectedMode='maths';
     currentMode = G.selectedMode;
