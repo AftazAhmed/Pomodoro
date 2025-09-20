@@ -411,24 +411,24 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_Simplex_NoLPT_CustomWeeklyLock_PerModeLPT_v7_alarm10s_xySky_full';
+    const APP_KEY='pomodoroTree_Simplex_NoLPT_CustomWeeklyLock_PerModeLPT_v8_xyReflect_setValues';
     const GLOBAL_KEY=APP_KEY+'_global', NAMES_KEY=APP_KEY+'_names';
     const svgns='http://www.w3.org/2000/svg';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simplex:'simplex' };
     const POMODORO_SECONDS=25*60;
 
-    // Storage helpers (JSON stringify/parse best practice) [web:7][web:19]
-    const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } }; /* [web:7][web:19] */
-    const save=(k,v)=> localStorage.setItem(k, JSON.stringify(v)); /* [web:7][web:19] */
+    // Storage helpers [web:19][web:44][web:42]
+    const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } }; /* [web:19][web:39][web:44] */
+    const save=(k,v)=> localStorage.setItem(k, JSON.stringify(v)); /* [web:19][web:42] */
 
-    // ISO week per ISO-8601 (Thursday-based) [web:9][web:18]
-    function isoWeekOf(date){ /* [web:9][web:18] */
-      const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())); /* [web:9] */
-      const dayNum = d.getUTCDay() || 7; /* [web:9] */
-      d.setUTCDate(d.getUTCDate() + 4 - dayNum); /* [web:9] */
-      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); /* [web:9] */
-      const week = Math.ceil((((d - yearStart) / 86400000) + 1)/7); /* [web:9] */
-      return { week, year: d.getUTCFullYear() }; /* [web:18] */
+    // ISO week helper (Thursday-based) [web:18]
+    function isoWeekOf(date){ /* [web:18] */
+      const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+      const week = Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+      return { week, year: d.getUTCFullYear() };
     }
 
     const G = load(GLOBAL_KEY, { timerType:TIMER_TYPES.pomodoro, customSeconds:25*60, simpleSeconds:25*60, selectedMode:'maths' });
@@ -441,8 +441,8 @@
       _week:undefined, _year:undefined
     };
     const modeKey=(id)=> `${APP_KEY}_mode_${id}`;
-    function loadState(mode){ return load(modeKey(mode), DEFAULT_MODE_STATE); } /* [web:7] */
-    function saveState(mode,S){ save(modeKey(mode), S); } /* [web:7] */
+    function loadState(mode){ return load(modeKey(mode), DEFAULT_MODE_STATE); } /* [web:19] */
+    function saveState(mode,S){ save(modeKey(mode), S); } /* [web:19] */
 
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
@@ -558,32 +558,32 @@
       gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
     }
 
-    // Web Audio alarm (10s) using OscillatorNode [web:1][web:21][web:2]
-    let audioCtx=null, alarmGain=null; /* [web:1] */
-    function unlockAudioContextOnce(){ /* [web:1][web:2] */
+    // Web Audio alarm (10s) [web:1][web:21][web:34][web:37][web:45]
+    let audioCtx=null, alarmGain=null;
+    function unlockAudioContextOnce(){
       if(!audioCtx){
-        audioCtx = new (window.AudioContext||window.webkitAudioContext)(); /* [web:24] */
+        audioCtx = new (window.AudioContext||window.webkitAudioContext)();
       }
       if(audioCtx.state==='suspended'){
-        audioCtx.resume().catch(()=>{}); /* [web:21] */
+        audioCtx.resume().catch(()=>{});
       }
       if(!alarmGain && audioCtx){
-        alarmGain = audioCtx.createGain(); /* [web:1] */
+        alarmGain = audioCtx.createGain();
         alarmGain.gain.value = 0.12;
-        alarmGain.connect(audioCtx.destination); /* [web:21] */
+        alarmGain.connect(audioCtx.destination);
       }
     }
-    function playAlarm10s(){ /* [web:1][web:2] */
+    function playAlarm10s(){
       if(!audioCtx || !alarmGain) return;
       const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator(); /* [web:1] */
-      osc.type = 'sine'; /* [web:1] */
-      osc.frequency.setValueAtTime(660, now); /* [web:2] */
-      osc.frequency.linearRampToValueAtTime(880, now+5); /* [web:2] */
-      osc.frequency.linearRampToValueAtTime(660, now+10); /* [web:2] */
-      osc.connect(alarmGain); /* [web:1] */
-      osc.start(now); /* [web:2] */
-      osc.stop(now+10); /* [web:2] */
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(660, now);
+      osc.frequency.linearRampToValueAtTime(880, now+5);
+      osc.frequency.linearRampToValueAtTime(660, now+10);
+      osc.connect(alarmGain);
+      osc.start(now);
+      osc.stop(now+10);
     }
 
     // Timer + visuals
@@ -698,8 +698,8 @@
 
     function onTimerEnd(){
       addLeaf();
-      if(currentMode!=='bedTime'){ // ring in all modes except bed time
-        playAlarm10s(); // 10 seconds alarm [web:2]
+      if(currentMode!=='bedTime'){
+        playAlarm10s();
       }
       S.secondsLeft = getSessionSeconds();
       saveState(currentMode,S);
@@ -707,7 +707,7 @@
     }
 
     function startTimer(){
-      unlockAudioContextOnce(); // ensure user gesture unlock [web:21]
+      unlockAudioContextOnce();
       rainTop.style.display='block';
       if(ticker) clearInterval(ticker);
       ticker=setInterval(()=>{
@@ -737,7 +737,7 @@
     });
     resetBtn.addEventListener('click', resetTimer);
 
-    // LPT set with ISO-week lock
+    // LPT set with ISO-week lock; reflect set value into input immediately
     lptSetBtn.addEventListener('click', ()=>{
       const v = Math.max(1, Math.min(200, Number(lptInput.value)||S.leavesPerTree));
       const {week,year}=isoWeekOf(new Date());
@@ -746,6 +746,7 @@
         S.weeklyTargetSetValue = v;
         S.weeklyTargetLocked = true;
         S.lockWeek = week; S.lockYear = year;
+        lptInput.value = String(v); // reflect set value
         saveState(currentMode,S);
         updateProgressInstant();
         renderStats();
@@ -754,11 +755,14 @@
           S.weeklyTargetLocked=false;
           S.lockWeek=undefined; S.lockYear=undefined;
           saveState(currentMode,S);
+        }else{
+          // If still locked in same week, force input to show the locked value
+          lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
         }
       }
     });
 
-    // Custom Set: apply manual minutes immediately and lock per ISO week
+    // Custom Set: apply manual minutes; reflect set minutes into input immediately; lock per ISO week
     applyCustomBtn.addEventListener('click', ()=>{
       const mins = Math.max(1, Math.min(999, Number(customMin.value)||25));
       const secs = mins*60;
@@ -770,6 +774,7 @@
         S.secondsLeft = secs;
         S.customLocked = true;
         S.customLockWeek = week; S.customLockYear = year;
+        customMin.value = String(mins); // reflect set value
         saveState(currentMode,S);
         timerTypeSelect.value = TIMER_TYPES.custom;
         setClockAndButtons();
@@ -780,11 +785,14 @@
           S.customLocked=false;
           S.customLockWeek=undefined; S.customLockYear=undefined;
           saveState(currentMode,S);
+        }else{
+          // If still locked, force input to show the locked set value
+          customMin.value = String(Math.round((G.customSeconds||1500)/60));
         }
       }
     });
 
-    // Simplex Set: always editable; hides LPT UI during simplex
+    // Simplex Set: reflect set minutes into input immediately
     applySimpleBtn.addEventListener('click', ()=>{
       const mins = Math.max(1, Math.min(999, Number(simpleMin.value)||25));
       const secs = mins*60;
@@ -792,6 +800,7 @@
       G.simpleSeconds = secs;
       save(GLOBAL_KEY, G);
       S.secondsLeft = secs;
+      simpleMin.value = String(mins); // reflect set value
       saveState(currentMode,S);
       timerTypeSelect.value = TIMER_TYPES.simplex;
       setClockAndButtons();
@@ -813,6 +822,10 @@
       refreshModeHeader();
       updateModeVisibility();
       renderStats();
+      // Keep timer/LPT inputs showing the last set values for the new mode as well
+      lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
+      customMin.value = String(Math.round((G.customSeconds||1500)/60));
+      simpleMin.value = String(Math.round((G.simpleSeconds||1500)/60));
     }
 
     modeSelect.addEventListener('change', ()=> switchMode(modeSelect.value));
@@ -840,6 +853,11 @@
       }
       updateInSkyXY();
       setClockAndButtons();
+
+      // Enforce reflecting currently set values in inputs
+      lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
+      customMin.value = String(Math.round((G.customSeconds||1500)/60));
+      simpleMin.value = String(Math.round((G.simpleSeconds||1500)/60));
     }
 
     timerTypeSelect.addEventListener('change', ()=>{
@@ -874,6 +892,11 @@
       updateModeVisibility();
       renderStats();
 
+      // Ensure inputs show last set values at boot
+      lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
+      customMin.value = String(Math.round((G.customSeconds||1500)/60));
+      simpleMin.value = String(Math.round((G.simpleSeconds||1500)/60));
+
       // Prepare rain elements once
       if(rainTop.childElementCount===0){
         const mk=(n, cls='')=>{
@@ -887,7 +910,6 @@
 
     document.addEventListener('visibilitychange', ()=>{
       if(document.hidden && ticker){
-        // Keep it simple: pause countdown when tab hidden
         stopTicker();
       }
     });
