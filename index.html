@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Final (GMT default)</title>
+  <title>Pomodoro Tree — GMT Default</title>
 
   <style>
     :root{
@@ -52,14 +52,6 @@
     .settings{ display:flex; flex-direction:column; gap:12px; margin-top:10px; color:var(--dim); width:100%; }
     .numWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
     .numWrap input{ width:160px; }
-
-    .progressWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
-    #progressRange{
-      -webkit-appearance:none; appearance:none; width:260px; height:10px; border-radius:999px; overflow:hidden; background:var(--track-bg); border:1px solid var(--line);
-      background-image:linear-gradient(90deg, #16a34a 0%, #ef4444 0%); background-size:100% 100%; background-repeat:no-repeat;
-    }
-    #progressRange::-webkit-slider-thumb{ -webkit-appearance:none; width:0; height:0; background:transparent; }
-    #progressRange::-moz-range-thumb{ width:0; height:0; background:transparent; border:none; }
 
     .treePanel{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treePanel.fixedCard{ width:760px; }
@@ -161,6 +153,7 @@
             <button id="startBtn">Start 25:00</button>
             <button id="resetBtn">Reset</button>
           </div>
+
           <div class="settings vstack" id="settingsBlock">
             <div class="numWrap" id="lptWrap">
               <label for="lptInput"><strong>Leaves per week (LPT)</strong></label>
@@ -172,11 +165,9 @@
               <span id="lptHelper" class="miniNote">LPT = No. of timer sessions per week</span>
               <span id="lockHint" class="miniNote">Editable once per ISO week</span>
             </div>
-            <div class="progressWrap" id="progressWrap">
-              <label class="miniNote">Weekly completion</label>
-              <input type="range" id="progressRange" min="0" max="100" step="1" value="0" readonly />
-              <span id="progressPct">0%</span>
-            </div>
+
+            <!-- Weekly completion removed as requested -->
+            <!-- <div class="progressWrap" id="progressWrap">...</div> -->
             <div id="weeklyTarget" class="miniNote">Weekly target = 3 hrs 45 mins</div>
           </div>
         </section>
@@ -194,6 +185,7 @@
             <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
             <div id="rainLayer" class="rain"></div>
 
+            <!-- Saplings beneath grass percent: insert saplings first, then grass percent text element is above due to DOM order -->
             <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
               <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
             </svg>
@@ -226,7 +218,7 @@
       </div>
     </div>
 
-    <!-- Time zone search -->
+    <!-- Time zone search (chips removed) -->
     <div class="centerRow">
       <div class="tzBar" id="tzBar">
         <div class="tzLeft">
@@ -234,10 +226,6 @@
           <div class="searchWrap">
             <input id="countrySearch" type="text" placeholder="Type country name..." autocomplete="off" />
             <div id="countryList" class="dropdown"></div>
-          </div>
-          <div class="chips">
-            <div class="chip">IANA zone: <span id="selZone">None</span></div>
-            <div class="chip">UTC offset now: <span id="selOffset">--</span></div>
           </div>
         </div>
       </div>
@@ -298,7 +286,7 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_GMT_Default_Final_v1';
+    const APP_KEY = 'pomodoroTree_GMT_NoWeeklyCompletion_6x7Saplings_v1';
     const GLOBAL_KEY = APP_KEY + '_global';
     const NAMES_KEY = APP_KEY + '_names';
     const svgns='http://www.w3.org/2000/svg';
@@ -316,7 +304,7 @@
     const load = (k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
     const save = (k,v)=> localStorage.setItem(k, JSON.stringify(v));
 
-    // Default time zone set to GMT
+    // Default time zone set to GMT (IANA id Etc/GMT)
     const G = load(GLOBAL_KEY, { timeZone:'Etc/GMT', selectedMode:'maths', timerType:TIMER_TYPES.pomodoro, customSeconds: 25*60 });
     const CUSTOM_NAMES = load(NAMES_KEY, {});
 
@@ -337,74 +325,35 @@
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
 
+    // Elements
     const el=id=>document.getElementById(id);
     const timerTypeSelect=el('timerTypeSelect'), customInputs=el('customInputs'), customMinInput=el('customMin'), applyCustomBtn=el('applyCustomBtn'), customLockMsg=el('customLockMsg'), durationLabel=el('durationLabel');
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
     const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptLockNote=el('lptLockNote'), lockHint=el('lockHint'), lptHelper=el('lptHelper');
-    const progressWrap=el('progressWrap'), progressRange=el('progressRange'), progressPct=el('progressPct'), weeklyTargetEl=el('weeklyTarget');
     const percentLabel=el('percentLabel'), grassPctEl=el('grassPct'), xyLabel=el('xyLabel'), todaySky=el('todaySky');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), saplingsG=document.getElementById('saplings');
     const treeGrid=el('treeGrid'), gridCount=el('gridCount'), modeNameEl=el('modeName');
     const rainLayer=el('rainLayer');
-    const countrySearch=el('countrySearch'), countryList=el('countryList'), selZone=el('selZone'), selOffset=el('selOffset');
+    const countrySearch=el('countrySearch'), countryList=el('countryList');
 
+    // Country list -> representative tz (kept minimal for demo; can extend)
     const COUNTRY_TZ = [
-      { name:'Afghanistan', tz:'Asia/Kabul' },{ name:'Albania', tz:'Europe/Tirane' },{ name:'Algeria', tz:'Africa/Algiers' },
-      { name:'Argentina', tz:'America/Argentina/Buenos_Aires' },{ name:'Armenia', tz:'Asia/Yerevan' },{ name:'Australia', tz:'Australia/Sydney' },
-      { name:'Austria', tz:'Europe/Vienna' },{ name:'Azerbaijan', tz:'Asia/Baku' },{ name:'Bahrain', tz:'Asia/Bahrain' },
-      { name:'Bangladesh', tz:'Asia/Dhaka' },{ name:'Belgium', tz:'Europe/Brussels' },{ name:'Bhutan', tz:'Asia/Thimphu' },
-      { name:'Bolivia', tz:'America/La_Paz' },{ name:'Bosnia and Herzegovina', tz:'Europe/Sarajevo' },{ name:'Botswana', tz:'Africa/Gaborone' },
-      { name:'Brazil', tz:'America/Sao_Paulo' },{ name:'Brunei', tz:'Asia/Brunei' },{ name:'Bulgaria', tz:'Europe/Sofia' },
-      { name:'Cambodia', tz:'Asia/Phnom_Penh' },{ name:'Cameroon', tz:'Africa/Douala' },{ name:'Canada', tz:'America/Toronto' },
-      { name:'Chile', tz:'America/Santiago' },{ name:'China', tz:'Asia/Shanghai' },{ name:'Colombia', tz:'America/Bogota' },
-      { name:'Congo (DRC)', tz:'Africa/Kinshasa' },{ name:'Costa Rica', tz:'America/Costa_Rica' },{ name:'Croatia', tz:'Europe/Zagreb' },
-      { name:'Cyprus', tz:'Asia/Nicosia' },{ name:'Czechia', tz:'Europe/Prague' },{ name:'Denmark', tz:'Europe/Copenhagen' },
-      { name:'Dominican Republic', tz:'America/Santo_Domingo' },{ name:'Ecuador', tz:'America/Guayaquil' },{ name:'Egypt', tz:'Africa/Cairo' },
-      { name:'El Salvador', tz:'America/El_Salvador' },{ name:'Estonia', tz:'Europe/Tallinn' },{ name:'Ethiopia', tz:'Africa/Addis_Ababa' },
-      { name:'Finland', tz:'Europe/Helsinki' },{ name:'France', tz:'Europe/Paris' },{ name:'Gabon', tz:'Africa/Libreville' },
-      { name:'Georgia', tz:'Asia/Tbilisi' },{ name:'Germany', tz:'Europe/Berlin' },{ name:'Ghana', tz:'Africa/Accra' },
-      { name:'Greece', tz:'Europe/Athens' },{ name:'Guatemala', tz:'America/Guatemala' },{ name:'Honduras', tz:'America/Tegucigalpa' },
-      { name:'Hong Kong', tz:'Asia/Hong_Kong' },{ name:'Hungary', tz:'Europe/Budapest' },{ name:'Iceland', tz:'Atlantic/Reykjavik' },
-      { name:'India', tz:'Asia/Kolkata' },{ name:'Indonesia', tz:'Asia/Jakarta' },{ name:'Iran', tz:'Asia/Tehran' },
-      { name:'Iraq', tz:'Asia/Baghdad' },{ name:'Ireland', tz:'Europe/Dublin' },{ name:'Israel', tz:'Asia/Jerusalem' },
-      { name:'Italy', tz:'Europe/Rome' },{ name:'Japan', tz:'Asia/Tokyo' },{ name:'Jordan', tz:'Asia/Amman' },
-      { name:'Kazakhstan', tz:'Asia/Almaty' },{ name:'Kenya', tz:'Africa/Nairobi' },{ name:'Kuwait', tz:'Asia/Kuwait' },
-      { name:'Kyrgyzstan', tz:'Asia/Bishkek' },{ name:'Laos', tz:'Asia/Vientiane' },{ name:'Latvia', tz:'Europe/Riga' },
-      { name:'Lebanon', tz:'Asia/Beirut' },{ name:'Libya', tz:'Africa/Tripoli' },{ name:'Lithuania', tz:'Europe/Vilnius' },
-      { name:'Luxembourg', tz:'Europe/Luxembourg' },{ name:'Malaysia', tz:'Asia/Kuala_Lumpur' },{ name:'Maldives', tz:'Indian/Maldives' },
-      { name:'Mexico', tz:'America/Mexico_City' },{ name:'Moldova', tz:'Europe/Chisinau' },{ name:'Mongolia', tz:'Asia/Ulaanbaatar' },
-      { name:'Montenegro', tz:'Europe/Podgorica' },{ name:'Morocco', tz:'Africa/Casablanca' },{ name:'Mozambique', tz:'Africa/Maputo' },
-      { name:'Myanmar', tz:'Asia/Yangon' },{ name:'Namibia', tz:'Africa/Windhoek' },{ name:'Nepal', tz:'Asia/Kathmandu' },
-      { name:'Netherlands', tz:'Europe/Amsterdam' },{ name:'New Zealand', tz:'Pacific/Auckland' },{ name:'Nicaragua', tz:'America/Managua' },
-      { name:'Niger', tz:'Africa/Niamey' },{ name:'Nigeria', tz:'Africa/Lagos' },{ name:'North Macedonia', tz:'Europe/Skopje' },
-      { name:'Norway', tz:'Europe/Oslo' },{ name:'Oman', tz:'Asia/Muscat' },{ name:'Pakistan', tz:'Asia/Karachi' },
-      { name:'Panama', tz:'America/Panama' },{ name:'Paraguay', tz:'America/Asuncion' },{ name:'Peru', tz:'America/Lima' },
-      { name:'Philippines', tz:'Asia/Manila' },{ name:'Poland', tz:'Europe/Warsaw' },{ name:'Portugal', tz:'Europe/Lisbon' },
-      { name:'Qatar', tz:'Asia/Qatar' },{ name:'Romania', tz:'Europe/Bucharest' },{ name:'Russia', tz:'Europe/Moscow' },
-      { name:'Rwanda', tz:'Africa/Kigali' },{ name:'Saudi Arabia', tz:'Asia/Riyadh' },{ name:'Senegal', tz:'Africa/Dakar' },
-      { name:'Serbia', tz:'Europe/Belgrade' },{ name:'Singapore', tz:'Asia/Singapore' },{ name:'Slovakia', tz:'Europe/Bratislava' },
-      { name:'Slovenia', tz:'Europe/Ljubljana' },{ name:'South Africa', tz:'Africa/Johannesburg' },{ name:'South Korea', tz:'Asia/Seoul' },
-      { name:'Spain', tz:'Europe/Madrid' },{ name:'Sri Lanka', tz:'Asia/Colombo' },{ name:'Sweden', tz:'Europe/Stockholm' },
-      { name:'Switzerland', tz:'Europe/Zurich' },{ name:'Syria', tz:'Asia/Damascus' },{ name:'Taiwan', tz:'Asia/Taipei' },
-      { name:'Tanzania', tz:'Africa/Dar_es_Salaam' },{ name:'Thailand', tz:'Asia/Bangkok' },{ name:'Tunisia', tz:'Africa/Tunis' },
-      { name:'Türkiye', tz:'Europe/Istanbul' },{ name:'Uganda', tz:'Africa/Kampala' },{ name:'Ukraine', tz:'Europe/Kyiv' },
-      { name:'United Arab Emirates', tz:'Asia/Dubai' },{ name:'United Kingdom', tz:'Europe/London' },{ name:'United States', tz:'America/New_York' },
-      { name:'Uruguay', tz:'America/Montevideo' },{ name:'Uzbekistan', tz:'Asia/Tashkent' },{ name:'Venezuela', tz:'America/Caracas' },
-      { name:'Vietnam', tz:'Asia/Ho_Chi_Minh' },{ name:'Zambia', tz:'Africa/Lusaka' },{ name:'Zimbabwe', tz:'Africa/Harare' }
+      { name:'India', tz:'Asia/Kolkata' }, { name:'United Kingdom', tz:'Europe/London' }, { name:'United States', tz:'America/New_York' },
+      { name:'Canada', tz:'America/Toronto' }, { name:'Australia', tz:'Australia/Sydney' }, { name:'UAE', tz:'Asia/Dubai' },
+      { name:'Bangladesh', tz:'Asia/Dhaka' }, { name:'Japan', tz:'Asia/Tokyo' }, { name:'China', tz:'Asia/Shanghai' },
+      { name:'Germany', tz:'Europe/Berlin' }, { name:'France', tz:'Europe/Paris' }, { name:'Brazil', tz:'America/Sao_Paulo' }
     ].sort((a,b)=> a.name.localeCompare(b.name));
 
     function formatOffset(tz){
       try{
         const now=new Date();
         const parts=new Intl.DateTimeFormat('en-US',{ timeZone: tz, timeZoneName:'shortOffset' }).formatToParts(now);
-        return parts.find(p=>p.type==='timeZoneName')?.value || '--';
-      }catch{ return '--'; }
+        return parts.find(p=>p.type==='timeZoneName')?.value || 'GMT';
+      }catch{ return 'GMT'; }
     }
     function setTimeZone(tz){
-      G.timeZone = tz;
+      G.timeZone = tz || 'Etc/GMT';
       save(GLOBAL_KEY,G);
-      selZone.textContent = tz || 'None';
-      selOffset.textContent = tz ? formatOffset(tz) : '--';
       rolloverWeekIfNeeded();
       renderAll();
     }
@@ -420,12 +369,12 @@
     document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
     countryList.addEventListener('click', (e)=>{
       const item=e.target.closest('.drop-item'); if(!item) return;
-      const tz=item.getAttribute('data-tz');
+      setTimeZone(item.getAttribute('data-tz'));
       countrySearch.value = item.getAttribute('data-name');
-      setTimeZone(tz);
       countryList.style.display='none';
     });
 
+    // Time helpers (use Etc/GMT default)
     function nowInTZ(){
       try{
         const tz= G.timeZone || 'Etc/GMT';
@@ -508,7 +457,7 @@
         S.completedSessions=(S.completedSessions||0)+1;
         S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
         if(S.placed>=S.leavesPerTree){ S.weeklyComplete=true; }
-        animateProgress();
+        updateProgressInstant();
         finalizeLeafPop();
       }
       S.secondsLeft=getSessionSeconds();
@@ -571,7 +520,7 @@
       }
     }
 
-    // Canopy fill
+    // Canopy fill and grass percent
     const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
     function setFillPercentInstant(pct){
       const p=Math.max(0, Math.min(100, Number(pct)||0));
@@ -582,43 +531,10 @@
       percentLabel.textContent = Math.round(p)+'%';
       grassPctEl.textContent = Math.round(p)+'%';
     }
-    function animateFillTo(pct){
-      const p=Math.max(0, Math.min(100, Number(pct)||0));
-      const currentH = Number(fillRect.getAttribute('height')||0);
-      const targetH = FILL_OVERSCAN*(p/100);
-      const startH=currentH, delta=targetH-startH;
-      const start=performance.now(), dur=420;
-      function step(ts){
-        const t=Math.min(1, (ts-start)/dur);
-        const ease = t<0.5 ? 2*t*t : -1+(4-2*t)*t;
-        const h = startH + delta*ease;
-        const y = CANOPY_BOTTOM - h;
-        fillRect.setAttribute('y', String(y));
-        fillRect.setAttribute('height', String(h));
-        const pctNow = Math.round((h/FILL_OVERSCAN)*100);
-        percentLabel.textContent = pctNow+'%';
-        grassPctEl.textContent = pctNow+'%';
-        if(t<1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-    function animateProgress(){
-      const total=Math.max(1, Number(S.leavesPerTree)||1);
-      const done=Math.min(S.placed,total);
-      const pct=Math.round((done/total)*100);
-      progressRange.value=String(pct);
-      progressRange.style.backgroundImage=`linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
-      progressPct.textContent=`${pct}%`;
-      xyLabel.textContent=`${done}/${total} leaves`;
-      animateFillTo(pct);
-    }
     function updateProgressInstant(){
       const total=Math.max(1, Number(S.leavesPerTree)||1);
       const done=Math.min(S.placed,total);
       const pct=Math.round((done/total)*100);
-      progressRange.value=String(pct);
-      progressRange.style.backgroundImage=`linear-gradient(90deg, var(--progress-green) ${pct}%, var(--progress-red) ${pct}%)`;
-      progressPct.textContent=`${pct}%`;
       setFillPercentInstant(pct);
       xyLabel.textContent=`${done}/${total} leaves`;
     }
@@ -645,7 +561,7 @@
       const per=getSessionSeconds();
       const totalSec = per * (S.leavesPerTree||0);
       const h=Math.floor(totalSec/3600), m=Math.round((totalSec%3600)/60);
-      weeklyTargetEl.textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
+      document.getElementById('weeklyTarget').textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
     }
 
     // Saplings 6×7 (rows × cols)
@@ -663,7 +579,8 @@
           stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
           stem.setAttribute('stroke','#2f6f3a'); stem.setAttribute('stroke-width','2'); stem.setAttribute('fill','none'); stem.setAttribute('stroke-linecap','round');
           const leafL = document.createElementNS(svgns,'path'); leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
-          leafL.setAttribute('stroke','#2f6f3a'); leafL.setAttribute('stroke-width','2'); leafL.setAttribute('fill','none'); leafL.setAttribute('stroke-linecap','round'); leafL.setAttribute('stroke-linejoin','round');
+          leafL.setAttribute('stroke','#2f6f3a'); leafL.setAttribute('stroke-width','2'); leafL.setAttribute='fill','none';
+          leafL.setAttribute('stroke-linecap','round'); leafL.setAttribute('stroke-linejoin','round');
           const leafR = document.createElementNS(svgns,'path'); leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
           leafR.setAttribute('stroke','#2f6f3a'); leafR.setAttribute('stroke-width','2'); leafR.setAttribute('fill','none'); leafR.setAttribute('stroke-linecap','round'); leafR.setAttribute('stroke-linejoin','round');
           saplingsG.appendChild(stem); saplingsG.appendChild(leafL); saplingsG.appendChild(leafR);
@@ -710,9 +627,8 @@
         customLockMsg.textContent='';
       }
 
-      lptWrap.style.display = isSimple ? 'none' : 'flex';
-      progressWrap.style.display = isSimple ? 'none' : 'flex';
-      weeklyTargetEl.style.display = isSimple ? 'none' : 'block';
+      // Weekly target visible (completion meter removed)
+      document.getElementById('weeklyTarget').style.display = isSimple ? 'none' : 'block';
 
       if(isSimple){
         xyLabel.textContent = `${S.placed} leaves`;
@@ -767,7 +683,7 @@
       saveAll();
     });
 
-    // LPT set lock for week
+    // LPT set lock for week: lock and reflect value in input immediately
     lptSetBtn.addEventListener('click', ()=>{
       if(G.timerType==='simple') return;
       rolloverWeekIfNeeded();
@@ -776,7 +692,9 @@
       S.leavesPerTree=v;
       S.weeklyTargetLocked=true;
       S.weeklyTargetSetValue=v;
-      lptInput.value=String(v);
+      lptInput.value=String(v); // reflect set value
+      lptInput.disabled=true;   // lock UI
+      lptSetBtn.disabled=true;
       lptLockNote.textContent='Locked';
       S.placed=0;
       leafLayer.innerHTML='';
@@ -822,6 +740,19 @@
       document.getElementById('modeName').textContent=label.replace(/ mode$/i,'');
     }
 
+    function renderGrid(){
+      treeGrid.innerHTML='';
+      for(let i=0;i<52;i++){
+        const cell=document.createElement('div'); cell.className='cell';
+        const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
+        const icon=document.createElement('div'); icon.className='icon';
+        const entry=S.grid[i];
+        if(entry){ icon.textContent= entry.live?'🌳':''; if(entry.live) cell.classList.add('live'); }
+        cell.appendChild(num); cell.appendChild(icon); treeGrid.appendChild(cell);
+      }
+      gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
+    }
+
     function renderAll(){
       renderLeaves();
       renderGrid();
@@ -837,24 +768,22 @@
         updateProgressInstant();
       }
       setClockAndButtons();
+
+      // reflect locked state for LPT on load
+      if(S.weeklyTargetLocked){
+        lptInput.disabled=true; lptSetBtn.disabled=true; lptLockNote.textContent='Locked';
+        lptInput.value=String(S.leavesPerTree);
+      }else{
+        lptInput.disabled=false; lptSetBtn.disabled=false; lptLockNote.textContent='Will be locked';
+      }
     }
 
     // Init
     buildSaplings();
     refreshModeHeader();
 
-    (function initCountry(){
-      // Keep GMT as default; do not override with system if empty
-      if(G.timeZone){
-        selZone.textContent = G.timeZone;
-        selOffset.textContent = formatOffset(G.timeZone);
-      }else{
-        G.timeZone = 'Etc/GMT';
-        selZone.textContent = 'Etc/GMT';
-        selOffset.textContent = formatOffset('Etc/GMT');
-        save(GLOBAL_KEY, G);
-      }
-    })();
+    // Keep GMT default; do not override with system tz
+    if(!G.timeZone){ G.timeZone='Etc/GMT'; save(GLOBAL_KEY,G); }
 
     timerTypeSelect.value=G.timerType;
     customMinInput.value=String(Math.max(1, Math.floor((G.customSeconds||1500)/60)));
