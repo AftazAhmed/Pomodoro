@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — GMT Default</title>
+  <title>Pomodoro Tree — Percent Slider + GMT</title>
 
   <style>
     :root{
@@ -15,6 +15,7 @@
       --btn-danger:#ef4444; --btn-danger-hover:#b91c1c;
       --btn-neutral:#334155; --btn-neutral-hover:#1f2937; --btn-focus:#0ea5e9;
       --progress-green:#16a34a; --progress-red:#ef4444; --track-bg:#e6efff;
+      --slider-fill:#16a34a; --slider-track:#e6efff;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
@@ -52,6 +53,19 @@
     .settings{ display:flex; flex-direction:column; gap:12px; margin-top:10px; color:var(--dim); width:100%; }
     .numWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
     .numWrap input{ width:160px; }
+
+    /* Percent slider */
+    .pctWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+    .pctRow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    #pctRange{
+      -webkit-appearance:none; appearance:none;
+      width:260px; height:10px; border-radius:999px; overflow:hidden;
+      background:var(--track-bg); border:1px solid var(--line);
+      background-image:linear-gradient(90deg, var(--slider-fill) 0%, var(--slider-track) 0%);
+      background-size:100% 100%; background-repeat:no-repeat;
+    }
+    #pctRange::-webkit-slider-thumb{ -webkit-appearance:none; width:0; height:0; background:transparent; }
+    #pctRange::-moz-range-thumb{ width:0; height:0; background:transparent; border:none; }
 
     .treePanel{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treePanel.fixedCard{ width:760px; }
@@ -142,6 +156,14 @@
             <button id="applyCustomBtn" title="Apply minutes">Apply</button>
             <span id="customLockMsg" class="miniNote">Will be locked</span>
           </div>
+          <!-- Percent slider: visible in Pomodoro and Custom -->
+          <div id="pctWrap" class="pctWrap" style="display:none;">
+            <label class="miniNote">Set progress (%)</label>
+            <div class="pctRow">
+              <input id="pctRange" type="range" min="0" max="100" step="1" value="0" />
+              <span id="pctValue" class="miniNote">0%</span>
+            </div>
+          </div>
         </section>
       </div>
 
@@ -165,9 +187,6 @@
               <span id="lptHelper" class="miniNote">LPT = No. of timer sessions per week</span>
               <span id="lockHint" class="miniNote">Editable once per ISO week</span>
             </div>
-
-            <!-- Weekly completion removed as requested -->
-            <!-- <div class="progressWrap" id="progressWrap">...</div> -->
             <div id="weeklyTarget" class="miniNote">Weekly target = 3 hrs 45 mins</div>
           </div>
         </section>
@@ -185,7 +204,7 @@
             <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
             <div id="rainLayer" class="rain"></div>
 
-            <!-- Saplings beneath grass percent: insert saplings first, then grass percent text element is above due to DOM order -->
+            <!-- Saplings under grass percent -->
             <svg width="560" height="560" viewBox="0 0 560 560" style="position:absolute; inset:0; pointer-events:none;">
               <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
             </svg>
@@ -286,7 +305,7 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_GMT_NoWeeklyCompletion_6x7Saplings_v1';
+    const APP_KEY = 'pomodoroTree_Slider_GMT_Final_v1';
     const GLOBAL_KEY = APP_KEY + '_global';
     const NAMES_KEY = APP_KEY + '_names';
     const svgns='http://www.w3.org/2000/svg';
@@ -304,7 +323,7 @@
     const load = (k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
     const save = (k,v)=> localStorage.setItem(k, JSON.stringify(v));
 
-    // Default time zone set to GMT (IANA id Etc/GMT)
+    // Default time zone = GMT
     const G = load(GLOBAL_KEY, { timeZone:'Etc/GMT', selectedMode:'maths', timerType:TIMER_TYPES.pomodoro, customSeconds: 25*60 });
     const CUSTOM_NAMES = load(NAMES_KEY, {});
 
@@ -328,6 +347,7 @@
     // Elements
     const el=id=>document.getElementById(id);
     const timerTypeSelect=el('timerTypeSelect'), customInputs=el('customInputs'), customMinInput=el('customMin'), applyCustomBtn=el('applyCustomBtn'), customLockMsg=el('customLockMsg'), durationLabel=el('durationLabel');
+    const pctWrap=el('pctWrap'), pctRange=el('pctRange'), pctValue=el('pctValue');
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
     const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptLockNote=el('lptLockNote'), lockHint=el('lockHint'), lptHelper=el('lptHelper');
     const percentLabel=el('percentLabel'), grassPctEl=el('grassPct'), xyLabel=el('xyLabel'), todaySky=el('todaySky');
@@ -336,7 +356,7 @@
     const rainLayer=el('rainLayer');
     const countrySearch=el('countrySearch'), countryList=el('countryList');
 
-    // Country list -> representative tz (kept minimal for demo; can extend)
+    // Country tz list (short demo list; extend as needed)
     const COUNTRY_TZ = [
       { name:'India', tz:'Asia/Kolkata' }, { name:'United Kingdom', tz:'Europe/London' }, { name:'United States', tz:'America/New_York' },
       { name:'Canada', tz:'America/Toronto' }, { name:'Australia', tz:'Australia/Sydney' }, { name:'UAE', tz:'Asia/Dubai' },
@@ -344,13 +364,6 @@
       { name:'Germany', tz:'Europe/Berlin' }, { name:'France', tz:'Europe/Paris' }, { name:'Brazil', tz:'America/Sao_Paulo' }
     ].sort((a,b)=> a.name.localeCompare(b.name));
 
-    function formatOffset(tz){
-      try{
-        const now=new Date();
-        const parts=new Intl.DateTimeFormat('en-US',{ timeZone: tz, timeZoneName:'shortOffset' }).formatToParts(now);
-        return parts.find(p=>p.type==='timeZoneName')?.value || 'GMT';
-      }catch{ return 'GMT'; }
-    }
     function setTimeZone(tz){
       G.timeZone = tz || 'Etc/GMT';
       save(GLOBAL_KEY,G);
@@ -374,7 +387,7 @@
       countryList.style.display='none';
     });
 
-    // Time helpers (use Etc/GMT default)
+    // Time helpers (Etc/GMT default)
     function nowInTZ(){
       try{
         const tz= G.timeZone || 'Etc/GMT';
@@ -520,7 +533,7 @@
       }
     }
 
-    // Canopy fill and grass percent
+    // Canopy fill + percent
     const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
     function setFillPercentInstant(pct){
       const p=Math.max(0, Math.min(100, Number(pct)||0));
@@ -537,7 +550,34 @@
       const pct=Math.round((done/total)*100);
       setFillPercentInstant(pct);
       xyLabel.textContent=`${done}/${total} leaves`;
+      // keep slider in sync when visible
+      if(pctWrap.style.display!=='none'){
+        pctRange.value=String(pct);
+        const perc = pct;
+        pctRange.style.backgroundImage = `linear-gradient(90deg, var(--slider-fill) ${perc}%, var(--slider-track) ${perc}%)`;
+        pctValue.textContent = `${perc}%`;
+      }
     }
+
+    // Percent slider handlers (Pomodoro + Custom)
+    function showPctSlider(show){
+      pctWrap.style.display = show ? 'block' : 'none';
+    }
+    function applyPctFromSlider(){
+      const pct = Math.max(0, Math.min(100, Number(pctRange.value)||0));
+      pctValue.textContent = `${pct}%`;
+      pctRange.style.backgroundImage = `linear-gradient(90deg, var(--slider-fill) ${pct}%, var(--slider-track) ${pct}%)`;
+      // derive S.placed from pct and leavesPerTree
+      const total=Math.max(1, Number(S.leavesPerTree)||1);
+      const targetPlaced = Math.round((pct/100)*total);
+      S.placed = Math.min(total, Math.max(0, targetPlaced));
+      // re-render leaves and fill
+      renderLeaves();
+      setFillPercentInstant(pct);
+      xyLabel.textContent=`${S.placed}/${total} leaves`;
+      saveAll();
+    }
+    pctRange.addEventListener('input', applyPctFromSlider);
 
     // Rain
     function rain(on){
@@ -564,13 +604,13 @@
       document.getElementById('weeklyTarget').textContent=`Weekly target = ${h>0? h+' hrs ':''}${m} mins`;
     }
 
-    // Saplings 6×7 (rows × cols)
+    // Saplings 6×7 beneath grass percent
     function buildSaplings(){
       saplingsG.innerHTML='';
       const rows=6, cols=7;
       const left=24, right=536;
-      const grassTop = Math.round(560*0.62)+14;
-      const rowGap=28;
+      const grassTop = 360; // near grass
+      const rowGap=24;
       for(let r=0;r<rows;r++){
         for(let c=0;c<cols;c++){
           const x = Math.round(left + c*((right-left)/(cols-1)));
@@ -579,8 +619,7 @@
           stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
           stem.setAttribute('stroke','#2f6f3a'); stem.setAttribute('stroke-width','2'); stem.setAttribute('fill','none'); stem.setAttribute('stroke-linecap','round');
           const leafL = document.createElementNS(svgns,'path'); leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
-          leafL.setAttribute('stroke','#2f6f3a'); leafL.setAttribute('stroke-width','2'); leafL.setAttribute='fill','none';
-          leafL.setAttribute('stroke-linecap','round'); leafL.setAttribute('stroke-linejoin','round');
+          leafL.setAttribute('stroke','#2f6f3a'); leafL.setAttribute('stroke-width','2'); leafL.setAttribute('fill','none'); leafL.setAttribute('stroke-linecap','round'); leafL.setAttribute('stroke-linejoin','round');
           const leafR = document.createElementNS(svgns,'path'); leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
           leafR.setAttribute('stroke','#2f6f3a'); leafR.setAttribute('stroke-width','2'); leafR.setAttribute('fill','none'); leafR.setAttribute('stroke-linecap','round'); leafR.setAttribute('stroke-linejoin','round');
           saplingsG.appendChild(stem); saplingsG.appendChild(leafL); saplingsG.appendChild(leafR);
@@ -615,6 +654,8 @@
 
       customInputs.style.display = (isCustom || isSimple) ? 'block' : 'none';
       durationLabel.textContent = isCustom ? 'Timer value can be edited only once per week' : (isSimple ? '' : 'Timer value');
+      showPctSlider(!isSimple); // show slider for Pomodoro + Custom
+
       if(isCustom){
         customMinInput.value = String(Math.max(1, Math.floor((G.customSeconds||1500)/60)));
         const locked = !!S.customLocked && S.customLockWeek===S.week && S.customLockYear===S.year;
@@ -627,7 +668,6 @@
         customLockMsg.textContent='';
       }
 
-      // Weekly target visible (completion meter removed)
       document.getElementById('weeklyTarget').style.display = isSimple ? 'none' : 'block';
 
       if(isSimple){
@@ -683,7 +723,7 @@
       saveAll();
     });
 
-    // LPT set lock for week: lock and reflect value in input immediately
+    // LPT lock for week
     lptSetBtn.addEventListener('click', ()=>{
       if(G.timerType==='simple') return;
       rolloverWeekIfNeeded();
@@ -692,10 +732,8 @@
       S.leavesPerTree=v;
       S.weeklyTargetLocked=true;
       S.weeklyTargetSetValue=v;
-      lptInput.value=String(v); // reflect set value
-      lptInput.disabled=true;   // lock UI
-      lptSetBtn.disabled=true;
-      lptLockNote.textContent='Locked';
+      lptInput.value=String(v);
+      lptInput.disabled=true; lptSetBtn.disabled=true; lptLockNote.textContent='Locked';
       S.placed=0;
       leafLayer.innerHTML='';
       updateWeeklyTargetText();
@@ -769,13 +807,18 @@
       }
       setClockAndButtons();
 
-      // reflect locked state for LPT on load
+      // reflect LPT lock state on load
       if(S.weeklyTargetLocked){
         lptInput.disabled=true; lptSetBtn.disabled=true; lptLockNote.textContent='Locked';
         lptInput.value=String(S.leavesPerTree);
       }else{
         lptInput.disabled=false; lptSetBtn.disabled=false; lptLockNote.textContent='Will be locked';
       }
+
+      // init slider gradient
+      const p = Number(pctRange.value)||0;
+      pctRange.style.backgroundImage = `linear-gradient(90deg, var(--slider-fill) ${p}%, var(--slider-track) ${p}%)`;
+      pctValue.textContent = `${p}%`;
     }
 
     // Init
