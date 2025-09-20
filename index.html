@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Mode Select Fixed, Custom/Simple Setters, x/y, Per‑Mode</title>
+  <title>Pomodoro Tree — Stable Mode Select, Custom/Simple Setters, x/y, Per‑Mode State</title>
   <style>
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
@@ -310,7 +310,7 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_ModeSelect_Fix_CustomSimpleSetters_v1';
+    const APP_KEY='pomodoroTree_Stable_v1';
     const GLOBAL_KEY=APP_KEY+'_global', NAMES_KEY=APP_KEY+'_names';
     const svgns='http://www.w3.org/2000/svg';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simple:'simple' };
@@ -365,7 +365,7 @@
     const MODE_IDS=['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
     const nameFor=(id)=> (CUSTOM_NAMES[id]??'').trim() || (DEFAULT_MODE_NAMES[id]||id);
 
-    // Build mode select and wire a single reliable change listener
+    // Build mode select + single reliable change handler
     function populateModeSelect(){
       modeSelect.innerHTML='';
       const f=document.createDocumentFragment();
@@ -425,7 +425,7 @@
         S.weeklyLeaves=0; S.weeklyFocusSeconds=0;
         S.placed=0; leafLayer.innerHTML='';
 
-        // unlock locks on new week
+        // unlock locks
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
         S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
 
