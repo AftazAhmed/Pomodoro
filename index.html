@@ -70,7 +70,7 @@
     .numWrap{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
 
-    .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; font-size:9px; line-height:1.25; text-align:center; min-height:22px; display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; order:-1; width:100%; }
+    .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; font-size:10px; line-height:1.25; text-align:center; min-height:22px; display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; order:-1; width:100%; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
     .treePanel{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
@@ -85,7 +85,7 @@
         var(--soil-deep) 100%);
     }
 
-    .percentLabel{ position:absolute; left:14px; bottom:8px; font:900 81px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; }
+    /* percent label removed */
     .xyLabel{ position:absolute; left:16px; top:14px; font:900 28.35px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
     .todaySky{ position:absolute; left:16px; top:52px; font:800 21px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
@@ -149,7 +149,7 @@
           <button id="resetBtn">Reset</button>
         </div>
 
-        <!-- Only addition: timer switch row -->
+        <!-- Timer switch + settings -->
         <div class="settings">
           <div class="numWrap" style="order:-2;">
             <label class="miniNote" for="timerType">Timer type</label>
@@ -167,21 +167,25 @@
           </div>
 
           <div class="numWrap" style="order:1;">
-            <label for="lptInput"><strong>Leaves per tree (LPT)</strong></label>
+            <label for="lptInput" style="font-size:12px;"><strong>LPT = No. of timer session per week</strong></label>
             <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
             <button id="lptSetBtn">Set</button>
             <span id="lockHint" style="color:#4a6894">Editable once per ISO week</span>
           </div>
 
           <div class="estWrap">
-            <div class="miniNote" id="lptNote">LPT = No. of 1 min sessions per week</div>
+            <div class="miniNote" id="lptNote" style="font-size:12px;">LPT = No. of timer session per week</div>
           </div>
 
           <div class="progressWrap" id="progressBlock" style="order:2;">
             <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
             <span id="lptVal">9</span>
           </div>
-          <!-- Weekly target hidden in custom mode; shows mins only in Pomodoro mode -->
+
+          <!-- Total duration (week) shows only in Custom mode -->
+          <div id="customWeekTotal" class="miniNote" style="display:none; order:2;">Total duration (week): 0 hrs 0 mins</div>
+
+          <!-- Weekly target visible only for Pomodoro mode (minutes calculated from LPT) -->
           <div id="weeklyTarget" class="miniNote" style="order:3;">Weekly target = 9 mins (as per LPT)</div>
         </div>
       </section>
@@ -190,7 +194,6 @@
         <h3 style="margin:0 0 8px 0; text-align:center;">Current Tree</h3>
         <div class="treeBox">
           <div class="sky"></div>
-          <div id="percentLabel" class="percentLabel">0%</div>
           <div id="xyLabel" class="xyLabel">0/9 of leaves completed</div>
           <div id="todaySky" class="todaySky">Leaves (today) = 0 (0 mins)</div>
           <div id="rainLayer" class="rain"></div>
@@ -294,12 +297,12 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_SoilFix_V1';
+    const APP_KEY = 'pomodoroTree_SoilFix_V2';
     const NAMES_KEY = APP_KEY + '_customNames';
     const GLOBAL_KEY = APP_KEY + '_global';
     const svgns='http://www.w3.org/2000/svg';
 
-    // One leaf = 1 minute for weekly target math (unchanged)
+    // One leaf = 1 minute for legacy LPT math
     const LEAF_SECONDS=60;
 
     // Timer selection
@@ -338,6 +341,7 @@
       leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS, running:false,
       leavesTotal:0, leavesToday:0, weeklyLeaves:0,
       weeklyFocusSeconds:0, totalFocusSeconds:0,
+      weeklyCustomSeconds:0, // NEW: actual seconds accumulated this ISO week for Custom mode
       grid:[],
       subActive:true, plan:'Free',
       week:undefined, year:undefined,
@@ -380,11 +384,11 @@
 
     const lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptRange=el('lptRange'), lptVal=el('lptVal'), lockHint=el('lockHint');
     const weeklyTargetEl=el('weeklyTarget'), lptNoteEl=el('lptNote');
+    const customWeekTotalEl=el('customWeekTotal');
 
     const todayChip=el('todayChip');
     const totalTimeChip=el('totalTimeChip');
 
-    const percentLabel=document.querySelector('.percentLabel');
     const xyLabel=document.querySelector('.xyLabel');
     const rainLayer=el('rainLayer');
     const treeGrid=el('treeGrid'); const gridCount=el('gridCount');
@@ -457,8 +461,7 @@
       save();
     }
 
-    // Accurate, drift-resistant countdown using wall clock (Date.now baseline)
-    // Avoid relying on setInterval increments only. [web:67][web:84][web:89]
+    // Accurate, drift-resistant countdown using wall clock [web:96][web:78]
     function startSessionWallClock(){
       const thisMode = currentMode;
       const targetEpoch = Date.now() + (S.secondsLeft * 1000);
@@ -468,7 +471,6 @@
         const remainingMs = Math.max(0, targetEpoch - Date.now());
         S.secondsLeft = Math.ceil(remainingMs / 1000);
         clockEl.textContent = format(S.secondsLeft);
-        paintProgressUI();
         if (remainingMs <= 0) {
           clearModeInterval(thisMode);
           onSessionComplete();
@@ -480,7 +482,7 @@
       setRunning(true);
       tick();
       clearModeInterval(thisMode);
-      intervals[thisMode] = setInterval(tick, 250); // tighter tick to feel responsive
+      intervals[thisMode] = setInterval(tick, 250);
       document.addEventListener('visibilitychange', onVisibility, { passive:true });
 
       startBtn._cleanupVisibility = ()=>document.removeEventListener('visibilitychange', onVisibility);
@@ -504,7 +506,7 @@
         const completed = (S.placed>=S.leavesPerTree && S.leavesPerTree>0);
         unshiftWeekToGrid(S.week, S.year, completed);
         S.week=wk; S.year=yr;
-        S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0;
+        S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0; S.weeklyCustomSeconds=0;
         S.weeklyComplete=false; S.weeklyTargetLocked=false; S.weeklyTargetSetValue=S.leavesPerTree;
         S.placed=0; S.secondsLeft=getSessionSeconds();
         const layer=document.querySelector('#treeSVG #leafLayer');
@@ -537,7 +539,6 @@
       const targetY=CANOPY_BOTTOM-targetH;
       fillRect.setAttribute('x','110'); fillRect.setAttribute('width','360');
       fillRect.setAttribute('y', String(targetY)); fillRect.setAttribute('height', String(targetH));
-      percentLabel.textContent = Math.round(p)+'%';
     }
     function percentFromState(){ const denom=Math.max(1, S.leavesPerTree|0); return (S.placed/denom)*100; }
     function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
@@ -551,7 +552,7 @@
       }
     }
 
-    // Natural saplings: slight bends and buds
+    // Natural saplings v2
     function buildSaplings(){
       const g=document.getElementById('saplings');
       if(!g) return;
@@ -564,10 +565,10 @@
 
       for(let r=0;r<rows;r++){
         for(let c=0;c<cols;c++){
-          const x = Math.round(startX + c * ((endX - startX)/(cols-1)) + rnd(-5,5));
-          const y = Math.round(soilYStart + r*rowGap + rnd(-2,2));
-          const h = rnd(10,20);
-          const bend = rnd(-4,4);
+          const x = Math.round(startX + c * ((endX - startX)/(cols-1)) + rnd(-6,6));
+          const y = Math.round(soilYStart + r*rowGap + rnd(-3,3));
+          const h = rnd(12,24);
+          const bend = rnd(-5,5);
           const yTop = y - h;
 
           const stem = document.createElementNS(svgns,'path');
@@ -578,7 +579,7 @@
           stem.setAttribute('stroke-linecap','round');
 
           const leafL = document.createElementNS(svgns,'path');
-          leafL.setAttribute('d', `M ${x} ${yTop} q -6 -3, -10 -8`);
+          leafL.setAttribute('d', `M ${x} ${yTop} q -7 -3, -11 -8`);
           leafL.setAttribute('stroke','#2f6f3a');
           leafL.setAttribute('stroke-width','2');
           leafL.setAttribute('fill','none');
@@ -586,7 +587,7 @@
           leafL.setAttribute('stroke-linejoin','round');
 
           const leafR = document.createElementNS(svgns,'path');
-          leafR.setAttribute('d', `M ${x} ${yTop} q 6 -3, 10 -8`);
+          leafR.setAttribute('d', `M ${x} ${yTop} q 7 -3, 11 -8`);
           leafR.setAttribute('stroke','#2f6f3a');
           leafR.setAttribute('stroke-width','2');
           leafR.setAttribute('fill','none');
@@ -594,10 +595,10 @@
           leafR.setAttribute('stroke-linejoin','round');
 
           const bud = document.createElementNS(svgns,'circle');
-          bud.setAttribute('cx', String(x + rnd(-1.2,1.2)));
-          bud.setAttribute('cy', String(yTop + rnd(-1.2,1.2)));
-          bud.setAttribute('r', '1.4');
-          bud.setAttribute('fill', '#356742');
+          bud.setAttribute('cx', String(x + rnd(-1.5,1.5)));
+          bud.setAttribute('cy', String(yTop + rnd(-1.5,1.5)));
+          bud.setAttribute('r', '1.6');
+          bud.setAttribute('fill', '#3a6b45');
 
           g.appendChild(stem);
           g.appendChild(leafL);
@@ -626,15 +627,21 @@
     }
 
     function updateWeeklyTarget(){
-      // Hide weekly target in custom mode
+      // Hide weekly target in custom mode; show minutes in Pomodoro mode
       if(S.timerType==='custom'){
         weeklyTargetEl.style.display='none';
+        customWeekTotalEl.style.display='block';
+        // compute custom week total display
+        const h=Math.floor((S.weeklyCustomSeconds||0)/3600);
+        const m=Math.floor(((S.weeklyCustomSeconds||0)%3600)/60);
+        customWeekTotalEl.textContent = `Total duration (week): ${h} hrs ${m} mins`;
       }else{
+        customWeekTotalEl.style.display='none';
         weeklyTargetEl.style.display='block';
-        const mins = S.leavesPerTree; // 1 min per leaf
+        const mins = S.leavesPerTree; // legacy statement per old app
         weeklyTargetEl.textContent = `Weekly target = ${mins} mins (as per LPT)`;
       }
-      lptNoteEl.textContent = 'LPT = No. of 1 min sessions per week';
+      lptNoteEl.textContent = 'LPT = No. of timer session per week';
     }
     function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
     function minutesForLeaves(n){ return n; }
@@ -721,7 +728,10 @@
     function onSessionComplete(){
       playAlarm10s();
 
-      // weekly/overall are tracked in seconds; add leaf seconds to keep consistent with old UI chips
+      // weekly totals shown in chips (legacy minute leaf) and custom-week seconds accumulator
+      if(S.timerType==='custom'){
+        S.weeklyCustomSeconds = (S.weeklyCustomSeconds||0) + getSessionSeconds();
+      }
       S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
 
@@ -783,7 +793,7 @@
       S.timerType = timerTypeSel.value==='custom' ? 'custom' : 'pomodoro';
       customTimeRow.style.display = (S.timerType==='custom') ? 'flex' : 'none';
       setClockToSession();
-      updateWeeklyTarget(); // hide if custom
+      updateWeeklyTarget();
       save();
       renderHUD();
     });
@@ -803,9 +813,9 @@
     lptInput.addEventListener('input', ()=>{
       const v = clamp(lptInput.value);
       lptVal.textContent = String(v);
-      const mins = v; // 1 min each
-      weeklyTargetEl.textContent = `Weekly target = ${mins} mins (as per LPT)`;
-      lptNoteEl.textContent = 'LPT = No. of 1 min sessions per week';
+      // preview text respects Pomodoro labeling
+      weeklyTargetEl.textContent = `Weekly target = ${v} mins (as per LPT)`;
+      lptNoteEl.textContent = 'LPT = No. of timer session per week';
     });
 
     lptSetBtn.addEventListener('click', ()=>{
@@ -1005,7 +1015,6 @@
     signOutBtn?.addEventListener('click', setSignedOut);
     signOutBtnBottom?.addEventListener('click', setSignedOut);
 
-    // INITIALIZE
     // Ensure Modes panel is default visible
     document.querySelectorAll('.tab').forEach(t=>{
       t.classList.toggle('active', t.getAttribute('data-tab')==='modesPanel');
@@ -1014,12 +1023,17 @@
       p.style.display = (p.id==='modesPanel') ? 'flex' : 'none';
     });
 
+    // INITIALIZE
     rolloverWeekIfNeeded();
     renderLeavesFromState();
     timerTypeSel.value = S.timerType || 'pomodoro';
     customTimeRow.style.display = (S.timerType==='custom') ? 'flex' : 'none';
     setClockToSession();
     renderHUD();
+
+    // Wire buttons
+    startBtn.addEventListener('click', startFlow);
+    resetBtn.addEventListener('click', resetTimer);
   </script>
 </body>
 </html>
