@@ -36,25 +36,13 @@
       font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    .wrap{
-      max-width:1140px;
-      margin:0 auto;
-      padding:20px 16px 120px;
-    }
+    .wrap{ max-width:1140px; margin:0 auto; padding:20px 16px 120px; }
 
-    header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
 
     .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:8px 12px;
-      border-radius:999px;
+      display:flex; align-items:center; gap:10px;
+      padding:8px 12px; border-radius:999px;
       background:linear-gradient(180deg,#f0f6ff,#ffffff);
       border:1px solid var(--line);
     }
@@ -62,144 +50,54 @@
     h1{ margin:0; font-size:22px; }
 
     .modeTag{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-weight:800;
-      color:#14563a;
-      font-size:20px;
-      white-space:nowrap;
+      display:flex; align-items:center; gap:8px;
+      font-weight:800; color:#14563a; font-size:20px; white-space:nowrap;
     }
 
-    #modeName{
-      display:inline-block;
-      max-width:52vw;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
+    #modeName{ display:inline-block; max-width:52vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-    .topStack{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin-top:12px;
-    }
-
-    .centerRow{
-      display:flex;
-      justify-content:center;
-      width:100%;
-    }
-
-    .fixedCard{
-      width:760px;
-      max-width:100%;
-      position:relative;
-      z-index:0;
-    }
+    .topStack{ display:flex; flex-direction:column; gap:12px; margin-top:12px; }
+    .centerRow{ display:flex; justify-content:center; width:100%; }
+    .fixedCard{ width:760px; max-width:100%; position:relative; z-index:0; }
 
     .timerTypeBar{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      box-shadow:var(--shadow);
+      display:flex; flex-direction:column; gap:10px;
+      background:#fff; border:1px solid var(--line);
+      border-radius:14px; padding:12px; box-shadow:var(--shadow);
     }
 
     .vstack{ display:flex; flex-direction:column; gap:10px; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
     .timerCard{
-      display:flex;
-      align-items:center;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:16px;
-      box-shadow:var(--shadow);
-      flex-direction:column;
+      display:flex; align-items:center; background:#fff;
+      border:1px solid var(--line); border-radius:18px;
+      padding:16px; box-shadow:var(--shadow); flex-direction:column;
     }
 
-    .time{
-      font-size:112px;
-      font-weight:800;
-      color:#0e2a70;
-      text-align:center;
-    }
+    .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
 
-    .controls{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      justify-content:center;
-      margin-top:10px;
-    }
+    .controls{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
 
     button{
-      border:none;
-      padding:10px 14px;
-      border-radius:12px;
-      font-weight:800;
-      cursor:pointer;
-      color:#fff;
-      background:var(--btn-neutral);
+      border:none; padding:10px 14px; border-radius:12px; font-weight:800; cursor:pointer;
+      color:#fff; background:var(--btn-neutral);
       box-shadow:0 1px 0 rgba(0,0,0,.06), 0 6px 14px rgba(15,23,42,.14);
     }
-
     #startBtn{ background:var(--btn-success); }
     #resetBtn{ background:var(--btn-danger); }
     #applyCustomBtn, #applySimpleBtn, #lptSetBtn, #saveNamesBtn{ background:var(--btn-primary); }
     #applyCustomBtn:hover, #applySimpleBtn:hover, #lptSetBtn:hover, #saveNamesBtn:hover{ background:var(--btn-primary-hover); }
 
-    .settings{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin-top:10px;
-      color:var(--dim);
-      width:100%;
-    }
+    .settings{ display:flex; flex-direction:column; gap:12px; margin-top:10px; color:var(--dim); width:100%; }
+    .numWrap{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+    .numWrap input, .vstack select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; width:100%; }
 
-    .numWrap{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      align-items:flex-start;
-    }
-
-    .numWrap input, .vstack select{
-      padding:8px 10px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      font-weight:800;
-      width:100%;
-    }
-
-    .pctRow{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:6px;
-    }
-
+    .pctRow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:6px; }
     #pctRange{
-      -webkit-appearance:none;
-      appearance:none;
-      width:100%;
-      max-width:360px;
-      height:12px;
-      border-radius:999px;
-      outline:none;
-      background:var(--slider-left);
-      border:1px solid var(--line);
-      pointer-events:none;
+      -webkit-appearance:none; appearance:none; width:100%; max-width:360px; height:12px; border-radius:999px; outline:none;
+      background:var(--slider-left); border:1px solid var(--line); pointer-events:none;
     }
-
     #pctRange::-webkit-slider-runnable-track{ height:12px; background:transparent; border-radius:999px; }
     #pctRange::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:0; height:0; border:none; background:transparent; }
     #pctRange::-moz-range-thumb{ width:0; height:0; border:none; background:transparent; }
@@ -207,328 +105,66 @@
     #pctRange::-moz-range-track{ height:12px; background:var(--slider-left); border-radius:999px; }
     #pctValue{ min-width:44px; text-align:right; }
 
-    .treePanel{
-      display:flex;
-      align-items:center;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px;
-      flex-direction:column;
-      box-shadow:var(--shadow);
-    }
-
+    .treePanel{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treePanel.fixedCard{ width:760px; }
 
-    .treeBox{
-      position:relative;
-      width:560px;
-      max-width:100%;
-      height:560px;
-      margin:6px auto;
-      border:1px solid var(--line);
-      border-radius:18px;
-      overflow:hidden;
-    }
-
-    .sky{
-      position:absolute;
-      inset:0;
-      background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, var(--soil-top) 62%, var(--soil-bottom) 100%);
-      z-index:0;
-    }
+    .treeBox{ position:relative; width:560px; max-width:100%; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
+    .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, var(--soil-top) 62%, var(--soil-bottom) 100%); z-index:0; }
 
     .skyOverlay{
-      position:absolute;
-      left:14px;
-      top:10px;
+      position:absolute; left:14px; top:10px;
       font:800 18px/1.2 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:#0b1a33;
-      text-shadow:0 2px 0 rgba(255,255,255,.65);
-      z-index:var(--z-labels);
-      background:rgba(255,255,255,.55);
-      padding:4px 8px;
-      border-radius:10px;
-      border:1px solid rgba(200,216,238,.8);
+      color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65);
+      z-index:var(--z-labels); background:rgba(255,255,255,.55);
+      padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8);
     }
-
     .todaySky{
-      position:absolute;
-      left:14px;
-      top:38px;
+      position:absolute; left:14px; top:38px;
       font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:#14563a;
-      text-shadow:0 2px 0 rgba(255,255,255,.65);
-      z-index:var(--z-labels);
-      background:rgba(255,255,255,.55);
-      padding:4px 8px;
-      border-radius:10px;
-      border:1px solid rgba(200,216,238,.8);
+      color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65);
+      z-index:var(--z-labels); background:rgba(255,255,255,.55);
+      padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8);
     }
 
-    /* Saplings on top */
-    .saplingsLayer{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      z-index:var(--z-saplings);
-    }
+    .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-saplings); }
+    #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:var(--z-tree); }
 
-    #treeSVG{
-      position:absolute;
-      left:50%;
-      transform:translateX(-50%) scale(1.2);
-      transform-origin:center bottom;
-      bottom:12px;
-      overflow:visible;
-      width:680px;
-      height:620px;
-      z-index:var(--z-tree);
-    }
+    .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:none; }
+    .rainTop .drop{ position:absolute; top:-28px; width:1.0px; height:28px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 0.8s linear infinite; }
+    .rainTop .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.1s; }
+    @keyframes rainFall{ to{ transform:translateY(760px); } }
 
-    .rainTop{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      z-index:var(--z-rain);
-      display:none;
-    }
-
-    .rainTop .drop{
-      position:absolute;
-      top:-28px;
-      width:1.0px;
-      height:28px;
-      background:rgba(14,42,112,.55);
-      border-radius:2px;
-      animation:rainFall 0.8s linear infinite;
-    }
-
-    .rainTop .drop.far{
-      opacity:.6;
-      transform:scale(.9);
-      animation-duration:1.1s;
-    }
-
-    @keyframes rainFall{
-      to{ transform:translateY(760px); }
-    }
-
-    @keyframes leafBlinkHue{
-      0%{   fill:#22c55e; }
-      50%{  fill:#15803d; }
-      100%{ fill:#22c55e; }
-    }
-
+    @keyframes leafBlinkHue { 0%{ fill:#22c55e; } 50%{ fill:#15803d; } 100%{ fill:#22c55e; } }
     .leaf-live path.leafFill{ animation: leafBlinkHue 900ms linear infinite; }
+    @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
+    .leaf-pop{ animation: leafPop 380ms ease-out forwards; transform-origin:center; transform-box:fill-box; }
 
-    @keyframes leafPop{
-      0%{ transform:scale(0); opacity:0; }
-      80%{ transform:scale(1.08); opacity:1; }
-      100%{ transform:scale(1); opacity:1; }
-    }
+    .tabsWrap{ margin:12px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:760px; max-width:100%; position:relative; z-index:var(--z-tabs); }
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); justify-content:center; }
+    .tab{ display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; user-select:none; }
+    .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
+    .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; flex-direction:column; position:relative; z-index:var(--z-tabs); }
 
-    .leaf-pop{
-      animation: leafPop 380ms ease-out forwards;
-      transform-origin:center;
-      transform-box:fill-box;
-    }
+    .modesBar{ display:flex; flex-direction:column; gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); }
 
-    .tabsWrap{
-      margin:12px auto;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:18px;
-      box-shadow:var(--shadow);
-      padding:14px;
-      width:760px;
-      max-width:100%;
-      position:relative;
-      z-index:var(--z-tabs);
-    }
-
-    .tabs{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      padding:8px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      background:var(--surface-2);
-      justify-content:center;
-    }
-
-    .tab{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      cursor:pointer;
-      color:#4a6894;
-      user-select:none;
-    }
-
-    .tab.active{
-      color:#0b1a33;
-      background:linear-gradient(180deg,#e6f1ff,#ffffff);
-    }
-
-    .panelCard{
-      display:none;
-      margin-top:12px;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px;
-      gap:10px;
-      flex-direction:column;
-      position:relative;
-      z-index:var(--z-tabs);
-    }
-
-    .modesBar{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      padding:12px;
-      border-radius:14px;
-      background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
-    }
-
-    .tzBar{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      padding:12px;
-      border-radius:14px;
-      background:#fff;
-      border:1px solid var(--line);
-      box-shadow:var(--shadow);
-      margin-top:12px;
-      width:560px;
-      max-width:100%;
-      position:relative;
-      z-index:var(--z-dropdown);
-    }
-
+    .tzBar{ display:flex; flex-direction:column; gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); margin-top:12px; width:560px; max-width:100%; position:relative; z-index:var(--z-dropdown); }
     .tzLeft{ display:flex; flex-direction:column; gap:8px; width:100%; }
-
     .searchWrap{ position:relative; }
-
-    .searchWrap input{
-      width:100%;
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      font-weight:700;
-    }
-
-    .dropdown{
-      position:absolute;
-      top:100%;
-      left:0;
-      right:0;
-      background:#fff;
-      border:1px solid #caddf8;
-      border-radius:12px;
-      max-height:260px;
-      overflow:auto;
-      box-shadow:0 10px 28px rgba(30,70,140,.15);
-      z-index:999;
-      display:none;
-    }
-
+    .searchWrap input{ width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--line); font-weight:700; }
+    .dropdown{ position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #caddf8; border-radius:12px; max-height:260px; overflow:auto; box-shadow:0 10px 28px rgba(30,70,140,.15); z-index:999; display:none; }
     .drop-item{ padding:10px 12px; cursor:pointer; }
     .drop-item:hover{ background:#eef6ff; }
+    .tzNote{ margin-top:6px; color:#0b1a33; font-weight:700; }
 
-    .tzNote{
-      margin-top:6px;
-      color:#0b1a33;
-      font-weight:700;
-    }
+    .gridWrap{ margin:14px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:760px; max-width:100%; display:flex; flex-direction:column; align-items:center; }
+    .gridHead{ display:flex; align-items:center; justify-content:space-between; gap:8px; color:#4a6894; width:100%; }
+    .grid{ display:grid; gap:6px; grid-template-columns:repeat(13, 1fr); width:100%; }
+    .cell{ aspect-ratio:1/1; border-radius:10px; background:#f3f8ff; border:1px dashed #c8d8ee; color:#4e6ea0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; position:relative; }
+    .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
+    .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:16px; pointer-events:none; }
 
-    .gridWrap{
-      margin:14px auto;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:18px;
-      box-shadow:var(--shadow);
-      padding:14px;
-      width:760px;
-      max-width:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-    }
-
-    .gridHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      color:#4a6894;
-      width:100%;
-    }
-
-    .grid{
-      display:grid;
-      gap:6px;
-      grid-template-columns:repeat(13, 1fr);
-      width:100%;
-    }
-
-    .cell{
-      aspect-ratio:1/1;
-      border-radius:10px;
-      background:#f3f8ff;
-      border:1px dashed #c8d8ee;
-      color:#4e6ea0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:800;
-      font-size:12px;
-      position:relative;
-    }
-
-    .cell.live{
-      background:linear-gradient(180deg,#e9fff1,#ffffff);
-      border:2px solid #16a34a;
-      color:#14563a;
-    }
-
-    .icon{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:16px;
-      pointer-events:none;
-    }
-
-    .bottomAuth{
-      margin:18px auto 0;
-      max-width:560px;
-      justify-content:center;
-      gap:10px;
-      flex-wrap:wrap;
-      color:#4a6894;
-      display:flex;
-      flex-direction:column;
-      align-items:stretch;
-    }
-
-    .bottomAuth input{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      font-weight:700;
-    }
-
+    .bottomAuth{ margin:18px auto 0; max-width:560px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; display:flex; flex-direction:column; align-items:stretch; }
+    .bottomAuth input{ padding:10px 12px; border-radius:12px; border:1px solid var(--line); font-weight:700; }
     .authRow{ display:flex; gap:8px; flex-wrap:wrap; }
 
     .hidden{ display:none !important; }
@@ -536,13 +172,7 @@
     @media (max-width: 640px){
       .wrap{ padding-bottom:80px; }
       .treePanel.fixedCard{ width:100%; max-width:92vw; }
-      .treeBox{
-        width:92vw;
-        aspect-ratio:1/1;
-        height:auto;
-        margin:8px auto;
-        position:relative;
-      }
+      .treeBox{ width:92vw; aspect-ratio:1/1; height:auto; margin:8px auto; position:relative; }
       #treeSVG, #saplingsSVG{ width:100%; height:100%; }
       .todaySky{ font-size:16px; top:36px; }
       h1{ font-size:18px; }
@@ -578,11 +208,10 @@
           </select>
 
           <div id="customInputs" class="vstack" style="display:none;">
-            <span class="miniNote" id="customLabel">Editable only once per week</span>
+            <!-- Removed lock notes for custom -->
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input id="customMin" type="number" min="1" max="999" step="1" value="25" />
               <button id="applyCustomBtn" title="Apply custom minutes">Set</button>
-              <span id="customLockMsg" class="miniNote">Will be locked</span>
             </div>
           </div>
 
@@ -632,7 +261,6 @@
             <div id="xySky" class="skyOverlay" style="display:none;">0 / 0 leaves</div>
             <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
 
-            <!-- Saplings on top layer -->
             <svg id="saplingsSVG" width="560" height="560" viewBox="0 0 560 560" class="saplingsLayer" aria-hidden="true">
               <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <defs>
@@ -644,7 +272,6 @@
                   </g>
                 </defs>
                 <!-- 72 saplings -->
-                <!-- Row Y=380 to 540, X=60..480 in steps of 60 -->
                 <g transform="translate(60 380)"><use href="#sapling"/></g><g transform="translate(120 380)"><use href="#sapling"/></g><g transform="translate(180 380)"><use href="#sapling"/></g><g transform="translate(240 380)"><use href="#sapling"/></g><g transform="translate(300 380)"><use href="#sapling"/></g><g transform="translate(360 380)"><use href="#sapling"/></g><g transform="translate(420 380)"><use href="#sapling"/></g><g transform="translate(480 380)"><use href="#sapling"/></g>
                 <g transform="translate(60 400)"><use href="#sapling"/></g><g transform="translate(120 400)"><use href="#sapling"/></g><g transform="translate(180 400)"><use href="#sapling"/></g><g transform="translate(240 400)"><use href="#sapling"/></g><g transform="translate(300 400)"><use href="#sapling"/></g><g transform="translate(360 400)"><use href="#sapling"/></g><g transform="translate(420 400)"><use href="#sapling"/></g><g transform="translate(480 400)"><use href="#sapling"/></g>
                 <g transform="translate(60 420)"><use href="#sapling"/></g><g transform="translate(120 420)"><use href="#sapling"/></g><g transform="translate(180 420)"><use href="#sapling"/></g><g transform="translate(240 420)"><use href="#sapling"/></g><g transform="translate(300 420)"><use href="#sapling"/></g><g transform="translate(360 420)"><use href="#sapling"/></g><g transform="translate(420 420)"><use href="#sapling"/></g><g transform="translate(480 420)"><use href="#sapling"/></g>
@@ -762,18 +389,18 @@
   </div>
 
   <script>
-    // App keys and constants
-    const APP_KEY='pomodoroTree_singlefile_v17';
+    // Keys and constants
+    const APP_KEY='pomodoroTree_singlefile_v18_customEditableAlways';
     const GLOBAL_KEY=APP_KEY+'_global';
     const NAMES_KEY=APP_KEY+'_names';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simplex:'simplex' };
     const svgns='http://www.w3.org/2000/svg';
 
-    // Storage helpers
+    // Storage
     const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
     const save=(k,v)=> localStorage.setItem(k, JSON.stringify(v));
 
-    // Global (selected mode and timer type)
+    // Global state
     const G = load(GLOBAL_KEY, { selectedMode:'maths', timerType:TIMER_TYPES.pomodoro });
 
     // Per mode+timer state
@@ -781,14 +408,12 @@
       leavesPerTree:9,
       placed:0,
       secondsLeft:25*60,
-      weeklyTargetLocked:false,
-      weeklyTargetSetValue:9,
-      lockWeek:undefined,
-      lockYear:undefined,
 
-      customLocked:false,
-      customLockWeek:undefined,
-      customLockYear:undefined,
+      // LPT weekly lock (kept as-is for LPT)
+      weeklyTargetLocked:false, weeklyTargetSetValue:9, lockWeek:undefined, lockYear:undefined,
+
+      // Custom lock REMOVED logic-wise; keep fields but unused
+      customLocked:false, customLockWeek:undefined, customLockYear:undefined,
 
       customSeconds:25*60,
       simpleSeconds:25*60,
@@ -808,7 +433,6 @@
       todayLeafCount:0,
       todayExtraSeconds:0,
 
-      // realtime refs
       targetEndTS:null,
       lastRealTS:null
     };
@@ -823,36 +447,22 @@
     let S = loadState(currentMode, currentTimerType);
 
     // DOM refs
-    const $ = id => document.getElementById(id);
+    const $=id=>document.getElementById(id);
 
-    const modeSelect = $('modeSelect');
-    const modeNameHeader = $('modeName');
+    const modeSelect=$('modeSelect'), modeNameHeader=$('modeName');
 
-    const timerTypeSelect = $('timerTypeSelect');
-    const customInputs = $('customInputs');
-    const customMin = $('customMin');
-    const applyCustomBtn = $('applyCustomBtn');
+    const timerTypeSelect=$('timerTypeSelect');
+    const customInputs=$('customInputs'), customMin=$('customMin'), applyCustomBtn=$('applyCustomBtn');
+    const simpleInputs=$('simpleInputs'), simpleMin=$('simpleMin'), applySimpleBtn=$('applySimpleBtn');
 
-    const simpleInputs = $('simpleInputs');
-    const simpleMin = $('simpleMin');
-    const applySimpleBtn = $('applySimpleBtn');
+    const clockEl=$('clock'), startBtn=$('startBtn'), resetBtn=$('resetBtn');
 
-    const clockEl = $('clock');
-    const startBtn = $('startBtn');
-    const resetBtn = $('resetBtn');
+    const lptWrap=$('lptWrap'), lptInput=$('lptInput'), lptSetBtn=$('lptSetBtn'), weeklyTargetEl=$('weeklyTarget');
 
-    const lptWrap = $('lptWrap');
-    const lptInput = $('lptInput');
-    const lptSetBtn = $('lptSetBtn');
-    const weeklyTargetEl = $('weeklyTarget');
+    const pctRange=$('pctRange'), pctValue=$('pctValue');
 
-    const pctRange = $('pctRange');
-    const pctValue = $('pctValue');
-
-    const xySky = $('xySky');
-    const todaySky = $('todaySky');
-
-    const rainTop = $('rainTop');
+    const xySky=$('xySky'), todaySky=$('todaySky');
+    const rainTop=$('rainTop');
 
     const subject1Input=$('subject1Input'), subject2Input=$('subject2Input'), subject3Input=$('subject3Input');
     const user1Input=$('user1Input'), user2Input=$('user2Input'), user3Input=$('user3Input');
@@ -860,11 +470,10 @@
 
     const treeGrid=$('treeGrid'), gridCount=$('gridCount');
 
-    const leafLayer = document.querySelector('#treeSVG #leafLayer');
-    const canopyGroup = document.getElementById('canopyGroup');
+    const leafLayer=document.querySelector('#treeSVG #leafLayer'), canopyGroup=document.getElementById('canopyGroup');
 
     // Names
-    let CUSTOM_NAMES = load(NAMES_KEY,{});
+    let CUSTOM_NAMES=load(NAMES_KEY,{});
     const DEFAULT_MODE_NAMES={
       exercise:'Exercise mode', cycling:'Cycling mode', digitalDetox:'Digital detox mode', bedTime:'Bed-time mode',
       quran:'Quran mode', dikhr:'Dikhr mode', maths:'Maths mode',
@@ -877,23 +486,17 @@
     function populateModeSelect(){
       const f=document.createDocumentFragment();
       for(const id of MODE_IDS){
-        const o=document.createElement('option');
-        o.value=id;
-        o.textContent=nameFor(id);
-        f.appendChild(o);
+        const o=document.createElement('option'); o.value=id; o.textContent=nameFor(id); f.appendChild(o);
       }
-      modeSelect.innerHTML='';
-      modeSelect.appendChild(f);
+      modeSelect.innerHTML=''; modeSelect.appendChild(f);
       modeSelect.value=currentMode;
       refreshModeHeader();
     }
-
     function refreshModeHeader(){
       const opt=modeSelect.options[modeSelect.selectedIndex];
       const label=opt? opt.text : nameFor(currentMode);
-      modeNameHeader.textContent = label.replace(/ mode$/i,'');
+      modeNameHeader.textContent=label.replace(/ mode$/i,'');
     }
-
     saveNamesBtn?.addEventListener('click', ()=>{
       CUSTOM_NAMES=Object.assign({}, CUSTOM_NAMES, {
         subject1: subject1Input.value || CUSTOM_NAMES.subject1 || '',
@@ -907,7 +510,6 @@
       populateModeSelect();
       refreshModeHeader();
     });
-
     modeSelect.addEventListener('change', ()=>{
       saveState(currentMode,currentTimerType,S);
       currentMode = modeSelect.value;
@@ -924,24 +526,23 @@
       lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
       customMin.value = String(Math.round((S.customSeconds||1500)/60));
       simpleMin.value = String(Math.round((S.simpleSeconds||1500)/60));
-    }); /* change event ensures select works [web:172] */
+    }); /* change event per spec [web:172] */
 
-    // Country dropdown (UI only)
+    // Country dropdown
     const countrySearch=$('countrySearch'), countryList=$('countryList');
     const COUNTRY_TZ=[{name:'Japan',tz:'Asia/Tokyo'},{name:'India',tz:'Asia/Kolkata'},{name:'United Kingdom',tz:'Europe/London'},{name:'United States',tz:'America/New_York'},{name:'Canada',tz:'America/Toronto'},{name:'Australia',tz:'Australia/Sydney'},{name:'UAE',tz:'Asia/Dubai'},{name:'Bangladesh',tz:'Asia/Dhaka'},{name:'China',tz:'Asia/Shanghai'},{name:'Germany',tz:'Europe/Berlin'},{name:'France',tz:'Europe/Paris'},{name:'Brazil',tz:'America/Sao_Paulo'}].sort((a,b)=> a.name.localeCompare(b.name));
     function renderCountryList(filter=''){
-      const q=filter.trim().toLowerCase();
-      const items=COUNTRY_TZ.filter(c=> c.name.toLowerCase().includes(q));
+      const q=filter.trim().toLowerCase(); const items=COUNTRY_TZ.filter(c=> c.name.toLowerCase().includes(q));
       if(items.length===0){ countryList.style.display='none'; countryList.innerHTML=''; return; }
       countryList.innerHTML=items.map(c=>`<div class="drop-item" data-tz="${c.tz}" data-name="${c.name}">${c.name}</div>`).join('');
       countryList.style.display='block';
     }
-    countrySearch.addEventListener('input', ()=> renderCountryList(countrySearch.value) );
+    countrySearch.addEventListener('input', ()=> renderCountryList(countrySearch.value) ); /* input fires for each change [web:181] */
     countrySearch.addEventListener('focus', ()=> renderCountryList(countrySearch.value) );
     document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
     countryList.addEventListener('click', (e)=>{ const it=e.target.closest('.drop-item'); if(!it) return; countrySearch.value=it.getAttribute('data-name'); countryList.style.display='none'; });
 
-    // Sunday-based week
+    // Sunday week
     function sundayWeekOf(date){
       const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       const yearStart = new Date(d.getFullYear(), 0, 1);
@@ -951,7 +552,6 @@
       const week = (dayOfYear < offset) ? 1 : Math.floor((dayOfYear - offset)/7) + 1;
       return { week, year: d.getFullYear() };
     }
-
     function rolloverWeekIfNeeded(){
       const {week,year}=sundayWeekOf(new Date());
       if(S._week===undefined || S._year===undefined){ S._week=week; S._year=year; saveState(currentMode,currentTimerType,S); return; }
@@ -960,15 +560,11 @@
         S.grid.unshift({week:S._week,year:S._year,live:completed,ts:Date.now()});
         if(S.grid.length>52) S.grid.pop();
         S._week=week; S._year=year;
-
-        S.weeklyLeaves=0;
-        S.weeklyFocusSeconds=0;
-        S.placed=0;
-        leafLayer.innerHTML='';
-
+        S.weeklyLeaves=0; S.weeklyFocusSeconds=0;
+        S.placed=0; leafLayer.innerHTML='';
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
-        S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
 
+        // Custom timer remains freely editable; no lock reset needed
         S.todayDateKey=null; S.todayLeafCount=0; S.todayExtraSeconds=0;
 
         saveState(currentMode,currentTimerType,S);
@@ -976,7 +572,7 @@
       }
     }
 
-    // Grid (always 52 cells)
+    // Grid
     function renderGrid(){
       treeGrid.innerHTML='';
       for(let i=0;i<52;i++){
@@ -990,7 +586,7 @@
       gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
     }
 
-    // Web Audio alarm (pleasant 10s)
+    // Alarm
     let audioCtx=null;
     function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); } }
     function playAlarm10s(){
@@ -1014,7 +610,7 @@
       osc1.stop(now+dur); osc2.stop(now+dur); lfo.stop(now+dur);
     }
 
-    // Timer helpers and realtime engine
+    // Timer
     let ticker=null, isRunning=false, currentLiveLeafIndex=null;
 
     function getSessionSeconds(){
@@ -1022,37 +618,24 @@
       if(currentTimerType==='custom')   return Math.max(60, Number(S.customSeconds)||1500);
       return Math.max(60, Number(S.simpleSeconds)||1500);
     }
-
-    function format(s){
-      const v = Math.max(0, Math.round(s));
-      const m=String(Math.floor(v/60)).padStart(2,'0');
-      const ss=String(v%60).padStart(2,'0');
-      return `${m}:${ss}`;
-    }
-
-    function setClockAndButtons(){
-      clockEl.textContent = format(S.secondsLeft);
-      startBtn.textContent = isRunning ? 'Running…' : `Start ${format(getSessionSeconds())}`;
-    }
+    function format(s){ const v=Math.max(0, Math.round(s)); const m=String(Math.floor(v/60)).padStart(2,'0'); const ss=String(v%60).padStart(2,'0'); return `${m}:${ss}`; }
+    function setClockAndButtons(){ clockEl.textContent = format(S.secondsLeft); startBtn.textContent = isRunning ? 'Running…' : `Start ${format(getSessionSeconds())}`; }
 
     function sessionMinutes(){ return Math.round(getSessionSeconds()/60); }
     function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
     function ensureTodayCounters(){ const k=todayKey(); if(S.todayDateKey!==k){ S.todayDateKey=k; S.todayLeafCount=0; S.todayExtraSeconds=0; } }
-
     function renderTodayDuration(){
       ensureTodayCounters();
       const elapsedLive = isRunning && S.targetEndTS ? Math.max(0, Math.floor((Date.now() - (S.targetEndTS - getSessionSeconds()*1000))/1000)) : 0;
       const totalMins = S.todayLeafCount*sessionMinutes() + Math.floor((S.todayExtraSeconds + elapsedLive)/60);
       todaySky.textContent = `Total duration (today): ${totalMins} mins`;
     }
-
     function renderWeeklyTarget(){
       const perLeafMin = Math.round(getSessionSeconds()/60);
       const totalMins = (Number(S.leavesPerTree)||0) * perLeafMin;
       const h = Math.floor(totalMins/60), m = totalMins%60;
       weeklyTargetEl.textContent = `Weekly target = ${h} hrs ${m} mins`;
     }
-
     function updateSliderFill(){
       const total = Math.max(1, Number(S.leavesPerTree)||1);
       const done = Math.min(S.weeklyLeaves||0, total);
@@ -1062,17 +645,11 @@
       pctRange.style.background = `linear-gradient(90deg, var(--slider-green) ${pct}%, var(--slider-done) ${pct}%)`;
     }
 
-    // Canopy-safe leaf positions
+    // Canopy-safe leaves
     const CANOPY_BOX = { xMin:140, xMax:420, yMin:200, yMax:300, cx:280, cy:250 };
     const LEAF_R = 22;
     function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx, dy); }
-    function insideCanopy(x,y){
-      const cx=CANOPY_BOX.cx, cy=CANOPY_BOX.cy;
-      const rx=160, ry=90;
-      const nx=(x-cx)/rx, ny=(y-cy)/ry;
-      return (nx*nx + ny*ny) <= 1.02;
-    }
-
+    function insideCanopy(x,y){ const cx=CANOPY_BOX.cx, cy=CANOPY_BOX.cy; const rx=160, ry=90; const nx=(x-cx)/rx, ny=(y-cy)/ry; return (nx*nx + ny*ny) <= 1.02; }
     function generateCanopyPoints(maxPoints){
       const pts = S.canopyPoints || [];
       if(pts.length>=maxPoints) return pts.slice(0,maxPoints);
@@ -1087,45 +664,36 @@
           const x = CANOPY_BOX.cx + r*Math.cos(angle)*160;
           const y = CANOPY_BOX.cy + r*Math.sin(angle)*90*0.95;
           if(!insideCanopy(x,y)) continue;
-          if(y>284) continue; // avoid trunk/branches
+          if(y>284) continue;
           let ok=true;
           for(const q of base){ if(dist({x,y}, q)<LEAF_R) { ok=false; break; } }
           if(ok){ base.push({x,y}); placed=true; }
         }
         if(!placed) break;
       }
-      base.sort((a,b)=> dist(a, CANOPY_BOX) - dist(b, CANOPY_BOX)); // center-out
+      base.sort((a,b)=> dist(a, CANOPY_BOX) - dist(b, CANOPY_BOX));
       S.canopyPoints = base;
       saveState(currentMode,currentTimerType,S);
       return base.slice(0,maxPoints);
     }
-
     function anchorForIndex(i){
       const pts = generateCanopyPoints(Math.max(S.leavesPerTree||9, i+1));
       return pts[i] || {x:CANOPY_BOX.cx, y:CANOPY_BOX.cy};
     }
-
     function makeLeafG(n, live=false){
-      const wrap=document.createElementNS(svgns,'g');
-      const g=document.createElementNS(svgns,'g'); g.setAttribute('class', live ? 'leaf leaf-live' : 'leaf');
-      const p=document.createElementNS(svgns,'path');
+      const wrap=document.createElementNS('http://www.w3.org/2000/svg','g');
+      const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('class', live ? 'leaf leaf-live' : 'leaf');
+      const p=document.createElementNS('http://www.w3.org/2000/svg','path');
       p.setAttribute('d','M 0 -16 C 10 -10, 12 0, 0 14 C -12 0, -10 -10, 0 -16 Z');
       p.setAttribute('class','leafFill');
       p.setAttribute('fill', live ? '#22c55e' : '#166534');
       p.setAttribute('stroke','#0b3d22'); p.setAttribute('stroke-width','1.2');
-      const t=document.createElementNS(svgns,'text');
-      t.setAttribute('x','0'); t.setAttribute('y','0');
-      t.setAttribute('fill','#fff'); t.setAttribute('font-weight','800');
-      t.setAttribute('font-size','13'); t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle');
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x','0'); t.setAttribute('y','0'); t.setAttribute('fill','#fff'); t.setAttribute('font-weight','800'); t.setAttribute('font-size','13'); t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle');
       t.textContent=String(n);
       g.appendChild(p); g.appendChild(t); wrap.appendChild(g); return wrap;
     }
-
-    function placeLeaf(wrap,a){
-      wrap.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`);
-      wrap.style.transformBox='fill-box'; wrap.style.transformOrigin='center';
-    }
-
+    function placeLeaf(wrap,a){ wrap.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); wrap.style.transformBox='fill-box'; wrap.style.transformOrigin='center'; }
     function renderLeaves(){
       leafLayer.innerHTML='';
       for(let i=0;i<S.placed;i++){
@@ -1147,6 +715,7 @@
     }
 
     // Realtime engine
+    function getSessionSeconds(){ if(currentTimerType==='pomodoro') return 25*60; if(currentTimerType==='custom') return Math.max(60, Number(S.customSeconds)||1500); return Math.max(60, Number(S.simpleSeconds)||1500); }
     function getSessionDurationMs(){ return getSessionSeconds()*1000; }
 
     function startTicker(){
@@ -1165,7 +734,6 @@
         saveState(currentMode,currentTimerType,S);
       }, 500);
     }
-
     function stopTicker(){
       if(ticker){ clearInterval(ticker); ticker=null; }
       isRunning=false;
@@ -1183,7 +751,6 @@
       saveState(currentMode,currentTimerType,S);
       renderTodayDuration();
     }
-
     function onTimerEnd(){
       addStaticLeaf();
       if(currentMode!=='bedTime'){ playAlarm10s(); }
@@ -1195,7 +762,6 @@
       renderStats();
       setClockAndButtons();
     }
-
     function startTimer(){
       ensureAudio();
       isRunning=true;
@@ -1207,7 +773,6 @@
       renderLeaves();
       startTicker();
     }
-
     function resetTimer(){
       invalidateLiveLeaf();
       stopTicker();
@@ -1218,7 +783,25 @@
       setClockAndButtons();
     }
 
-    // Leaf finalize / invalidate
+    // Actions
+    const ensureRainDrops=()=>{
+      if(rainTop.childElementCount>0) return;
+      const mk=(n, cls='')=>{
+        for(let i=0;i<n;i++){
+          const d=document.createElement('div'); d.className=`drop ${cls}`;
+          d.style.left=Math.round(Math.random()*100)+'%';
+          d.style.animationDelay=(Math.random()*1.0).toFixed(2)+'s';
+          const h = 20 + Math.random()*24;
+          const w = 0.6 + Math.random()*0.8;
+          d.style.height = h.toFixed(0)+'px';
+          d.style.width = w.toFixed(1)+'px';
+          d.style.animationDuration = (0.7 + Math.random()*0.7).toFixed(2)+'s';
+          rainTop.appendChild(d);
+        }
+      };
+      mk(180); mk(140,'far');
+    };
+
     function addStaticLeaf(){
       const idx=S.placed;
       const last=leafLayer.lastElementChild;
@@ -1240,7 +823,6 @@
       updateSliderFill();
       renderTodayDuration();
     }
-
     function invalidateLiveLeaf(){
       const last=leafLayer.lastElementChild;
       if(last && last.querySelector('.leaf')?.classList.contains('leaf-live')){
@@ -1248,7 +830,6 @@
       }
       currentLiveLeafIndex=null;
     }
-
     function updateInSkyXY(){
       const show = (currentTimerType===TIMER_TYPES.pomodoro || currentTimerType===TIMER_TYPES.custom);
       xySky.style.display = show?'block':'none';
@@ -1258,7 +839,6 @@
         xySky.textContent = `${x} / ${y} leaves`;
       }
     }
-
     function renderStats(){
       renderWeeklyTarget();
       updateInSkyXY();
@@ -1266,8 +846,8 @@
       renderTodayDuration();
     }
 
-    // Events
-    startBtn.addEventListener('click', ()=>{
+    // Event wiring
+    $('startBtn').addEventListener('click', ()=>{
       if(isRunning) return;
       if(S.secondsLeft<=0 || S.secondsLeft>getSessionSeconds()){
         S.secondsLeft = getSessionSeconds();
@@ -1275,25 +855,20 @@
       if(rainTop.childElementCount===0) ensureRainDrops();
       startTimer();
     });
+    $('resetBtn').addEventListener('click', resetTimer);
 
-    resetBtn.addEventListener('click', resetTimer);
-
-    // LPT set
+    // LPT lock logic stays (unchanged)
     lptSetBtn.addEventListener('click', ()=>{
       const v = Math.max(1, Math.min(200, Number(lptInput.value)||S.leavesPerTree));
       const {week,year}=sundayWeekOf(new Date());
       if(!S.weeklyTargetLocked){
-        S.leavesPerTree=v;
-        S.weeklyTargetSetValue=v;
-        S.weeklyTargetLocked=true;
-        S.lockWeek=week; S.lockYear=year;
+        S.leavesPerTree=v; S.weeklyTargetSetValue=v; S.weeklyTargetLocked=true; S.lockWeek=week; S.lockYear=year;
         lptInput.value=String(v);
         saveState(currentMode,currentTimerType,S);
         renderStats();
       }else{
         if(S.lockWeek!==week || S.lockYear!==year){
-          S.weeklyTargetLocked=false;
-          S.lockWeek=undefined; S.lockYear=undefined;
+          S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
           saveState(currentMode,currentTimerType,S);
         }else{
           lptInput.value=String(S.weeklyTargetSetValue||S.leavesPerTree||9);
@@ -1303,82 +878,68 @@
       renderLeaves();
     });
 
-    // CUSTOM SET — fix: immediately apply minutes to secondsLeft and running target
+    // CUSTOM: editable every time (lock removed)
     applyCustomBtn.addEventListener('click', ()=>{
       const mins = Math.max(1, Math.min(999, Number(customMin.value)||25));
       const secs = mins*60;
 
-      // Switch to custom type if not already
       if(currentTimerType!==TIMER_TYPES.custom){
         saveState(currentMode,currentTimerType,S);
-        currentTimerType = TIMER_TYPES.custom;
-        G.timerType = currentTimerType;
+        currentTimerType=TIMER_TYPES.custom;
+        G.timerType=currentTimerType;
         save(GLOBAL_KEY, G);
         S = loadState(currentMode, currentTimerType);
       }
 
-      // Lock per week if first set this week (optional behavior preserved)
-      const {week,year}=sundayWeekOf(new Date());
-      if(!S.customLocked){
-        S.customLocked=true;
-        S.customLockWeek=week; S.customLockYear=year;
-      }
-
-      // Apply new duration
+      // No lock checks — always apply
       S.customSeconds = secs;
       S.secondsLeft = secs;
 
-      // If running, recompute absolute end to continue accurately
       if(isRunning){
         S.targetEndTS = Date.now() + secs*1000;
       }
 
-      // Persist and refresh UI
       saveState(currentMode,currentTimerType,S);
-      timerTypeSelect.value = TIMER_TYPES.custom;
+      timerTypeSelect.value=TIMER_TYPES.custom;
       updateModeVisibility();
       renderLeaves();
       renderStats();
       setClockAndButtons();
-    }); /* update on Set and reflect immediately [web:193][web:172] */
+    }); /* editable every time; input/change pattern is fine [web:181][web:172] */
 
-    // SIMPLEX SET — fix: immediately apply minutes to secondsLeft and running target
+    // SIMPLEX
     applySimpleBtn.addEventListener('click', ()=>{
       const mins = Math.max(1, Math.min(999, Number(simpleMin.value)||25));
       const secs = mins*60;
 
-      // Switch to simplex type if not already
       if(currentTimerType!==TIMER_TYPES.simplex){
         saveState(currentMode,currentTimerType,S);
-        currentTimerType = TIMER_TYPES.simplex;
-        G.timerType = currentTimerType;
+        currentTimerType=TIMER_TYPES.simplex;
+        G.timerType=currentTimerType;
         save(GLOBAL_KEY, G);
         S = loadState(currentMode, currentTimerType);
       }
 
-      // Apply new duration
       S.simpleSeconds = secs;
       S.secondsLeft = secs;
 
-      // If running, recompute absolute end to continue accurately
       if(isRunning){
         S.targetEndTS = Date.now() + secs*1000;
       }
 
-      // Persist and refresh UI
       saveState(currentMode,currentTimerType,S);
-      timerTypeSelect.value = TIMER_TYPES.simplex;
+      timerTypeSelect.value=TIMER_TYPES.simplex;
       updateModeVisibility();
       renderLeaves();
       renderStats();
       setClockAndButtons();
-    }); /* update on Set and reflect immediately [web:193][web:172] */
+    });
 
     // Timer type switch
     timerTypeSelect.addEventListener('change', ()=>{
       saveState(currentMode,currentTimerType,S);
       currentTimerType = timerTypeSelect.value;
-      G.timerType = currentTimerType;
+      G.timerType=currentTimerType;
       save(GLOBAL_KEY, G);
       S = loadState(currentMode, currentTimerType);
       rolloverWeekIfNeeded();
@@ -1413,7 +974,7 @@
       renderTodayDuration();
     }
 
-    // Background/visibility corrections (recompute from absolute end)
+    // Visibility compensation (keeps accuracy in background)
     document.addEventListener('visibilitychange', ()=>{
       if(isRunning && S.targetEndTS){
         S.secondsLeft = Math.max(0, Math.round((S.targetEndTS - Date.now())/1000));
@@ -1422,7 +983,6 @@
         saveState(currentMode,currentTimerType,S);
       }
     });
-
     window.addEventListener('focus', ()=>{
       if(isRunning && S.targetEndTS){
         S.secondsLeft = Math.max(0, Math.round((S.targetEndTS - Date.now())/1000));
@@ -1431,7 +991,7 @@
       }
     });
 
-    // Rain
+    // Rain drops
     function ensureRainDrops(){
       if(rainTop.childElementCount>0) return;
       const mk=(n, cls='')=>{
@@ -1456,25 +1016,33 @@
       customMin.value = String(Math.round((S.customSeconds||1500)/60));
       simpleMin.value = String(Math.round((S.simpleSeconds||1500)/60));
     }
-
-    function renderLeavesAndGridAndStats(){
-      renderLeaves();
-      renderGrid();
-      renderStats();
-      setClockAndButtons();
-    }
-
     function init(){
+      // names and mode select
+      const DEFAULT_MODE_NAMES={
+        exercise:'Exercise mode', cycling:'Cycling mode', digitalDetox:'Digital detox mode', bedTime:'Bed-time mode',
+        quran:'Quran mode', dikhr:'Dikhr mode', maths:'Maths mode',
+        subject1:'Subject 1 mode', subject2:'Subject 2 mode', subject3:'Subject 3 mode',
+        user1:'User 1 mode', user2:'User 2 mode', user3:'User 3 mode'
+      };
       populateModeSelect();
-      // Fill editable name inputs
       subject1Input.value=CUSTOM_NAMES.subject1||''; subject2Input.value=CUSTOM_NAMES.subject2||''; subject3Input.value=CUSTOM_NAMES.subject3||'';
       user1Input.value=CUSTOM_NAMES.user1||''; user2Input.value=CUSTOM_NAMES.user2||''; user3Input.value=CUSTOM_NAMES.user3||'';
-      // Reflect current timer type
+
+      // timer type
       timerTypeSelect.value=currentTimerType;
+
+      // grid and state
+      renderGrid();
       rolloverWeekIfNeeded();
       updateModeVisibility();
-      renderLeavesAndGridAndStats();
+      renderLeaves();
+      renderStats();
+      setClockAndButtons();
+
+      // inputs reflect
       renderWeeklyDefaultsToInputs();
+
+      // rain
       ensureRainDrops();
     }
 
