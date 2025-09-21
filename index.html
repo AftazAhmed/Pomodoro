@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Single File Build</title>
+  <title>Pomodoro Tree — Single File Build (restored leaf, fill, rain)</title>
 
   <style>
     :root{
@@ -125,26 +125,22 @@
       z-index:var(--z-labels); background:rgba(255,255,255,.55);
       padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8);
     }
-    .xySkyRight{ position:absolute; right:14px; top:10px; font:800 18px/1.2 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
     .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-saplings); }
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:var(--z-tree); }
 
-    /* Rain overlay: slightly thicker and denser, original staggered style */
+    /* Rain overlay (original simple effect; active only while running) */
     .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:none; overflow:hidden; }
     .rainTop.active{ display:block; }
-    .rainTop .drop{ position:absolute; top:-28px; width:1.4px; height:30px; background:rgba(14,42,112,.6); border-radius:2px; animation:rainFall 0.9s linear infinite; }
-    .rainTop .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.15s; }
-    @keyframes rainFall{ to{ transform:translateY(780px); } }
+    .rainTop .drop{ position:absolute; top:-28px; width:1px; height:28px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 0.9s linear infinite; }
+    .rainTop .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
+    @keyframes rainFall{ to{ transform:translateY(760px); } }
 
-    /* Leaf animations: only current leaf blinks */
-    @keyframes leafBlinkHue { 0%{ fill:#1f9a4f; } 50%{ fill:#0f6e36; } 100%{ fill:#1f9a4f; } }
-    .leaf-current path.leafFill{ animation: leafBlinkHue 900ms linear infinite; }
-
+    /* Leaf animations (play only while running) */
+    @keyframes leafBlinkHue { 0%{ fill:#22c55e; } 50%{ fill:#15803d; } 100%{ fill:#22c55e; } }
+    .leaf-live path.leafFill{ animation: leafBlinkHue 900ms linear infinite; }
     @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
-    .leaf-pop{ animation: leafPop 300ms ease-out forwards; transform-origin:center; transform-box:fill-box; }
-
-    .leafNumber{ font:800 12px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; fill:#083b1d; text-anchor:middle; dominant-baseline:middle; pointer-events:none; }
+    .leaf-pop{ animation: leafPop 380ms ease-out forwards; transform-origin:center; transform-box:fill-box; }
 
     .tabsWrap{ margin:12px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:760px; max-width:100%; position:relative; z-index:var(--z-tabs); }
     .tabs{ display:flex; gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); justify-content:center; }
@@ -244,7 +240,7 @@
               <div style="display:flex; gap:8px; align-items:center;">
                 <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
                 <button id="lptSetBtn">Set</button>
-                <span id="lptLockNote" class="miniNote hidden">Locked for this week</span>
+                <span id="lptLockNote" class="miniNote">Editable once per week</span>
               </div>
               <div class="pctRow">
                 <input id="pctRange" type="range" min="0" max="100" step="1" value="0" />
@@ -264,7 +260,7 @@
 
             <div class="sky"></div>
 
-            <div id="xySky" class="xySkyRight" style="display:none;">0 / 0 leaves</div>
+            <div id="xySky" class="skyOverlay" style="display:none;">0 / 0 leaves</div>
             <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
 
             <svg id="saplingsSVG" width="560" height="560" viewBox="0 0 560 560" class="saplingsLayer" aria-hidden="true">
@@ -277,7 +273,7 @@
                     <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
                   </g>
                 </defs>
-                <!-- 72 saplings -->
+                <!-- 72 saplings grid -->
                 <g transform="translate(60 380)"><use href="#sapling"/></g><g transform="translate(120 380)"><use href="#sapling"/></g><g transform="translate(180 380)"><use href="#sapling"/></g><g transform="translate(240 380)"><use href="#sapling"/></g><g transform="translate(300 380)"><use href="#sapling"/></g><g transform="translate(360 380)"><use href="#sapling"/></g><g transform="translate(420 380)"><use href="#sapling"/></g><g transform="translate(480 380)"><use href="#sapling"/></g>
                 <g transform="translate(60 400)"><use href="#sapling"/></g><g transform="translate(120 400)"><use href="#sapling"/></g><g transform="translate(180 400)"><use href="#sapling"/></g><g transform="translate(240 400)"><use href="#sapling"/></g><g transform="translate(300 400)"><use href="#sapling"/></g><g transform="translate(360 400)"><use href="#sapling"/></g><g transform="translate(420 400)"><use href="#sapling"/></g><g transform="translate(480 400)"><use href="#sapling"/></g>
                 <g transform="translate(60 420)"><use href="#sapling"/></g><g transform="translate(120 420)"><use href="#sapling"/></g><g transform="translate(180 420)"><use href="#sapling"/></g><g transform="translate(240 420)"><use href="#sapling"/></g><g transform="translate(300 420)"><use href="#sapling"/></g><g transform="translate(360 420)"><use href="#sapling"/></g><g transform="translate(420 420)"><use href="#sapling"/></g><g transform="translate(480 420)"><use href="#sapling"/></g>
@@ -395,7 +391,7 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_singlefile_leafNum_currentBlink_lptLock_xy_rainDense';
+    const APP_KEY='pomodoroTree_singlefile_restored_core';
     const GLOBAL_KEY=APP_KEY+'_global';
     const NAMES_KEY=APP_KEY+'_names';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simplex:'simplex' };
@@ -411,7 +407,7 @@
       customLocked:false, customLockWeek:undefined, customLockYear:undefined,
       customSeconds:25*60, simpleSeconds:25*60,
       grid:[], weeklyLeaves:0, totalFocusSeconds:0, weeklyFocusSeconds:0, _week:undefined, _year:undefined,
-      canopyPoints:[],
+      canopyPoints:[], canopySeedWeek:undefined, canopySeedYear:undefined,
       todayDateKey:null, todayLeafCount:0, todayExtraSeconds:0,
       targetEndTS:null, lastRealTS:null
     };
@@ -442,11 +438,8 @@
     const startBtn = $('startBtn');
     const resetBtn = $('resetBtn');
 
-    const lptWrap = $('lptWrap');
     const lptInput = $('lptInput');
     const lptSetBtn = $('lptSetBtn');
-    const lptLockNote = $('lptLockNote');
-    const lptHelper = $('lptHelper');
     const weeklyTargetEl = $('weeklyTarget');
 
     const pctRange = $('pctRange');
@@ -497,7 +490,7 @@
       CUSTOM_NAMES=Object.assign({}, CUSTOM_NAMES, {
         subject1: subject1Input.value || CUSTOM_NAMES.subject1 || '',
         subject2: subject2Input.value || CUSTOM_NAMES.subject2 || '',
-        subject3: subject3Input value || CUSTOM_NAMES.subject3 || '',
+        subject3: subject3Input.value || CUSTOM_NAMES.subject3 || '',
         user1: user1Input.value || CUSTOM_NAMES.user1 || '',
         user2: user2Input.value || CUSTOM_NAMES.user2 || '',
         user3: user3Input.value || CUSTOM_NAMES.user3 || ''
@@ -514,7 +507,7 @@
       S = loadState(currentMode, currentTimerType);
       rolloverWeekIfNeeded();
       refreshModeHeader();
-      renderLeaves(); renderGrid(); updateModeVisibility(); renderStats(); setClockAndButtons(); hydrateInputsFromState(); updateXY();
+      renderLeaves(); renderGrid(); updateModeVisibility(); renderStats(); setClockAndButtons(); hydrateInputsFromState();
     });
 
     const countrySearch=$('countrySearch'), countryList=$('countryList');
@@ -554,7 +547,8 @@
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
         S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
         S.todayDateKey=null; S.todayLeafCount=0; S.todayExtraSeconds=0;
-        saveState(currentMode,currentTimerType,S); renderGrid();
+        saveState(currentMode,currentTimerType,S);
+        renderGrid();
       }
     }
 
@@ -588,7 +582,8 @@
       gain.gain.exponentialRampToValueAtTime(sustain, now+attack+decay);
       gain.gain.setValueAtTime(sustain, now+dur-release);
       gain.gain.exponentialRampToValueAtTime(0.0001, now+dur);
-      osc1.connect(biquad); osc2.connect(biquad); biquad.connect(gain); gain.connect(audioCtx.destination);
+      osc1.connect(biquad); osc2.connect(biquad);
+      biquad.connect(gain); gain.connect(audioCtx.destination);
       lfo.start(now); osc1.start(now); osc2.start(now);
       osc1.stop(now+dur); osc2.stop(now+dur); lfo.stop(now+dur);
     }
@@ -640,18 +635,15 @@
       pctRange.style.background = `linear-gradient(90deg, var(--slider-green) ${pct}%, var(--slider-done) ${pct}%)`;
     }
 
-    // Leaf placement
+    // Leaf placement and canopy fill updates (restored)
     const CANOPY_BOX = { cx:280, cy:250, rx:160, ry:90 };
-    const LEAF_W = 22, LEAF_H = 34; // taller leaf
-    const LEAF_MIN_DIST = 22;
-
+    const LEAF_R = 22;
     function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx, dy); }
     function insideCanopy(x,y){
       const nx=(x-CANOPY_BOX.cx)/CANOPY_BOX.rx;
       const ny=(y-CANOPY_BOX.cy)/CANOPY_BOX.ry;
       return (nx*nx + ny*ny) <= 1.02 && y<=284;
     }
-
     function generateCanopyPoints(maxPoints){
       const pts=[];
       const triesPerPoint=200;
@@ -665,7 +657,7 @@
           const y = CANOPY_BOX.cy + r*Math.sin(angle)*CANOPY_BOX.ry*0.95;
           if(!insideCanopy(x,y)) continue;
           let ok=true;
-          for(const q of pts){ if(dist({x,y}, q)<LEAF_MIN_DIST){ ok=false; break; } }
+          for(const q of pts){ if(dist({x,y}, q)<LEAF_R){ ok=false; break; } }
           if(ok){ pts.push({x,y}); placed=true; }
         }
         if(!placed) break;
@@ -674,59 +666,34 @@
       return pts;
     }
 
-    function leafPath(x,y){
-      // darker than fill, taller vertically
-      return `<path class="leafFill" d="M ${x} ${y} c 7 -${LEAF_H/2}, 14 -${LEAF_H/2}, 20 0 c -7 ${LEAF_H/2}, -14 ${LEAF_H/2}, -20 0 z" fill="#1b8f49" stroke="#0f6e36" stroke-width="2"/>`;
-    }
-
     function renderLeaves(){
-      // keep layer last
-      const group=document.getElementById('canopyGroup'); const layer=document.getElementById('leafLayer');
-      if(group && layer && layer!==group.lastElementChild){ group.appendChild(layer); }
+      // keep leaf layer last so it’s painted on top
+      const group = document.getElementById('canopyGroup');
+      const layer = document.getElementById('leafLayer');
+      if(group && layer && layer !== group.lastElementChild){
+        group.appendChild(layer);
+      }
 
       const max = Math.max(S.leavesPerTree||0,0);
       const pts = generateCanopyPoints(max);
       const placed = Math.min(S.placed||0, pts.length);
       const g=[];
-
       for(let i=0;i<placed;i++){
         const p=pts[i];
-        const isCurrent = isRunning && (i===placed-1) && (placed<max); // current leaf slot during running
-        g.push(`<g class="leaf-pop${isCurrent?' leaf-current':''}">`+leafPath(p.x,p.y)+`<text class="leafNumber" x="${p.x+10}" y="${p.y}">${i+1}</text></g>`);
+        g.push(`<g class="leaf-pop${isRunning?' leaf-live':''}"><path class="leafFill" d="M ${p.x} ${p.y} c 8 -10, 16 -10, 22 0 c -8 10, -16 10, -22 0 z" fill="#22c55e" stroke="#15803d" stroke-width="2"/></g>`);
       }
-
-      // Render preview/current leaf during running if there's room
-      if(isRunning && placed < Math.min(max, pts.length)){
-        const p=pts[placed];
-        g.push(`<g class="leaf-pop leaf-current">`+leafPath(p.x,p.y)+`<text class="leafNumber" x="${p.x+10}" y="${p.y}">${placed+1}</text></g>`);
-      }
-
       leafLayer.innerHTML = g.join('');
 
-      // green fill by mask rect height
-      const effectivePlaced = Math.min(placed, max);
-      const canopyHeight = Math.round((effectivePlaced/Math.max(1, max))*140);
+      // Update mask rect to animate green fill level
+      const canopyHeight = Math.round((placed/Math.max(1, max))*140);
       const fillRect=document.getElementById('fillRect');
       fillRect.setAttribute('y', String(316 - canopyHeight));
       fillRect.setAttribute('height', String(canopyHeight));
-
-      updateXY();
     }
 
     function updateModeVisibility(){
-      const isSimplex = currentTimerType==='simplex';
-      lptWrap.classList.toggle('hidden', isSimplex);
-      lptHelper.classList.toggle('hidden', isSimplex);
-      weeklyTargetEl.classList.toggle('hidden', isSimplex);
-      // x/y visible only in Pomodoro/Custom
-      xySky.style.display = isSimplex ? 'none' : 'block';
       customInputs.style.display = currentTimerType==='custom' ? 'flex' : 'none';
-      simpleInputs.classList.toggle('hidden', !isSimplex);
-
-      // lock UI state for LPT
-      lptInput.disabled = (!isSimplex) && S.weeklyTargetLocked;
-      lptSetBtn.disabled = (!isSimplex) && S.weeklyTargetLocked;
-      lptLockNote.classList.toggle('hidden', isSimplex || !S.weeklyTargetLocked);
+      simpleInputs.classList.toggle('hidden', currentTimerType!=='simplex');
     }
 
     function renderStats(){
@@ -742,9 +709,9 @@
       setClockAndButtons();
     }
 
-    // Rain (slightly thicker/denser)
+    // Rain (original simple effect)
     let rainRAF=null;
-    function spawnRain(count=120){
+    function spawnRain(count=90){
       rainTop.innerHTML='';
       const rect = rainTop.getBoundingClientRect();
       const width = rect.width || 560;
@@ -753,15 +720,15 @@
         d.className='drop'+(Math.random()<0.4?' far':'');
         d.style.left = Math.round(Math.random()*width)+'px';
         d.style.animationDelay = (Math.random()*0.9)+'s';
-        d.style.height = (22+Math.random()*26)+'px';
+        d.style.height = (20+Math.random()*24)+'px';
         rainTop.appendChild(d);
       }
     }
     function startRain(){
       if(rainRAF) return;
       rainTop.classList.add('active');
-      spawnRain(120);
-      const loop=()=>{ rainRAF = requestAnimationFrame(()=>{ if(!isRunning){ stopRain(); return; } if(Math.random()<0.02){ spawnRain(120); } loop(); }); };
+      spawnRain(90);
+      const loop=()=>{ rainRAF = requestAnimationFrame(()=>{ if(!isRunning){ stopRain(); return; } if(Math.random()<0.02){ spawnRain(90); } loop(); }); };
       loop();
     }
     function stopRain(){
@@ -781,21 +748,24 @@
       }
       S.lastRealTS = now;
       saveState(currentMode,currentTimerType,S);
-      renderLeaves(); startRain(); setClockAndButtons();
+      renderLeaves(); // enable leaf animation via class
+      startRain();    // original rain
+      setClockAndButtons();
 
       ticker = setInterval(()=>{
         const now = Date.now();
         S.secondsLeft = Math.max(0, Math.round((S.targetEndTS - now)/1000));
-        setClockAndButtons(); renderTodayDuration(); renderLeaves(); // keep current leaf preview blinking
+        setClockAndButtons();
+        renderTodayDuration();
         if(S.secondsLeft<=0){
           clearInterval(ticker); ticker=null; isRunning=false;
           S.targetEndTS=null; S.lastRealTS=null;
-          // complete current leaf and persist its position
-          S.placed = Math.min((S.placed||0)+1, S.leavesPerTree||0);
           S.weeklyLeaves = (S.weeklyLeaves||0)+1;
           S.todayLeafCount = (S.todayLeafCount||0)+1;
+          S.placed = Math.min((S.placed||0)+1, S.leavesPerTree||0);
           saveState(currentMode,currentTimerType,S);
-          stopRain(); renderAll();
+          stopRain();
+          renderAll(); // re-renders without animation class
           try{ ensureAudio(); playAlarm10s(); }catch{}
         }
       }, 250);
@@ -807,26 +777,20 @@
       S.targetEndTS=null; S.lastRealTS=null;
       S.secondsLeft = getSessionSeconds();
       saveState(currentMode,currentTimerType,S);
-      stopRain(); renderLeaves(); setClockAndButtons();
+      stopRain();
+      renderLeaves();
+      setClockAndButtons();
     }
 
     function clampInt(v, min, max){ v = Math.floor(Number(v)||0); return Math.min(max, Math.max(min, v)); }
 
-    // LPT set once per week; lock input and button; persist value
     function applyLeavesPerWeek(newLpt){
-      const {week,year}=sundayWeekOf(new Date());
-      if(S.weeklyTargetLocked && S.lockWeek===week && S.lockYear===year){ updateModeVisibility(); return; }
       S.leavesPerTree = newLpt;
       S.weeklyTargetSetValue = newLpt;
-      S.weeklyTargetLocked = true;
-      S.lockWeek = week; S.lockYear = year;
       saveState(currentMode, currentTimerType, S);
-      lptInput.value = String(newLpt);
-      updateModeVisibility();
       renderWeeklyTarget();
       updateSliderFill();
       renderLeaves();
-      updateXY();
     }
 
     function applyCustomMinutes(min){
@@ -851,14 +815,6 @@
       lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
       customMin.value = String(Math.round((S.customSeconds||1500)/60));
       simpleMin.value = String(Math.round((S.simpleSeconds||1500)/60));
-    }
-
-    function updateXY(){
-      if(currentTimerType==='simplex'){ xySky.style.display='none'; return; }
-      const x = Math.min(S.placed||0, S.leavesPerTree||0);
-      const y = Math.max(S.leavesPerTree||0, 0);
-      xySky.textContent = `${x} / ${y} leaves`;
-      xySky.style.display='block';
     }
 
     startBtn.addEventListener('click', (e)=>{ e.preventDefault(); startTimer(); });
@@ -893,7 +849,7 @@
       rolloverWeekIfNeeded();
       updateModeVisibility();
       hydrateInputsFromState();
-      renderAll(); updateXY();
+      renderAll();
     });
 
     const tabs = document.getElementById('tabs');
@@ -913,7 +869,6 @@
       hydrateInputsFromState();
       rolloverWeekIfNeeded();
       renderAll();
-      updateXY();
       window.addEventListener('resize', ()=>{ if(isRunning){ stopRain(); startRain(); } });
     })();
   </script>
