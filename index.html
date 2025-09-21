@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Completion + Mode Fix</title>
+  <title>Pomodoro Tree — Leaf Animation Restored</title>
 
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
@@ -56,7 +56,7 @@
     .miniNote{ color:#4a6894; font-weight:700; font-size:var(--fs-sm); }
     .noteBig{ font-size:var(--fs-md); color:#0b1a33; font-weight:800; }
 
-    /* Canvas */
+    /* Canvas: positioned wrapper for overlays (rain, labels) */
     .canvas{
       position:relative;
       width:100%;
@@ -77,9 +77,9 @@
 
     .skySvg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
 
+    /* Tree scaled by 1.5 with pivot near ground so trunk stays planted */
     .treeSvg{
-      position:absolute; inset:0; width:100%; height:100%;
-      display:block; overflow:visible; pointer-events:none;
+      position:absolute; inset:0; width:100%; height:100%; display:block; overflow:visible; pointer-events:none;
       transform-origin: 50% 72%;
       transform: scale(1.5);
     }
@@ -94,13 +94,11 @@
       background:rgba(255,255,255,.55); padding:3px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8);
     }
 
+    /* Rain overlay spans entire canvas and is clipped by overflow:hidden on .aspect */
     .rain{ position:absolute; top:0; right:0; bottom:0; left:0; pointer-events:none; display:none; z-index:4; }
-    .rain .drop{
-      position:absolute; left:0; width:3px; height:12px; background:rgba(14,42,112,.45); border-radius:2px;
-      top:-10%; animation:rainTop 1.1s linear infinite;
-    }
+    .rain .drop{ position:absolute; left:0; width:3px; height:12px; background:rgba(14,42,112,.45); border-radius:2px; top:-10%; animation:rainTop 1.1s linear infinite; }
     .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.5s; }
-    @keyframes rainTop{ 0%{ top:-10%; } 100%{ top:110%; } } /* falls within parent box */ /* [web:293] */
+    @keyframes rainTop{ 0%{ top:-10%; } 100%{ top:110%; } } /* [web:293] */
 
     .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; }
     .countryWrap{ display:flex; gap:8px; align-items:center; }
@@ -132,6 +130,12 @@
     .indicator{ display:flex; width:220px; height:12px; border-radius:999px; overflow:hidden; border:1px solid var(--line); background:#fff; }
     .indicator .done{ background:var(--progress-green); height:100%; transition:width .25s ease; }
     .indicator .rem{ background:var(--progress-red); height:100%; transition:width .25s ease; }
+
+    /* Restored animations */
+    @keyframes canopyBlink { 0%,100%{ stroke:#065f46;} 50%{ stroke:#000; } }
+    @keyframes leafPulse { 0%,100%{ transform:scale(1.05);} 50%{ transform:scale(1.18);} }
+    .blink-canopy{ animation: canopyBlink 900ms linear infinite; } /* [web:291][web:357] */
+    .animate-leaf path{ animation: leafPulse 1.2s ease-in-out infinite; transform-origin:center; } /* [web:361] */
   </style>
 </head>
 <body>
@@ -271,6 +275,7 @@
             <select id="modeSelect" title="Switch mode"></select>
           </div>
           <div class="modeEditRow" id="editableNamesRow">
+            <!-- Editable only for subjects/users -->
             <div class="editGroup"><span class="miniNote">Subject 1</span><input id="subject1Input" placeholder="Edit name" /></div>
             <div class="editGroup"><span class="miniNote">Subject 2</span><input id="subject2Input" placeholder="Edit name" /></div>
             <div class="editGroup"><span class="miniNote">Subject 3</span><input id="subject3Input" placeholder="Edit name" /></div>
@@ -300,7 +305,7 @@
 
   <script>
     // Keys and constants
-    const APP_KEY = 'pomodoroTree_CompleteFix_V1';
+    const APP_KEY = 'pomodoroTree_LeafAnimRestore_V1';
     const NAMES_KEY = APP_KEY + '_names';
     const GLOBAL_KEY = APP_KEY + '_global';
     const svgns = 'http://www.w3.org/2000/svg';
@@ -310,7 +315,6 @@
     const DEFAULT_CUSTOM_MIN = 20;
     const MAX_CUSTOM_MIN = 180;
 
-    // Preset modes not editable
     const PRESET_MODES = ['cycling','exercise','quran','dhikr','digitalDetox','bedTime'];
     const MODE_IDS = [...PRESET_MODES, 'maths','subject1','subject2','subject3','user1','user2','user3'];
 
@@ -331,8 +335,7 @@
     // Mode state helpers
     const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
     const DEFAULT_STATE = {
-      leavesPerTree:9,
-      placed:0,
+      leavesPerTree:9, placed:0,
       timers: {
         pomodoro: { secondsLeft:POMODORO_SECONDS, running:false, weeklySeconds:0, totalSeconds:0 },
         custom:   { secondsLeft:DEFAULT_CUSTOM_MIN*60, running:false, weeklySeconds:0, totalSeconds:0, sessionSeconds:DEFAULT_CUSTOM_MIN*60 }
@@ -340,9 +343,7 @@
       activeTimer:'pomodoro',
       weeklyLeaves:0, leavesToday:0, leavesTotal:0,
       weeklyFocusSeconds:0, totalFocusSeconds:0,
-      grid:[],
-      week:undefined, year:undefined,
-      weeklyComplete:false,
+      grid:[], week:undefined, year:undefined, weeklyComplete:false,
       weeklyTargetLocked:false, weeklyTargetSetValue:9
     };
     function loadState(modeId){
@@ -351,11 +352,11 @@
       catch{ return Object.assign({}, DEFAULT_STATE); }
     }
     function saveState(modeId, S){ localStorage.setItem(modeKey(modeId), JSON.stringify(S)); }
+    function save(){ saveState(currentMode, S); saveGlobal(); }
 
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
 
-    // Accurate interval refs per timer
     const intervals = { pomodoro:null, custom:null };
 
     // DOM
@@ -370,7 +371,7 @@
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), todaySky=el('todaySky'), modeNameEl=document.getElementById('modeName');
     const modeSelect=el('modeSelect');
 
-    // Saplings once
+    // Build saplings once
     (function buildSaplings(){
       const g=document.getElementById('saplings'); if(!g) return;
       const rows=6, cols=7, startX=28, endX=532, soilYStart=560*0.62 + 20, rowGap=30;
@@ -401,10 +402,10 @@
       }
     })();
 
-    // Basic time helpers
-    function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; } /* [web:325] */
+    // Time helpers
+    function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; } /* [web:291] */
 
-    // Accurate ticking using a target epoch; interval cleared at completion
+    // Ticking
     function startWallClock(timerId){
       stopTimer(timerId);
       const tState = S.timers[timerId];
@@ -413,20 +414,19 @@
         const remainingMs = Math.max(0, targetEpoch - Date.now());
         tState.secondsLeft = Math.ceil(remainingMs / 1000);
         if(S.activeTimer===timerId) clockEl.textContent = format(tState.secondsLeft);
-        if(remainingMs <= 0){
-          stopTimer(timerId);
-          onSessionComplete(timerId); // updates leaf + time + UI immediately
-        }
+        if(remainingMs <= 0){ stopTimer(timerId); onSessionComplete(timerId); }
       };
       setRunning(timerId, true);
+      // ensure current leaf animates
+      ensureCurrentLeafPreview();
+      intervals[timerId] = setInterval(tick, 250);
       tick();
-      intervals[timerId] = setInterval(tick, 250); /* stable updates */ /* [web:325][web:342] */
     }
-    function stopTimer(timerId){ if(intervals[timerId]){ clearInterval(intervals[timerId]); intervals[timerId]=null; } setRunning(timerId, false); } /* [web:325] */
+    function stopTimer(timerId){ if(intervals[timerId]){ clearInterval(intervals[timerId]); intervals[timerId]=null; } setRunning(timerId, false); }
 
     function getSessionSecondsFor(timerId){ return timerId==='pomodoro' ? POMODORO_SECONDS : Math.max(1, S.timers.custom.sessionSeconds|0); }
 
-    // Leaf anchors and rendering
+    // Leaves
     const baseAnchors=[{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}];
     function anchorForIndex(i){
       if(i<baseAnchors.length) return baseAnchors[i];
@@ -451,8 +451,28 @@
       leafLayer.innerHTML='';
       for(let i=0;i<S.placed;i++){ const g=createLeafG(i+1); placeLeaf(g, anchorForIndex(i)); leafLayer.appendChild(g); }
     }
+    function ensureCurrentLeafPreview(){
+      // If not complete and preview isn't present, add a pulsing preview leaf
+      if(S.placed < S.leavesPerTree){
+        const wantIndex = S.placed; // next leaf number is placed+1
+        const last = leafLayer.lastElementChild;
+        const lastNum = last?.querySelector('text')?.textContent;
+        if(Number(lastNum)!==wantIndex+1){
+          const g = createLeafG(wantIndex+1);
+          placeLeaf(g, anchorForIndex(wantIndex));
+          leafLayer.appendChild(g);
+        }
+        // apply pulse animation class to current leaf only
+        Array.from(leafLayer.children).forEach((node, idx)=>{
+          node.classList.toggle('animate-leaf', idx===wantIndex);
+        });
+      }else{
+        // no animation if complete
+        Array.from(leafLayer.children).forEach(node=>node.classList.remove('animate-leaf'));
+      }
+    }
 
-    // Canopy fill progress
+    // Canopy fill
     const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
     function setFillPercent(pct){
       const p=Math.max(0, Math.min(100, Number(pct)||0));
@@ -464,7 +484,7 @@
     function percentFromState(){ const denom=Math.max(1, S.leavesPerTree|0); return (S.placed/denom)*100; }
     function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
 
-    // Indicator HUD
+    // Indicator and totals
     function paintIndicator(){
       const total = Math.max(1, Number(S.leavesPerTree)||1);
       const done = Math.max(0, Math.min(S.placed, total));
@@ -472,9 +492,7 @@
       indDone.style.width = pct + '%';
       indRem.style.width = (100 - pct) + '%';
       xyLabel.textContent = `${done}/${total} leaves`;
-    } /* updates after completion to turn partial green */ /* [web:346] */
-
-    // Totals HUD
+    }
     function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
     function renderTotals(){
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
@@ -483,26 +501,21 @@
       todaySky.textContent = `Today: ${S.leavesToday||0} leaves`;
     }
 
-    // Running state visuals
+    // Running UI
     function setRunning(timerId, on){
       S.timers[timerId].running = on;
       if(S.activeTimer===timerId){
         startBtn.textContent = on ? 'Running…' : `Start ${format(S.timers[timerId].secondsLeft)}`;
         startBtn.disabled = !!on;
         document.getElementById('canopyOutline')?.classList.toggle('blink-canopy', !!on);
-        const cur=leafLayer?.lastElementChild;
-        if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
+        if(on) ensureCurrentLeafPreview(); else Array.from(leafLayer.children).forEach(node=>node.classList.remove('animate-leaf'));
         showRain(!!on);
       }
       save();
     }
 
-    // Save combined
-    function save(){ saveState(currentMode, S); saveGlobal(); }
-
-    // Completion: update leaf, times, indicator, totals, persist immediately
+    // Completion
     function onSessionComplete(timerId){
-      // increment time totals based on active timer
       if(timerId==='pomodoro'){
         S.timers.pomodoro.weeklySeconds += POMODORO_SECONDS;
         S.timers.pomodoro.totalSeconds  += POMODORO_SECONDS;
@@ -511,68 +524,53 @@
         S.timers.custom.weeklySeconds += used;
         S.timers.custom.totalSeconds  += used;
       }
-
-      // leaf + focus seconds
       S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
       S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
 
-      // render leaf immediately
-      const idx=S.placed-1;
-      const g=createLeafG(idx+1);
-      placeLeaf(g, anchorForIndex(idx));
-      leafLayer.appendChild(g);
+      // finalize the animated leaf: keep it as solid (remove animation class)
+      Array.from(leafLayer.children).forEach((node, idx)=>{
+        node.classList.toggle('animate-leaf', idx===S.placed); // next preview only
+      });
 
-      // update canopy fill, indicator, totals, and persist right away
       applyProgress();
       paintIndicator();
       renderTotals();
       save();
 
-      // if completed tree this week, mark in grid
+      // if completed week tree
       if(S.placed===S.leavesPerTree){
         S.weeklyComplete=true;
         S.grid.unshift({week:S.week,year:S.year,live:true,ts:Date.now()});
         if(S.grid.length>52) S.grid.pop();
         buildGrid();
+        // stop anim fully if week complete
+        Array.from(leafLayer.children).forEach(node=>node.classList.remove('animate-leaf'));
       }
 
-      // reset next session countdown for active timer
-      S.timers[timerId].secondsLeft = getSessionSecondsFor(timerId);
-      if(S.activeTimer===timerId){
-        clockEl.textContent = format(S.timers[timerId].secondsLeft);
-        startBtn.textContent = `Start ${format(S.timers[timerId].secondsLeft)}`;
-      }
-
-      // stop visuals
-      setRunning(timerId, false);
-      showRain(false);
-    } /* immediate DOM + state update on completion */ /* [web:325] */
-
-    // Start/reset flows
-    function startFlow(){
-      ensureWeekInit();
-      const timerId = S.activeTimer;
-      if(intervals[timerId]) return;
-
-      // guard secondsLeft bounds
-      if(S.timers[timerId].secondsLeft<=0 || S.timers[timerId].secondsLeft>24*3600){
-        S.timers[timerId].secondsLeft = getSessionSecondsFor(timerId);
-      }
-      clockEl.textContent = format(S.timers[timerId].secondsLeft);
-      startWallClock(timerId);
-    }
-    function resetTimer(){
-      const timerId = S.activeTimer; stopTimer(timerId); showRain(false);
-      // remove preview leaf if it somehow exists beyond placed count
-      const cur=leafLayer?.lastElementChild;
-      if(cur){
-        const n=(Number(cur.querySelector('text')?.textContent)||0);
-        if(n>S.placed) leafLayer.removeChild(cur);
-      }
+      // reset next session countdown
       S.timers[timerId].secondsLeft = getSessionSecondsFor(timerId);
       clockEl.textContent = format(S.timers[timerId].secondsLeft);
       startBtn.textContent = `Start ${format(S.timers[timerId].secondsLeft)}`;
+
+      setRunning(timerId, false);
+      showRain(false);
+    }
+
+    // Controls
+    function startFlow(){
+      if(S.timers[S.activeTimer].secondsLeft<=0 || S.timers[S.activeTimer].secondsLeft>24*3600){
+        S.timers[S.activeTimer].secondsLeft = getSessionSecondsFor(S.activeTimer);
+      }
+      clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft);
+      startWallClock(S.activeTimer);
+    }
+    function resetTimer(){
+      stopTimer(S.activeTimer); showRain(false);
+      Array.from(leafLayer.children).forEach(node=>node.classList.remove('animate-leaf'));
+      S.timers[S.activeTimer].secondsLeft = getSessionSecondsFor(S.activeTimer);
+      clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft);
+      startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft)}`;
       save();
     }
 
@@ -587,11 +585,10 @@
       S.timers[S.activeTimer].secondsLeft = sec;
       clockEl.textContent = format(sec);
       startBtn.textContent = `Start ${format(sec)}`;
-      updateWeeklyTarget();
       save();
-    }); /* [web:56] */
+    });
 
-    // Apply custom session
+    // Custom session
     applyCustomBtn.addEventListener('click', ()=>{
       const min = Math.max(1, Math.min(MAX_CUSTOM_MIN, Number(customMinutes.value)||DEFAULT_CUSTOM_MIN));
       const sec = Math.max(0, Math.min(59, Number(customSecondsEl.value)||0));
@@ -601,11 +598,10 @@
         clockEl.textContent = format(S.timers.custom.secondsLeft);
         startBtn.textContent = `Start ${format(S.timers.custom.secondsLeft)}`;
       }
-      updateWeeklyTarget();
       save();
     });
 
-    // LPT/target controls
+    // LPT controls
     const clamp = (v)=>Math.max(1, Math.min(200, Number(v)||1));
     lptInput.addEventListener('input', ()=>{
       const v = clamp(lptInput.value);
@@ -613,23 +609,18 @@
       weeklyTargetEl.textContent = `Weekly target = ${v*25} mins (as per LPT × 25)`;
     });
     lptSetBtn.addEventListener('click', ()=>{
-      ensureWeekInit();
       if(S.weeklyTargetLocked) return;
       const v = clamp(lptInput.value);
       S.leavesPerTree = v;
       S.weeklyTargetLocked = true;
       S.weeklyTargetSetValue = v;
-
-      // reset week progress for new target
-      S.placed = 0; S.weeklyLeaves = 0;
-      leafLayer.innerHTML = '';
-      applyProgress();
-      paintIndicator();
+      S.placed = 0; S.weeklyLeaves = 0; leafLayer.innerHTML='';
+      applyProgress(); paintIndicator();
       lptVal.textContent = String(S.leavesPerTree);
       save();
     });
 
-    // Country UI minimal
+    // Country UI minimal (no-op for logic)
     (function populateCountryList(){
       const COUNTRY_TZ_MAP = {"India":"Asia/Kolkata"};
       const datalist=document.getElementById('countryList'); if(!datalist) return;
@@ -637,8 +628,9 @@
       datalist.appendChild(frag);
     })();
 
-    // Modes UI (dropdown fix: attach single change listener; always loads state and re-renders)
+    // Modes UI (preset inputs hidden)
     function populateModesUI(){
+      const modeSelect = document.getElementById('modeSelect');
       if(modeSelect){
         const curVal = modeSelect.value;
         modeSelect.innerHTML='';
@@ -650,74 +642,49 @@
         });
         modeSelect.appendChild(frag);
         modeSelect.value = MODE_IDS.includes(currentMode)? currentMode : MODE_IDS[0];
+        if(curVal && MODE_IDS.includes(curVal)) modeSelect.value = curVal;
       }
       const editableRow = document.getElementById('editableNamesRow');
       if(editableRow){ editableRow.style.display = PRESET_MODES.includes(currentMode) ? 'none' : 'flex'; }
 
-      // bind editable inputs
       const pairs=[['subject1','subject1Input'],['subject2','subject2Input'],['subject3','subject3Input'],['user1','user1Input'],['user2','user2Input'],['user3','user3Input']];
       pairs.forEach(([key,id])=>{
         const inp=document.getElementById(id);
         if(!inp) return;
         inp.value = NAMES[key] || '';
-        const persist = ()=>{ NAMES[key]=inp.value; saveNames(); refreshModeName(); if(modeSelect) populateModesUI(); };
-        inp.oninput = persist;
-        inp.onblur = persist;
+        const persist = ()=>{ NAMES[key]=inp.value; saveNames(); refreshModeName(); populateModesUI(); };
+        inp.oninput = persist; inp.onblur = persist;
       });
       const saveNamesBtn=document.getElementById('saveNamesBtn');
       if(saveNamesBtn){
         saveNamesBtn.onclick = ()=>{
           pairs.forEach(([key,id])=>{ const inp=document.getElementById(id); if(inp) NAMES[key]=inp.value; });
-          saveNames(); refreshModeName(); if(modeSelect) populateModesUI();
+          saveNames(); refreshModeName(); populateModesUI();
           saveNamesBtn.textContent='Saved'; setTimeout(()=>saveNamesBtn.textContent='Save names', 900);
         };
       }
       refreshModeName();
     }
+    const modeSelectEl=document.getElementById('modeSelect');
+    modeSelectEl.addEventListener('change', (e)=>{
+      const toId = e.target.value;
+      if(!toId || toId===currentMode) return;
+      stopTimer('pomodoro'); stopTimer('custom');
+      currentMode = toId; G.selectedMode=toId; saveGlobal();
+      S = loadState(currentMode);
+      leafLayer.innerHTML='';
+      renderLeavesFromState();
+      S.activeTimer = S.activeTimer && S.timers[S.activeTimer] ? S.activeTimer : 'pomodoro';
+      timerTypeSel.value = S.activeTimer;
+      customTimeRow.style.display = (S.activeTimer==='custom') ? 'flex' : 'none';
+      const sec = getSessionSecondsFor(S.activeTimer);
+      S.timers[S.activeTimer].secondsLeft = sec;
+      clockEl.textContent = format(sec);
+      startBtn.textContent = `Start ${format(sec)}`;
+      applyProgress(); paintIndicator(); renderTotals(); buildGrid(); populateModesUI(); save();
+    }); /* change listener bound once */ /* [web:373] */
 
-    // Mode change listener (single binding)
-    if(modeSelect){
-      modeSelect.addEventListener('change', (e)=>{
-        const toId = e.target.value;
-        if(!toId || toId===currentMode) return;
-        // stop both timers, save selection, load state
-        stopTimer('pomodoro'); stopTimer('custom');
-        currentMode = toId; G.selectedMode=toId; saveGlobal();
-        S = loadState(currentMode);
-
-        // re-render leaves and HUD
-        leafLayer.innerHTML='';
-        renderLeavesFromState();
-        ensureWeekInit();
-        S.activeTimer = S.activeTimer && S.timers[S.activeTimer] ? S.activeTimer : 'pomodoro';
-        timerTypeSel.value = S.activeTimer;
-        customTimeRow.style.display = (S.activeTimer==='custom') ? 'flex' : 'none';
-
-        const sec = getSessionSecondsFor(S.activeTimer);
-        S.timers[S.activeTimer].secondsLeft = sec;
-        clockEl.textContent = format(sec);
-        startBtn.textContent = `Start ${format(sec)}`;
-
-        // HUD refresh
-        applyProgress();
-        paintIndicator();
-        renderTotals();
-        buildGrid();
-        populateModesUI();
-        save();
-      }); /* [web:56] */
-    }
-
-    function refreshModeName(){ if(modeNameEl) modeNameEl.textContent=(NAMES[currentMode]||DEFAULT_MODE_NAMES[currentMode]||currentMode).replace(/ mode$/i,''); }
-
-    // Week init/rollover minimal (kept simple)
-    function ensureWeekInit(){
-      const now=new Date();
-      const y=now.getUTCFullYear(); const start=new Date(Date.UTC(y,0,1));
-      const day=(Math.floor((now-start)/86400000)+start.getUTCDay()+6)%7;
-      const week=Math.floor((now-start)/86400000/7)+1;
-      if(S.week===undefined || S.year===undefined){ S.week=week; S.year=y; save(); }
-    }
+    function refreshModeName(){ const el=document.getElementById('modeName'); if(el) el.textContent=(NAMES[currentMode]||DEFAULT_MODE_NAMES[currentMode]||currentMode).replace(/ mode$/i,''); }
 
     // Rain
     function showRain(on){
@@ -734,7 +701,7 @@
         };
         mk(140,''); mk(110,' far');
       }
-    } /* falls only inside canvas due to overflow hidden + absolute inset */
+    }
 
     // Grid
     function buildGrid(){
@@ -749,32 +716,7 @@
       gridCount.textContent=`${Math.min(S.grid.length, 52)} / 52`;
     }
 
-    // Weekly target UI
-    function updateWeeklyTarget(){
-      if(S.activeTimer==='custom'){
-        weeklyTargetEl.style.display='none';
-        customWeekTotalEl.style.display='block';
-        const sec = S.timers.custom.weeklySeconds||0;
-        const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60);
-        customWeekTotalEl.textContent = `Total duration (week): ${h} hrs ${m} mins`;
-      }else{
-        customWeekTotalEl.style.display='none';
-        weeklyTargetEl.style.display='block';
-        const targetMins = (S.leavesPerTree||0) * 25;
-        weeklyTargetEl.textContent = `Weekly target = ${targetMins} mins (as per LPT × 25)`;
-      }
-    }
-
-    // Audio unlock noop for brevity
-    function ensureAudioUnlocked(){}
-
-    // Buttons
-    startBtn.addEventListener('click', ()=>{ ensureWeekInit(); ensureAudioUnlocked(); startFlow(); });
-    resetBtn.addEventListener('click', resetTimer);
-
-    // Init HUD/UI
     function initialRender(){
-      ensureWeekInit();
       renderLeavesFromState();
       const sec = getSessionSecondsFor(S.activeTimer||'pomodoro');
       S.activeTimer = S.activeTimer && S.timers[S.activeTimer] ? S.activeTimer : 'pomodoro';
@@ -795,6 +737,12 @@
       populateModesUI();
       save();
     }
+
+    // Buttons
+    startBtn.addEventListener('click', startFlow);
+    resetBtn.addEventListener('click', resetTimer);
+
+    // Kick off
     initialRender();
   </script>
 </body>
