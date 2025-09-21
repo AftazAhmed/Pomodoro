@@ -129,13 +129,14 @@
     .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-saplings); }
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:var(--z-tree); }
 
-    /* Rain overlay restored */
-    .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:block; overflow:hidden; }
-    .rainTop .drop{ position:absolute; top:-28px; width:1.0px; height:28px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 0.9s linear infinite; }
+    /* Rain overlay */
+    .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:none; overflow:hidden; }
+    .rainTop.active{ display:block; }
+    .rainTop .drop{ position:absolute; top:-28px; width:1.2px; height:34px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 0.9s linear infinite; }
     .rainTop .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
     @keyframes rainFall{ to{ transform:translateY(760px); } }
 
-    /* Leaf animations restored */
+    /* Leaf animations */
     @keyframes leafBlinkHue { 0%{ fill:#22c55e; } 50%{ fill:#15803d; } 100%{ fill:#22c55e; } }
     .leaf-live path.leafFill{ animation: leafBlinkHue 900ms linear infinite; }
     @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
@@ -210,7 +211,6 @@
           </select>
 
           <div id="customInputs" class="vstack" style="display:none;">
-            <!-- custom weekly lock texts removed earlier -->
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
               <input id="customMin" type="number" min="1" max="999" step="1" value="25" />
               <button id="applyCustomBtn" title="Apply custom minutes">Set</button>
@@ -236,11 +236,11 @@
 
           <div class="settings vstack" id="settingsBlock">
             <div class="numWrap" id="lptWrap">
-              <label for="lptInput" class="miniNote">Leaves per week (LPT)</label>
+              <label for="lptInput" class="miniNote" id="lptLabel">Leaves per week (LPT)</label>
               <div style="display:flex; gap:8px; align-items:center;">
                 <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
                 <button id="lptSetBtn">Set</button>
-                <span id="lptLockNote" class="miniNote">Editable once per week</span>
+                <span id="lptLockNote" class="miniNote hidden">Locked for this week</span>
               </div>
               <div class="pctRow">
                 <input id="pctRange" type="range" min="0" max="100" step="1" value="0" />
@@ -273,7 +273,7 @@
                     <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
                   </g>
                 </defs>
-                <!-- saplings omitted for brevity in comment; retained in DOM -->
+                <!-- 72 saplings -->
                 <g transform="translate(60 380)"><use href="#sapling"/></g><g transform="translate(120 380)"><use href="#sapling"/></g><g transform="translate(180 380)"><use href="#sapling"/></g><g transform="translate(240 380)"><use href="#sapling"/></g><g transform="translate(300 380)"><use href="#sapling"/></g><g transform="translate(360 380)"><use href="#sapling"/></g><g transform="translate(420 380)"><use href="#sapling"/></g><g transform="translate(480 380)"><use href="#sapling"/></g>
                 <g transform="translate(60 400)"><use href="#sapling"/></g><g transform="translate(120 400)"><use href="#sapling"/></g><g transform="translate(180 400)"><use href="#sapling"/></g><g transform="translate(240 400)"><use href="#sapling"/></g><g transform="translate(300 400)"><use href="#sapling"/></g><g transform="translate(360 400)"><use href="#sapling"/></g><g transform="translate(420 400)"><use href="#sapling"/></g><g transform="translate(480 400)"><use href="#sapling"/></g>
                 <g transform="translate(60 420)"><use href="#sapling"/></g><g transform="translate(120 420)"><use href="#sapling"/></g><g transform="translate(180 420)"><use href="#sapling"/></g><g transform="translate(240 420)"><use href="#sapling"/></g><g transform="translate(300 420)"><use href="#sapling"/></g><g transform="translate(360 420)"><use href="#sapling"/></g><g transform="translate(420 420)"><use href="#sapling"/></g><g transform="translate(480 420)"><use href="#sapling"/></g>
@@ -312,8 +312,10 @@
               </g>
             </svg>
 
-            <!-- Rain overlay restored -->
             <div id="rainTop" class="rainTop" aria-hidden="true"></div>
+
+            <!-- x / y label -->
+            <div id="xySky" class="skyOverlay" style="left:auto; right:14px; top:10px; display:none;">0 / 0 leaves</div>
 
           </div>
         </section>
@@ -392,30 +394,28 @@
   </div>
 
   <script>
-    // App keys and constants
-    const APP_KEY='pomodoroTree_singlefile_final_rain_leafanim';
+    const APP_KEY='pomodoroTree_singlefile_final_lptlock_xy';
     const GLOBAL_KEY=APP_KEY+'_global';
     const NAMES_KEY=APP_KEY+'_names';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simplex:'simplex' };
 
-    // Storage helpers
     const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
     const save=(k,v)=> localStorage.setItem(k, JSON.stringify(v));
 
-    // Global (selected mode and timer type)
     const G = load(GLOBAL_KEY, { selectedMode:'maths', timerType:TIMER_TYPES.pomodoro });
 
-    // Per mode+timer state
     const DEFAULT_TIMER_STATE = {
       leavesPerTree:9,
       placed:0,
       secondsLeft:25*60,
 
+      // LPT weekly lock fields
       weeklyTargetLocked:false,
       weeklyTargetSetValue:9,
       lockWeek:undefined,
       lockYear:undefined,
 
+      // Custom time lock kept but UI texts removed earlier
       customLocked:false,
       customLockWeek:undefined,
       customLockYear:undefined,
@@ -446,12 +446,10 @@
     const loadState=(mode,timer)=> load(modeTimerKey(mode,timer), DEFAULT_TIMER_STATE);
     const saveState=(mode,timer,S)=> save(modeTimerKey(mode,timer), S);
 
-    // Current selections
     let currentMode = G.selectedMode || 'maths';
     let currentTimerType = G.timerType || TIMER_TYPES.pomodoro;
     let S = loadState(currentMode, currentTimerType);
 
-    // DOM refs
     const $ = id => document.getElementById(id);
 
     const modeSelect = $('modeSelect');
@@ -473,13 +471,17 @@
     const lptWrap = $('lptWrap');
     const lptInput = $('lptInput');
     const lptSetBtn = $('lptSetBtn');
+    const lptLockNote = $('lptLockNote');
+    const lptLabel = $('lptLabel');
+    const lptHelper = $('lptHelper');
+
     const weeklyTargetEl = $('weeklyTarget');
 
     const pctRange = $('pctRange');
     const thePctValue = $('pctValue');
 
-    const xySky = $('xySky');
     const todaySky = $('todaySky');
+    const xySky = document.querySelectorAll('#xySky')[1] || document.querySelector('#xySky'); // second added below treeBox
 
     const rainTop = $('rainTop');
 
@@ -491,7 +493,6 @@
 
     const leafLayer = document.querySelector('#treeSVG #leafLayer');
 
-    // Names
     let CUSTOM_NAMES = load(NAMES_KEY,{});
     const DEFAULT_MODE_NAMES={
       exercise:'Exercise mode', cycling:'Cycling mode', digitalDetox:'Digital detox mode', bedTime:'Bed-time mode',
@@ -506,14 +507,11 @@
       const f=document.createDocumentFragment();
       for(const id of MODE_IDS){
         const o=document.createElement('option');
-        o.value=id;
-        o.textContent=nameFor(id);
+        o.value=id; o.textContent=nameFor(id);
         f.appendChild(o);
       }
-      modeSelect.innerHTML='';
-      modeSelect.appendChild(f);
-      modeSelect.value=currentMode;
-      refreshModeHeader();
+      modeSelect.innerHTML=''; modeSelect.appendChild(f);
+      modeSelect.value=currentMode; refreshModeHeader();
     }
 
     function refreshModeHeader(){
@@ -539,20 +537,14 @@
     modeSelect.addEventListener('change', ()=>{
       saveState(currentMode,currentTimerType,S);
       currentMode = modeSelect.value;
-      G.selectedMode = currentMode;
-      save(GLOBAL_KEY, G);
+      G.selectedMode = currentMode; save(GLOBAL_KEY, G);
       S = loadState(currentMode, currentTimerType);
       rolloverWeekIfNeeded();
       refreshModeHeader();
-      renderLeaves();
-      renderGrid();
-      updateModeVisibility();
-      renderStats();
-      setClockAndButtons();
-      hydrateInputsFromState();
+      renderLeaves(); renderGrid(); updateModeVisibility(); renderStats(); setClockAndButtons(); hydrateInputsFromState();
+      updateXY();
     });
 
-    // Country dropdown (UI only)
     const countrySearch=$('countrySearch'), countryList=$('countryList');
     const COUNTRY_TZ=[{name:'Japan',tz:'Asia/Tokyo'},{name:'India',tz:'Asia/Kolkata'},{name:'United Kingdom',tz:'Europe/London'},{name:'United States',tz:'America/New_York'},{name:'Canada',tz:'America/Toronto'},{name:'Australia',tz:'Australia/Sydney'},{name:'UAE',tz:'Asia/Dubai'},{name:'Bangladesh',tz:'Asia/Dhaka'},{name:'China',tz:'Asia/Shanghai'},{name:'Germany',tz:'Europe/Berlin'},{name:'France',tz:'Europe/Paris'},{name:'Brazil',tz:'America/Sao_Paulo'}].sort((a,b)=> a.name.localeCompare(b.name));
     function renderCountryList(filter=''){
@@ -567,11 +559,10 @@
     document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
     countryList.addEventListener('click', (e)=>{ const it=e.target.closest('.drop-item'); if(!it) return; countrySearch.value=it.getAttribute('data-name'); countryList.style.display='none'; });
 
-    // Sunday-based week
     function sundayWeekOf(date){
       const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       const yearStart = new Date(d.getFullYear(), 0, 1);
-      const startWeekday = yearStart.getDay(); // 0=Sun
+      const startWeekday = yearStart.getDay();
       const offset = (7 - startWeekday) % 7;
       const dayOfYear = Math.floor((d - yearStart)/86400000);
       const week = (dayOfYear < offset) ? 1 : Math.floor((dayOfYear - offset)/7) + 1;
@@ -580,7 +571,13 @@
 
     function rolloverWeekIfNeeded(){
       const {week,year}=sundayWeekOf(new Date());
-      if(S._week===undefined || S._year===undefined){ S._week=week; S._year=year; saveState(currentMode,currentTimerType,S); return; }
+      if(S._week===undefined || S._year===undefined){
+        S._week=week; S._year=year;
+        // reset lock on first init of week
+        S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
+        saveState(currentMode,currentTimerType,S);
+        return;
+      }
       if(S._week!==week || S._year!==year){
         const completed = S.placed>=S.leavesPerTree && S.leavesPerTree>0;
         S.grid.unshift({week:S._week,year:S._year,live:completed,ts:Date.now()});
@@ -590,6 +587,7 @@
         S.weeklyLeaves=0; S.weeklyFocusSeconds=0;
         S.placed=0; leafLayer.innerHTML='';
 
+        // unlock both LPT and custom at week rollover
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
         S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
 
@@ -600,7 +598,6 @@
       }
     }
 
-    // Grid (always 52 cells)
     function renderGrid(){
       treeGrid.innerHTML='';
       for(let i=0;i<52;i++){
@@ -614,7 +611,6 @@
       gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
     }
 
-    // Web Audio alarm (pleasant 10s)
     let audioCtx=null;
     function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); } }
     function playAlarm10s(){
@@ -638,7 +634,6 @@
       osc1.stop(now+dur); osc2.stop(now+dur); lfo.stop(now+dur);
     }
 
-    // Timer helpers and realtime engine
     let ticker=null, isRunning=false;
 
     function getSessionSeconds(){
@@ -686,7 +681,7 @@
       pctRange.style.background = `linear-gradient(90deg, var(--slider-green) ${pct}%, var(--slider-done) ${pct}%)`;
     }
 
-    // Canopy-safe leaf positions: strict inside, margin, no overlap
+    // Leaves placement rules
     const CANOPY_BOX = { cx:280, cy:250, rx:160, ry:90 };
     const LEAF_R = 22;
     const LEAF_MARGIN = 10;
@@ -699,7 +694,7 @@
       const ny=(y-CANOPY_BOX.cy)/(CANOPY_BOX.ry - LEAF_MARGIN);
       const inside = (nx*nx + ny*ny) <= 1.0;
       if(!inside) return false;
-      if(y > 272) return false;
+      if(y > 272) return false; // avoid trunk/branches area
       return true;
     }
 
@@ -732,7 +727,7 @@
       const g = [];
       for(let i=0;i<placed;i++){
         const p=pts[i];
-        g.push(`<g class="leaf-pop leaf-live"><path class="leafFill" d="M ${p.x} ${p.y} c 8 -10, 16 -10, 22 0 c -8 10, -16 10, -22 0 z" fill="#22c55e" stroke="#15803d" stroke-width="2"/></g>`);
+        g.push(`<g class="leaf-pop${isRunning?' leaf-live':''}"><path class="leafFill" d="M ${p.x} ${p.y} c 8 -10, 16 -10, 22 0 c -8 10, -16 10, -22 0 z" fill="#22c55e" stroke="#15803d" stroke-width="2"/></g>`);
       }
       leafLayer.innerHTML = g.join('');
       const canopyHeight = Math.round((placed/Math.max(1, max))*140);
@@ -742,14 +737,39 @@
     }
 
     function updateModeVisibility(){
+      const isSimplex = currentTimerType==='simplex';
+      // LPT hidden entirely in simplex
+      lptWrap.classList.toggle('hidden', isSimplex);
+      // x/y shown only for pomodoro/custom
+      xySky.style.display = isSimplex ? 'none' : 'block';
+      // minute inputs visibility per timer
       customInputs.style.display = currentTimerType==='custom' ? 'flex' : 'none';
-      simpleInputs.classList.toggle('hidden', currentTimerType!=='simplex');
+      simpleInputs.classList.toggle('hidden', !isSimplex);
+      // lock note only relevant in pomodoro/custom
+      lptLockNote.classList.toggle('hidden', isSimplex || !S.weeklyTargetLocked);
+      // disable LPT inputs when locked (pomodoro/custom)
+      lptInput.disabled = (!isSimplex) && S.weeklyTargetLocked;
+      lptSetBtn.disabled = (!isSimplex) && S.weeklyTargetLocked;
+      lptHelper.textContent = isSimplex ? 'Simplex mode does not track weekly leaves' : 'LPT = No. of timer sessions per week';
+      lptLabel.textContent = isSimplex ? 'Leaves per week (disabled in Simplex)' : 'Leaves per week (LPT)';
     }
 
     function renderStats(){
       renderWeeklyTarget();
       updateSliderFill();
       renderTodayDuration();
+      updateXY();
+    }
+
+    function updateXY(){
+      if(currentTimerType==='simplex'){
+        xySky.style.display='none';
+        return;
+      }
+      const x = Math.min(S.placed||0, S.leavesPerTree||0);
+      const y = Math.max(S.leavesPerTree||0, 0);
+      xySky.textContent = `${x} / ${y} leaves`;
+      xySky.style.display='block';
     }
 
     function renderAll(){
@@ -759,7 +779,35 @@
       setClockAndButtons();
     }
 
-    // Timer engine
+    // Rain control (only when running; denser)
+    let rainRAF=null;
+    function spawnRain(count){
+      rainTop.innerHTML='';
+      const rect = rainTop.getBoundingClientRect();
+      const width = rect.width || 560;
+      for(let i=0;i<count;i++){
+        const d=document.createElement('div');
+        d.className='drop'+(Math.random()<0.45?' far':'');
+        d.style.left = Math.round(Math.random()*width)+'px';
+        d.style.animationDelay = (Math.random()*1.2)+'s';
+        d.style.height = (22+Math.random()*28)+'px';
+        rainTop.appendChild(d);
+      }
+    }
+    function startRain(){
+      if(rainRAF) return;
+      rainTop.classList.add('active');
+      const base = Math.max(200, Math.floor((rainTop.clientWidth||560)/2.5));
+      spawnRain(base);
+      const loop=()=>{ rainRAF = requestAnimationFrame(()=>{ if(!isRunning){ stopRain(); return; } if(Math.random()<0.02){ spawnRain(base); } loop(); }); };
+      loop();
+    }
+    function stopRain(){
+      if(rainRAF){ cancelAnimationFrame(rainRAF); rainRAF=null; }
+      rainTop.classList.remove('active');
+      rainTop.innerHTML='';
+    }
+
     function startTimer(){
       if(isRunning) return;
       isRunning = true;
@@ -771,8 +819,10 @@
       }
       S.lastRealTS = now;
       saveState(currentMode,currentTimerType,S);
-      setClockAndButtons();
       ensureAudio();
+      renderLeaves();
+      startRain();
+      setClockAndButtons();
 
       ticker = setInterval(()=>{
         const now = Date.now();
@@ -786,6 +836,7 @@
           S.todayLeafCount = (S.todayLeafCount||0)+1;
           S.placed = Math.min((S.placed||0)+1, S.leavesPerTree||0);
           saveState(currentMode,currentTimerType,S);
+          stopRain();
           renderAll();
           try{ playAlarm10s(); }catch{}
         }
@@ -798,19 +849,36 @@
       S.targetEndTS=null; S.lastRealTS=null;
       S.secondsLeft = getSessionSeconds();
       saveState(currentMode,currentTimerType,S);
+      stopRain();
+      renderLeaves();
       setClockAndButtons();
     }
 
-    // Apply/Set helpers
     function clampInt(v, min, max){ v = Math.floor(Number(v)||0); return Math.min(max, Math.max(min, v)); }
 
+    // Enforce weekly lock for LPT in pomodoro/custom; hide in simplex
     function applyLeavesPerWeek(newLpt){
+      const {week,year}=sundayWeekOf(new Date());
+      const isSimplex = currentTimerType==='simplex';
+      if(isSimplex){
+        return; // not applicable
+      }
+      if(S.weeklyTargetLocked && S.lockWeek===week && S.lockYear===year){
+        updateModeVisibility();
+        return;
+      }
       S.leavesPerTree = newLpt;
       S.weeklyTargetSetValue = newLpt;
+      // lock now for this week
+      S.weeklyTargetLocked = true;
+      S.lockWeek = week;
+      S.lockYear = year;
       saveState(currentMode, currentTimerType, S);
       renderWeeklyTarget();
       updateSliderFill();
       renderLeaves();
+      updateModeVisibility();
+      updateXY();
     }
 
     function applyCustomMinutes(min){
@@ -837,7 +905,6 @@
       simpleMin.value = String(Math.round((S.simpleSeconds||1500)/60));
     }
 
-    // Wire controls
     startBtn.addEventListener('click', (e)=>{ e.preventDefault(); startTimer(); });
     resetBtn.addEventListener('click', (e)=>{ e.preventDefault(); resetTimer(); });
 
@@ -865,8 +932,7 @@
     timerTypeSelect.addEventListener('change', ()=>{
       saveState(currentMode,currentTimerType,S);
       currentTimerType = timerTypeSelect.value;
-      G.timerType = currentTimerType;
-      save(GLOBAL_KEY, G);
+      G.timerType = currentTimerType; save(GLOBAL_KEY, G);
       S = loadState(currentMode, currentTimerType);
       rolloverWeekIfNeeded();
       updateModeVisibility();
@@ -874,7 +940,6 @@
       renderAll();
     });
 
-    // Tabs
     const tabs = document.getElementById('tabs');
     tabs.addEventListener('click', (e)=>{
       const t = e.target.closest('.tab'); if(!t) return;
@@ -885,31 +950,15 @@
       document.getElementById(panel).style.display='flex';
     });
 
-    // Simple rain generator (restored)
-    function spawnRain(count=80){
-      rainTop.innerHTML='';
-      const rect = rainTop.getBoundingClientRect();
-      const width = rect.width || 560;
-      for(let i=0;i<count;i++){
-        const d=document.createElement('div');
-        d.className='drop'+(Math.random()<0.4?' far':'');
-        d.style.left = Math.round(Math.random()*width)+'px';
-        d.style.animationDelay = (Math.random()*0.9)+'s';
-        d.style.height = (20+Math.random()*24)+'px';
-        rainTop.appendChild(d);
-      }
-    }
-
-    // Initial boot
     (function init(){
       populateModeSelect();
       timerTypeSelect.value=currentTimerType;
+      rolloverWeekIfNeeded();
       updateModeVisibility();
       hydrateInputsFromState();
-      rolloverWeekIfNeeded();
       renderAll();
-      spawnRain(90); // bring back rain
-      window.addEventListener('resize', ()=> spawnRain(90) );
+      updateXY();
+      window.addEventListener('resize', ()=>{ if(isRunning) startRain(); });
     })();
   </script>
 </body>
