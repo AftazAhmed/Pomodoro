@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Study Mode</title>
+  <title>Pomodoro Tree — Country TZ + Dual Timers</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G91N05XLB3"></script>
@@ -25,12 +25,11 @@
       --btn-success:#16a34a; --btn-success-hover:#0f6a33;
       --btn-danger:#ef4444; --btn-danger-hover:#b91c1c;
       --btn-neutral:#334155; --btn-neutral-hover:#1f2937; --btn-focus:#0ea5e9;
-      --progress-green:#16a34a; --progress-red:#ef4444; --track-bg:#e6efff;
-      --xy-font:28.35px;
 
-      /* soil colors for grass band only */
       --soil-top:#e8d0b0;
       --soil-deep:#caa879;
+      --progress-green:#16a34a;
+      --progress-red:#ef4444;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
@@ -42,10 +41,9 @@
     .brand{ gap:10px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,#f0f6ff,#ffffff); border:1px solid var(--line); }
     .modeTag{ font-weight:800; color:#14563a; }
 
-    /* Timer and Tree at top */
     .topStack{ display:flex; flex-direction:column; gap:12px; margin-top:12px; }
 
-    .timerCard{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow); flex-direction:column; }
+    .timerCard{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow); flex-direction:column; }
     .time{ font-size:112px; font-weight:800; color:#0e2a70; text-align:center; }
     .controls{ gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
     button{
@@ -66,16 +64,14 @@
     #lptSetBtn:hover{ background:var(--btn-primary-hover); }
 
     .settings{ gap:12px; margin-top:10px; flex-wrap:wrap; justify-content:center; color:var(--dim); flex-direction:column; align-items:center; }
-    input[type=range][readonly]{ pointer-events:none; }
     .numWrap{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
 
     .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; font-size:10px; line-height:1.25; text-align:center; min-height:22px; display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; order:-1; width:100%; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
-    .treePanel{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
+    .treePanel{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
-    /* Only green band -> soil */
     .sky{
       position:absolute; inset:0;
       background:linear-gradient(180deg,
@@ -84,8 +80,6 @@
         var(--soil-top) 62%,
         var(--soil-deep) 100%);
     }
-
-    /* percent label removed */
     .xyLabel{ position:absolute; left:16px; top:14px; font:900 28.35px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
     .todaySky{ position:absolute; left:16px; top:52px; font:800 21px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
@@ -100,22 +94,21 @@
     .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
     @keyframes rainFall{ to{ transform:translateY(620px); } }
 
-    /* Timezone bar (below timer/tree) */
     .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; }
     .tzLeft{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     .tzLeft label{ color:#4a6894; font-weight:800; }
-    .tzLeft select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); background:#fff; color:#0b1a33; font-weight:700; min-width:260px; }
+    .countryWrap{ display:flex; gap:8px; align-items:center; }
+    .countryWrap input{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:700; min-width:260px; }
+
     .stats{ gap:10px; flex-wrap:wrap; }
     .chip{ gap:8px; padding:8px 12px; border-radius:999px; background:#fff; border:1px solid var(--line); color:#4a6894; }
 
-    /* Tabs after timezone */
     .tabsWrap{ margin:12px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; }
     .tabs{ gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); }
     .tab{ gap:8px; padding:8px 12px; border-radius:999px; cursor:pointer; color:#4a6894; }
     .tab.active{ color:#0b1a33; background:linear-gradient(180deg,#e6f1ff,#ffffff); }
     .panelCard{ display:none; margin-top:12px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; gap:10px; flex-wrap:wrap; }
 
-    /* Modes panel inline editors */
     .modesBar{ gap:10px; padding:12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin:0; width:100%; }
     .modesBar select{ padding:8px 10px; border-radius:12px; border:1px solid var(--line); font-weight:800; color:#0b1a33; min-width:260px; }
     .modeEditRow{ gap:8px; flex-wrap:wrap; }
@@ -131,16 +124,21 @@
     .num{ position:relative; z-index:1; font-size:18px; color:#4e6ea0; }
     .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:26px; z-index:2; pointer-events:none; }
     .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
+
+    .indicator{
+      display:flex; width:260px; height:12px; border-radius:999px; overflow:hidden; border:1px solid var(--line); background:#fff;
+    }
+    .indicator .done{ background:var(--progress-green); height:100%; }
+    .indicator .rem{ background:var(--progress-red); height:100%; }
   </style>
 </head>
-<body data-mode="Study">
+<body>
   <div class="wrap">
     <header>
       <div class="brand"><span style="font-weight:800;">🌳</span><h1>Pomodoro Tree</h1></div>
       <div class="modeTag">Mode: <span id="modeName">Study</span></div>
     </header>
 
-    <!-- TOP: Timer and Tree directly under header -->
     <div class="topStack">
       <section class="timerCard">
         <div class="time" id="clock">25:00</div>
@@ -149,7 +147,6 @@
           <button id="resetBtn">Reset</button>
         </div>
 
-        <!-- Timer switch + settings -->
         <div class="settings">
           <div class="numWrap" style="order:-2;">
             <label class="miniNote" for="timerType">Timer type</label>
@@ -177,15 +174,15 @@
             <div class="miniNote" id="lptNote" style="font-size:12px;">LPT = No. of timer session per week</div>
           </div>
 
-          <div class="progressWrap" id="progressBlock" style="order:2;">
-            <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
+          <div class="numWrap" style="order:2;">
+            <div class="indicator" aria-label="Progress">
+              <div id="indDone" class="done" style="width:0%"></div>
+              <div id="indRem" class="rem" style="width:100%"></div>
+            </div>
             <span id="lptVal">9</span>
           </div>
 
-          <!-- Total duration (week) shows only in Custom mode -->
           <div id="customWeekTotal" class="miniNote" style="display:none; order:2;">Total duration (week): 0 hrs 0 mins</div>
-
-          <!-- Weekly target visible only for Pomodoro mode (minutes calculated from LPT) -->
           <div id="weeklyTarget" class="miniNote" style="order:3;">Weekly target = 9 mins (as per LPT)</div>
         </div>
       </section>
@@ -229,11 +226,14 @@
       </section>
     </div>
 
-    <!-- BELOW: Timezone bar -->
     <div class="tzBar">
       <div class="tzLeft">
-        <label for="tzSelect">Time zone</label>
-        <select id="tzSelect" aria-label="Time zone"></select>
+        <div class="countryWrap">
+          <label for="countryInput">Country</label>
+          <input id="countryInput" list="countryList" placeholder="Type country (e.g., India)" />
+          <datalist id="countryList"></datalist>
+          <span id="tzLabel" class="miniNote">TZ: Asia/Kolkata</span>
+        </div>
       </div>
       <div class="stats">
         <div class="chip" id="todayChip"><strong>Pomodoro hrs (week)</strong>: 0 hrs 0 mins</div>
@@ -241,7 +241,6 @@
       </div>
     </div>
 
-    <!-- Tabs below timezone -->
     <section class="tabsWrap">
       <div class="tabs">
         <div class="tab" data-tab="subPanel">Subscription</div>
@@ -297,18 +296,72 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_SoilFix_V2';
+    const APP_KEY = 'pomodoroTree_CountryTZ_DualTimers_V2';
     const NAMES_KEY = APP_KEY + '_customNames';
     const GLOBAL_KEY = APP_KEY + '_global';
     const svgns='http://www.w3.org/2000/svg';
 
-    // One leaf = 1 minute for legacy LPT math
     const LEAF_SECONDS=60;
-
-    // Timer selection
     const POMODORO_SECONDS = 25*60;
     const DEFAULT_CUSTOM_MIN = 20;
     const MAX_CUSTOM_MIN = 180;
+
+    // One canonical tz per country (minimal starter set). [web:118][web:128]
+    const COUNTRY_TZ_MAP = {
+      "India":"Asia/Kolkata",
+      "United States":"America/New_York",
+      "United Kingdom":"Europe/London",
+      "Canada":"America/Toronto",
+      "Australia":"Australia/Sydney",
+      "Japan":"Asia/Tokyo",
+      "China":"Asia/Shanghai",
+      "Russia":"Europe/Moscow",
+      "Germany":"Europe/Berlin",
+      "France":"Europe/Paris",
+      "Brazil":"America/Sao_Paulo",
+      "South Africa":"Africa/Johannesburg",
+      "UAE":"Asia/Dubai",
+      "Saudi Arabia":"Asia/Riyadh",
+      "Bangladesh":"Asia/Dhaka",
+      "Nepal":"Asia/Kathmandu",
+      "Sri Lanka":"Asia/Colombo",
+      "Pakistan":"Asia/Karachi",
+      "Indonesia":"Asia/Jakarta",
+      "Mexico":"America/Mexico_City",
+      "Singapore":"Asia/Singapore",
+      "Malaysia":"Asia/Kuala_Lumpur",
+      "Thailand":"Asia/Bangkok",
+      "Vietnam":"Asia/Ho_Chi_Minh",
+      "Philippines":"Asia/Manila",
+      "New Zealand":"Pacific/Auckland",
+      "Nigeria":"Africa/Lagos",
+      "Kenya":"Africa/Nairobi",
+      "Turkey":"Europe/Istanbul",
+      "Spain":"Europe/Madrid",
+      "Italy":"Europe/Rome",
+      "Netherlands":"Europe/Amsterdam",
+      "Portugal":"Europe/Lisbon",
+      "Norway":"Europe/Oslo",
+      "Sweden":"Europe/Stockholm",
+      "Finland":"Europe/Helsinki",
+      "Poland":"Europe/Warsaw",
+      "Czechia":"Europe/Prague",
+      "Switzerland":"Europe/Zurich",
+      "Argentina":"America/Argentina/Buenos_Aires",
+      "Chile":"America/Santiago",
+      "Peru":"America/Lima",
+      "Colombia":"America/Bogota",
+      "Egypt":"Africa/Cairo",
+      "Israel":"Asia/Jerusalem",
+      "Iran":"Asia/Tehran",
+      "Iraq":"Asia/Baghdad",
+      "Qatar":"Asia/Qatar",
+      "Kuwait":"Asia/Kuwait",
+      "Oman":"Asia/Muscat",
+      "Myanmar":"Asia/Yangon",
+      "Korea, South":"Asia/Seoul",
+      "Korea":"Asia/Seoul"
+    };
 
     const DEFAULT_MODE_NAMES = {
       'exercise': 'Exercise mode',
@@ -325,32 +378,31 @@
       'user2': 'User 2 mode',
       'user3': 'User 3 mode'
     };
-    const EDITABLE_KEYS = ['subject1','subject2','subject3','user1','user2','user3'];
 
     const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}');
-    const G = Object.assign({ timeZone:'UTC', selectedMode:'maths' }, loadGlobal());
+    const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India' }, loadGlobal());
 
-    const loadNames = () => JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
-    const CUSTOM_NAMES = Object.assign({}, loadNames());
+    const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
 
     function saveGlobal(){ localStorage.setItem(GLOBAL_KEY, JSON.stringify(G)); }
-    function saveNames(){ localStorage.setItem(NAMES_KEY, JSON.stringify(CUSTOM_NAMES)); }
+    function saveNames(){ localStorage.setItem(NAMES_KEY, JSON.stringify(NAMES)); }
 
     const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
     const DEFAULT_STATE = {
-      leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS, running:false,
+      leavesPerTree:9, placed:0,
+      timers: {
+        pomodoro: { secondsLeft:POMODORO_SECONDS, running:false, weeklyCustomSeconds:0 },
+        custom:   { secondsLeft:DEFAULT_CUSTOM_MIN*60, running:false, weeklyCustomSeconds:0 }
+      },
+      activeTimer:'pomodoro',
       leavesTotal:0, leavesToday:0, weeklyLeaves:0,
       weeklyFocusSeconds:0, totalFocusSeconds:0,
-      weeklyCustomSeconds:0, // NEW: actual seconds accumulated this ISO week for Custom mode
       grid:[],
       subActive:true, plan:'Free',
       week:undefined, year:undefined,
       weeklyComplete:false,
       weeklyTargetLocked:false, weeklyTargetSetValue:9,
       freeWeeksCap:4,
-
-      // timer selection persisted
-      timerType:'pomodoro',
       customSeconds: DEFAULT_CUSTOM_MIN*60
     };
     function loadState(modeId){
@@ -358,33 +410,29 @@
       try{ return Object.assign({}, DEFAULT_STATE, raw? JSON.parse(raw): {}); }
       catch{ return Object.assign({}, DEFAULT_STATE); }
     }
-    function saveState(modeId, S){
-      localStorage.setItem(modeKey(modeId), JSON.stringify(S));
-    }
+    function saveState(modeId, S){ localStorage.setItem(modeKey(modeId), JSON.stringify(S)); }
 
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
 
-    const intervals = {}; // modeId -> interval handle
-    function clearModeInterval(modeId){
-      if(intervals[modeId]){ clearInterval(intervals[modeId]); intervals[modeId]=null; }
-    }
+    const intervals = { pomodoro:null, custom:null };
 
     const el=id=>document.getElementById(id);
     const clockEl=el('clock');
     const startBtn=el('startBtn');
     const resetBtn=el('resetBtn');
 
-    // Timer switch controls
     const timerTypeSel = el('timerType');
     const customTimeRow = el('customTimeRow');
     const customMinutes = el('customMinutes');
-    const customSeconds = el('customSeconds');
+    const customSecondsEl = el('customSeconds');
     const applyCustomBtn = el('applyCustomBtn');
 
-    const lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptRange=el('lptRange'), lptVal=el('lptVal'), lockHint=el('lockHint');
+    const lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptVal=el('lptVal'), lockHint=el('lockHint');
     const weeklyTargetEl=el('weeklyTarget'), lptNoteEl=el('lptNote');
     const customWeekTotalEl=el('customWeekTotal');
+
+    const indDone=el('indDone'), indRem=el('indRem');
 
     const todayChip=el('todayChip');
     const totalTimeChip=el('totalTimeChip');
@@ -396,6 +444,10 @@
     const fillRect=document.getElementById('fillRect');
     const todaySky=el('todaySky');
     const modeNameEl=document.getElementById('modeName');
+
+    const countryInput = el('countryInput');
+    const countryList = el('countryList');
+    const tzLabel = el('tzLabel');
 
     const tabsContainer=document.querySelector('.tabs');
     tabsContainer?.addEventListener('click', (e)=>{
@@ -461,39 +513,32 @@
       save();
     }
 
-    // Accurate, drift-resistant countdown using wall clock [web:96][web:78]
-    function startSessionWallClock(){
-      const thisMode = currentMode;
-      const targetEpoch = Date.now() + (S.secondsLeft * 1000);
-
+    function startWallClock(timerId){
+      stopTimer(timerId);
+      const tState = S.timers[timerId];
+      const targetEpoch = Date.now() + (tState.secondsLeft * 1000);
       const tick = ()=>{
-        if(thisMode !== currentMode){ clearModeInterval(thisMode); return; }
         const remainingMs = Math.max(0, targetEpoch - Date.now());
-        S.secondsLeft = Math.ceil(remainingMs / 1000);
-        clockEl.textContent = format(S.secondsLeft);
+        tState.secondsLeft = Math.ceil(remainingMs / 1000);
+        if(S.activeTimer===timerId) clockEl.textContent = format(tState.secondsLeft);
         if (remainingMs <= 0) {
-          clearModeInterval(thisMode);
-          onSessionComplete();
+          stopTimer(timerId);
+          onSessionComplete(timerId);
         }
       };
-
-      const onVisibility=()=>{ if(document.visibilityState==='visible' && intervals[thisMode]) tick(); };
-
-      setRunning(true);
+      setRunning(timerId, true);
       tick();
-      clearModeInterval(thisMode);
-      intervals[thisMode] = setInterval(tick, 250);
-      document.addEventListener('visibilitychange', onVisibility, { passive:true });
-
-      startBtn._cleanupVisibility = ()=>document.removeEventListener('visibilitychange', onVisibility);
+      intervals[timerId] = setInterval(tick, 250);
+    }
+    function stopTimer(timerId){
+      if(intervals[timerId]){ clearInterval(intervals[timerId]); intervals[timerId]=null; }
+      setRunning(timerId, false);
     }
 
-    function getSessionSeconds(){
-      return S.timerType==='custom' ? Math.max(1, S.customSeconds|0) : POMODORO_SECONDS;
-    }
+    function activeSeconds(){ return S.timers[S.activeTimer].secondsLeft; }
     function setClockToSession(){
-      const sec = getSessionSeconds();
-      S.secondsLeft = sec;
+      const sec = (S.activeTimer==='custom') ? Math.max(1,S.customSeconds|0) : POMODORO_SECONDS;
+      S.timers[S.activeTimer].secondsLeft = sec;
       clockEl.textContent = format(sec);
       startBtn.textContent = `Start ${format(sec)}`;
     }
@@ -506,9 +551,13 @@
         const completed = (S.placed>=S.leavesPerTree && S.leavesPerTree>0);
         unshiftWeekToGrid(S.week, S.year, completed);
         S.week=wk; S.year=yr;
-        S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0; S.weeklyCustomSeconds=0;
+        S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0;
+        S.timers.pomodoro.weeklyCustomSeconds=0;
+        S.timers.custom.weeklyCustomSeconds=0;
         S.weeklyComplete=false; S.weeklyTargetLocked=false; S.weeklyTargetSetValue=S.leavesPerTree;
-        S.placed=0; S.secondsLeft=getSessionSeconds();
+        S.placed=0;
+        S.timers.pomodoro.secondsLeft=POMODORO_SECONDS;
+        S.timers.custom.secondsLeft=S.customSeconds;
         const layer=document.querySelector('#treeSVG #leafLayer');
         if(layer) layer.innerHTML='';
         save();
@@ -552,58 +601,45 @@
       }
     }
 
-    // Natural saplings v2
     function buildSaplings(){
       const g=document.getElementById('saplings');
       if(!g) return;
       g.innerHTML='';
-      const cols=7, rows=7;
+      const cols=8, rows=6;
       const startX=28, endX=532;
-      const soilYStart=560*0.62 + 18;
-      const rowGap=26;
+      const soilYStart=560*0.62 + 22;
+      const rowGap=28;
       const rnd=(a,b)=>a+Math.random()*(b-a);
 
       for(let r=0;r<rows;r++){
         for(let c=0;c<cols;c++){
-          const x = Math.round(startX + c * ((endX - startX)/(cols-1)) + rnd(-6,6));
-          const y = Math.round(soilYStart + r*rowGap + rnd(-3,3));
-          const h = rnd(12,24);
-          const bend = rnd(-5,5);
-          const yTop = y - h;
+          const x = Math.round(startX + c * ((endX - startX)/(cols-1)) + rnd(-4,4));
+          const y = Math.round(soilYStart + r*rowGap + rnd(-2,2));
+          const stemH = rnd(10,18);
+          const yTop = y - stemH;
 
           const stem = document.createElementNS(svgns,'path');
-          stem.setAttribute('d', `M ${x} ${y} Q ${x + bend} ${y - h*0.5}, ${x} ${yTop}`);
+          stem.setAttribute('d', `M ${x} ${y} L ${x} ${yTop}`);
           stem.setAttribute('stroke','#2f6f3a');
           stem.setAttribute('stroke-width','2');
           stem.setAttribute('fill','none');
           stem.setAttribute('stroke-linecap','round');
 
-          const leafL = document.createElementNS(svgns,'path');
-          leafL.setAttribute('d', `M ${x} ${yTop} q -7 -3, -11 -8`);
-          leafL.setAttribute('stroke','#2f6f3a');
-          leafL.setAttribute('stroke-width','2');
-          leafL.setAttribute('fill','none');
-          leafL.setAttribute('stroke-linecap','round');
-          leafL.setAttribute('stroke-linejoin','round');
-
-          const leafR = document.createElementNS(svgns,'path');
-          leafR.setAttribute('d', `M ${x} ${yTop} q 7 -3, 11 -8`);
-          leafR.setAttribute('stroke','#2f6f3a');
-          leafR.setAttribute('stroke-width','2');
-          leafR.setAttribute('fill','none');
-          leafR.setAttribute('stroke-linecap','round');
-          leafR.setAttribute('stroke-linejoin','round');
-
-          const bud = document.createElementNS(svgns,'circle');
-          bud.setAttribute('cx', String(x + rnd(-1.5,1.5)));
-          bud.setAttribute('cy', String(yTop + rnd(-1.5,1.5)));
-          bud.setAttribute('r', '1.6');
-          bud.setAttribute('fill', '#3a6b45');
+          // tri-leaf (left/up/right)
+          const L = document.createElementNS(svgns,'path');
+          L.setAttribute('d', `M ${x} ${yTop} q -6 -2, -10 -7`);
+          L.setAttribute('stroke','#2f6f3a'); L.setAttribute('stroke-width','2'); L.setAttribute('fill','none'); L.setAttribute('stroke-linecap','round');
+          const U = document.createElementNS(svgns,'path');
+          U.setAttribute('d', `M ${x} ${yTop} q 0 -7, 0 -12`);
+          U.setAttribute('stroke','#2f6f3a'); U.setAttribute('stroke-width','2'); U.setAttribute('fill','none'); U.setAttribute('stroke-linecap','round');
+          const R = document.createElementNS(svgns,'path');
+          R.setAttribute('d', `M ${x} ${yTop} q 6 -2, 10 -7`);
+          R.setAttribute('stroke','#2f6f3a'); R.setAttribute('stroke-width','2'); R.setAttribute('fill','none'); R.setAttribute('stroke-linecap','round');
 
           g.appendChild(stem);
-          g.appendChild(leafL);
-          g.appendChild(leafR);
-          g.appendChild(bud);
+          g.appendChild(L);
+          g.appendChild(U);
+          g.appendChild(R);
         }
       }
     }
@@ -627,22 +663,21 @@
     }
 
     function updateWeeklyTarget(){
-      // Hide weekly target in custom mode; show minutes in Pomodoro mode
-      if(S.timerType==='custom'){
+      if(S.activeTimer==='custom'){
         weeklyTargetEl.style.display='none';
         customWeekTotalEl.style.display='block';
-        // compute custom week total display
-        const h=Math.floor((S.weeklyCustomSeconds||0)/3600);
-        const m=Math.floor(((S.weeklyCustomSeconds||0)%3600)/60);
+        const sec = S.timers.custom.weeklyCustomSeconds||0;
+        const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60);
         customWeekTotalEl.textContent = `Total duration (week): ${h} hrs ${m} mins`;
       }else{
         customWeekTotalEl.style.display='none';
         weeklyTargetEl.style.display='block';
-        const mins = S.leavesPerTree; // legacy statement per old app
+        const mins = S.leavesPerTree;
         weeklyTargetEl.textContent = `Weekly target = ${mins} mins (as per LPT)`;
       }
       lptNoteEl.textContent = 'LPT = No. of timer session per week';
     }
+
     function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
     function minutesForLeaves(n){ return n; }
 
@@ -654,33 +689,37 @@
       document.getElementById('todaySky').textContent = `Leaves (today) = ${S.leavesToday||0} (${minsToday} mins)`;
     }
 
-    function paintProgressUI(){
+    function paintIndicator(){
       const total = Math.max(1, Number(S.leavesPerTree)||1);
       const done = Math.max(0, Math.min(S.placed, total));
       const pct = (done/total)*100;
-      lptRange.style.background = `linear-gradient(90deg, #16a34a ${pct}%, #ef4444 ${pct}%)`;
+      indDone.style.width = pct + '%';
+      indRem.style.width = (100 - pct) + '%';
       xyLabel.textContent = `${done}/${total} of leaves completed`;
     }
+
     function format(sec){
       const m=String(Math.floor(sec/60)).padStart(2,'0');
       const s=String(sec%60).padStart(2,'0');
       return `${m}:${s}`;
     }
 
-    function setRunning(on){
-      S.running=on;
-      const canopyOutline = document.getElementById('canopyOutline');
-      if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
-      const layer=document.querySelector('#treeSVG #leafLayer');
-      const cur=layer?.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
-      startBtn.textContent = on ? 'Running…' : `Start ${format(getSessionSeconds())}`;
-      startBtn.disabled = !!on;
-      showRain(!!on);
+    function setRunning(timerId, on){
+      S.timers[timerId].running = on;
+      if(S.activeTimer===timerId){
+        startBtn.textContent = on ? 'Running…' : `Start ${format(S.timers[timerId].secondsLeft)}`;
+        startBtn.disabled = !!on;
+        const canopyOutline = document.getElementById('canopyOutline');
+        if(canopyOutline) canopyOutline.classList.toggle('blink-canopy', !!on);
+        const layer=document.querySelector('#treeSVG #leafLayer');
+        const cur=layer?.lastElementChild; if(cur){ cur.querySelector('path').classList.toggle('blink-leaf', !!on); }
+        showRain(!!on);
+      }
       save();
     }
 
     function renderHUD(){
-      clockEl.textContent = String(format(S.secondsLeft));
+      clockEl.textContent = String(format(S.timers[S.activeTimer].secondsLeft));
       buildGrid();
       buildSaplings();
       lptVal.textContent=String(S.leavesPerTree);
@@ -692,20 +731,10 @@
         : 'Editable once per ISO week';
       applyProgress();
       updateWeeklyTarget();
-      paintProgressUI();
+      paintIndicator();
       renderTotals();
-      populateTimeZonesIfNeeded();
       populateModesUI();
-
-      // Sync timer switch UI and button text
-      timerTypeSel.value = S.timerType || 'pomodoro';
-      customTimeRow.style.display = (S.timerType==='custom') ? 'flex' : 'none';
-      const mins = Math.floor((S.customSeconds||DEFAULT_CUSTOM_MIN*60)/60);
-      const secs = (S.customSeconds||DEFAULT_CUSTOM_MIN*60)%60;
-      customMinutes.value = Math.min(MAX_CUSTOM_MIN, Math.max(1, mins));
-      customSeconds.value = Math.min(59, Math.max(0, secs));
-      startBtn.textContent = `Start ${format(getSessionSeconds())}`;
-
+      updateCountryUI();
       save();
     }
 
@@ -725,12 +754,11 @@
       }
     }
 
-    function onSessionComplete(){
+    function onSessionComplete(timerId){
       playAlarm10s();
 
-      // weekly totals shown in chips (legacy minute leaf) and custom-week seconds accumulator
-      if(S.timerType==='custom'){
-        S.weeklyCustomSeconds = (S.weeklyCustomSeconds||0) + getSessionSeconds();
+      if(timerId==='custom'){
+        S.timers.custom.weeklyCustomSeconds = (S.timers.custom.weeklyCustomSeconds||0) + (S.customSeconds||DEFAULT_CUSTOM_MIN*60);
       }
       S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
@@ -738,7 +766,7 @@
       S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
 
       applyProgress();
-      setRunning(false);
+      setRunning(timerId, false);
       showRain(false);
 
       if(S.placed===S.leavesPerTree){
@@ -748,18 +776,19 @@
           if(S.grid.length>52) S.grid.pop();
         }
       }else{
-        S.secondsLeft=getSessionSeconds();
+        if(timerId==='pomodoro'){ S.timers.pomodoro.secondsLeft = POMODORO_SECONDS; }
+        if(timerId==='custom'){ S.timers.custom.secondsLeft = S.customSeconds; }
       }
-      clockEl.textContent=format(S.secondsLeft);
+      if(S.activeTimer===timerId) clockEl.textContent=format(S.timers[timerId].secondsLeft);
       save();
       renderHUD();
     }
 
     function startFlow(){
       rolloverWeekIfNeeded();
-      if(intervals[currentMode]) return;
-
       ensureAudioUnlocked();
+      const timerId = S.activeTimer;
+      if(intervals[timerId]) return;
 
       if(!S.weeklyComplete && S.placed < S.leavesPerTree){
         const idx=S.placed;
@@ -767,16 +796,15 @@
         const g=createLeafG(idx+1); placeLeaf(g, anchorForIndex(idx)); layer.appendChild(g);
       }
 
-      if (S.secondsLeft <= 0 || S.secondsLeft > 24*3600) {
-        setClockToSession();
-      }
-
-      startSessionWallClock();
+      const sec = (timerId==='custom') ? Math.max(1, (S.timers.custom.secondsLeft||S.customSeconds)|0) : Math.max(1, (S.timers.pomodoro.secondsLeft||POMODORO_SECONDS)|0);
+      S.timers[timerId].secondsLeft = sec;
+      clockEl.textContent = format(sec);
+      startWallClock(timerId);
     }
 
     function resetTimer(){
-      if(intervals[currentMode]){ clearModeInterval(currentMode); startBtn._cleanupVisibility?.(); }
-      setRunning(false);
+      const timerId = S.activeTimer;
+      stopTimer(timerId);
       showRain(false);
       const layer=document.querySelector('#treeSVG #leafLayer');
       const cur=layer?.lastElementChild;
@@ -784,28 +812,39 @@
         const idx=(Number(cur.querySelector('text')?.textContent)||0)-1;
         if(idx===S.placed){ layer.removeChild(cur); }
       }
-      setClockToSession();
+      if(timerId==='pomodoro') S.timers.pomodoro.secondsLeft=POMODORO_SECONDS;
+      if(timerId==='custom') S.timers.custom.secondsLeft=S.customSeconds;
+      clockEl.textContent = format(S.timers[timerId].secondsLeft);
+      startBtn.textContent = `Start ${format(S.timers[timerId].secondsLeft)}`;
       renderHUD();
     }
 
-    // Timer switch handlers
     timerTypeSel.addEventListener('change', ()=>{
-      S.timerType = timerTypeSel.value==='custom' ? 'custom' : 'pomodoro';
-      customTimeRow.style.display = (S.timerType==='custom') ? 'flex' : 'none';
+      const next = timerTypeSel.value==='custom' ? 'custom' : 'pomodoro';
+      if(next===S.activeTimer) return;
+      stopTimer(S.activeTimer);
+      S.activeTimer = next;
+      customTimeRow.style.display = (next==='custom') ? 'flex' : 'none';
+      if(next==='custom' && (!S.timers.custom.secondsLeft || S.timers.custom.secondsLeft>24*3600)){
+        S.timers.custom.secondsLeft = S.customSeconds || DEFAULT_CUSTOM_MIN*60;
+      }
+      if(next==='pomodoro' && (!S.timers.pomodoro.secondsLeft || S.timers.pomodoro.secondsLeft>24*3600)){
+        S.timers.pomodoro.secondsLeft = POMODORO_SECONDS;
+      }
       setClockToSession();
       updateWeeklyTarget();
-      save();
       renderHUD();
     });
 
     applyCustomBtn.addEventListener('click', ()=>{
       const min = Math.max(1, Math.min(MAX_CUSTOM_MIN, Number(customMinutes.value)||DEFAULT_CUSTOM_MIN));
-      const sec = Math.max(0, Math.min(59, Number(customSeconds.value)||0));
+      const sec = Math.max(0, Math.min(59, Number(customSecondsEl.value)||0));
       S.customSeconds = min*60 + sec;
-      if(S.timerType!=='custom'){ S.timerType='custom'; }
-      setClockToSession();
+      if(S.activeTimer==='custom'){
+        S.timers.custom.secondsLeft = S.customSeconds;
+        setClockToSession();
+      }
       updateWeeklyTarget();
-      save();
       renderHUD();
     });
 
@@ -813,9 +852,9 @@
     lptInput.addEventListener('input', ()=>{
       const v = clamp(lptInput.value);
       lptVal.textContent = String(v);
-      // preview text respects Pomodoro labeling
       weeklyTargetEl.textContent = `Weekly target = ${v} mins (as per LPT)`;
       lptNoteEl.textContent = 'LPT = No. of timer session per week';
+      paintIndicator();
     });
 
     lptSetBtn.addEventListener('click', ()=>{
@@ -828,7 +867,6 @@
 
       S.placed = 0;
       S.weeklyLeaves = 0;
-      S.secondsLeft = getSessionSeconds();
 
       const layer=document.querySelector('#treeSVG #leafLayer');
       if(layer) layer.innerHTML = '';
@@ -838,61 +876,52 @@
       renderHUD();
     });
 
-    const tzSelect = document.getElementById('tzSelect');
-    function populateTimeZonesIfNeeded(){
-      if(!tzSelect) return;
-      if(tzSelect.options.length===0){
-        let zones=[];
-        try{ zones = Intl.supportedValuesOf('timeZone'); }
-        catch{ zones = ['UTC','Europe/London','Asia/Kolkata','America/New_York','Asia/Tokyo']; }
-        zones = Array.from(new Set(['UTC', ...zones]));
-        const frag=document.createDocumentFragment();
-        for(const z of zones){
-          const opt=document.createElement('option');
-          opt.value=z;
-          opt.textContent=labelForTZ(z);
-          frag.appendChild(opt);
-        }
-        tzSelect.appendChild(frag);
+    function populateCountryList(){
+      countryList.innerHTML='';
+      const frag=document.createDocumentFragment();
+      Object.keys(COUNTRY_TZ_MAP).sort().forEach(name=>{
+        const opt=document.createElement('option');
+        opt.value=name;
+        frag.appendChild(opt);
+      });
+      countryList.appendChild(frag);
+    }
+    function updateCountryUI(){
+      countryInput.value = G.country || '';
+      tzLabel.textContent = `TZ: ${G.timeZone || ''}`;
+    }
+    countryInput.addEventListener('change', ()=>{
+      const name = String(countryInput.value||'').trim();
+      if(COUNTRY_TZ_MAP[name]){
+        G.country = name;
+        G.timeZone = COUNTRY_TZ_MAP[name];
+        saveGlobal();
+        rolloverWeekIfNeeded();
+        renderHUD();
       }
-      tzSelect.value = G.timeZone || 'UTC';
-    }
-    function labelForTZ(tz){
-      try{
-        const now = new Date();
-        const short = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName:'shortOffset' }).format(now);
-        const offsetPart = short.split(', ').pop() || 'GMT';
-        return `(${offsetPart}) ${tz}`;
-      }catch{ return `(GMT) ${tz}`; }
-    }
-    tzSelect?.addEventListener('change', ()=>{
-      G.timeZone = tzSelect.value || 'UTC';
-      rolloverWeekIfNeeded();
-      renderHUD();
-      save();
     });
 
-    // Modes UI
-    const modeSelect = document.getElementById('modeSelect');
-    const subject1Input = document.getElementById('subject1Input');
-    const subject2Input = document.getElementById('subject2Input');
-    const subject3Input = document.getElementById('subject3Input');
-    const user1Input = document.getElementById('user1Input');
-    const user2Input = document.getElementById('user2Input');
-    const user3Input = document.getElementById('user3Input');
-    const saveNamesBtn = document.getElementById('saveNamesBtn');
-
-    function allModeIds(){
-      return ['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
-    }
-    function modeLabel(id){
-      const custom = CUSTOM_NAMES[id];
-      if(custom && String(custom).trim().length>0) return custom;
-      return DEFAULT_MODE_NAMES[id] || id;
-    }
     function populateModesUI(){
-      const ids = allModeIds();
+      const modeSelect = document.getElementById('modeSelect');
+      const subject1Input = document.getElementById('subject1Input');
+      const subject2Input = document.getElementById('subject2Input');
+      const subject3Input = document.getElementById('subject3Input');
+      const user1Input = document.getElementById('user1Input');
+      const user2Input = document.getElementById('user2Input');
+      const user3Input = document.getElementById('user3Input');
+      const saveNamesBtn = document.getElementById('saveNamesBtn');
+
+      function allModeIds(){
+        return ['exercise','cycling','digitalDetox','bedTime','quran','dikhr','maths','subject1','subject2','subject3','user1','user2','user3'];
+      }
+      function modeLabel(id){
+        const custom = NAMES[id];
+        if(custom && String(custom).trim().length>0) return custom;
+        return DEFAULT_MODE_NAMES[id] || id;
+      }
+
       if(modeSelect){
+        const ids = allModeIds();
         const curVal = modeSelect.value;
         modeSelect.innerHTML='';
         const frag=document.createDocumentFragment();
@@ -904,83 +933,80 @@
         modeSelect.appendChild(frag);
         modeSelect.value = ids.includes(currentMode)? currentMode : ids[0];
         if(curVal && ids.includes(curVal)) modeSelect.value = curVal;
+
+        modeSelect.addEventListener('change', ()=>{
+          switchMode(modeSelect.value);
+        });
       }
-      subject1Input.value = CUSTOM_NAMES['subject1'] || '';
-      subject2Input.value = CUSTOM_NAMES['subject2'] || '';
-      subject3Input.value = CUSTOM_NAMES['subject3'] || '';
-      user1Input.value = CUSTOM_NAMES['user1'] || '';
-      user2Input.value = CUSTOM_NAMES['user2'] || '';
-      user3Input.value = CUSTOM_NAMES['user3'] || '';
 
-      if(modeNameEl) modeNameEl.textContent = modeLabel(currentMode).replace(/ mode$/i,'');
+      const binds = [
+        ['subject1','subject1Input'],
+        ['subject2','subject2Input'],
+        ['subject3','subject3Input'],
+        ['user1','user1Input'],
+        ['user2','user2Input'],
+        ['user3','user3Input']
+      ];
+      for(const [key, id] of binds){
+        const inp = document.getElementById(id);
+        if(inp){
+          inp.value = NAMES[key] || '';
+          inp.addEventListener('input', ()=>{
+            NAMES[key] = inp.value;
+            saveNames();
+            if(modeNameEl) modeNameEl.textContent = (NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode).replace(/ mode$/i,'');
+          });
+        }
+      }
+
+      const saveNamesBtn = document.getElementById('saveNamesBtn');
+      saveNamesBtn?.addEventListener('click', ()=>{
+        saveNames();
+        saveNamesBtn.textContent = 'Saved';
+        setTimeout(()=>{ saveNamesBtn.textContent = 'Save names'; }, 900);
+      });
+
+      if(modeNameEl) modeNameEl.textContent = (NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode).replace(/ mode$/i,'');
     }
-
-    modeSelect?.addEventListener('change', ()=>{
-      switchMode(modeSelect.value);
-    });
 
     function switchMode(toId){
       if(!toId || toId===currentMode) return;
-      clearModeInterval(currentMode);
-      startBtn._cleanupVisibility?.();
-      showRain(false);
-
-      save();
+      // stop both timers when switching modes to avoid orphan intervals
+      stopTimer('pomodoro');
+      stopTimer('custom');
 
       currentMode = toId;
       G.selectedMode = toId;
-      S = loadState(currentMode);
+      saveGlobal();
 
-      const sessionSec = getSessionSeconds();
-      if (S.secondsLeft <= 0 || S.secondsLeft > 24*3600) S.secondsLeft = sessionSec;
+      S = loadState(currentMode);
 
       const layer=document.querySelector('#treeSVG #leafLayer');
       if(layer) layer.innerHTML='';
       renderLeavesFromState();
       rolloverWeekIfNeeded();
+      // keep activeTimer selection; default to pomodoro if invalid
+      if(!S.activeTimer || !S.timers[S.activeTimer]) S.activeTimer='pomodoro';
+      timerTypeSel.value = S.activeTimer;
+      customTimeRow.style.display = (S.activeTimer==='custom') ? 'flex' : 'none';
+      setClockToSession();
       renderHUD();
     }
 
-    saveNamesBtn?.addEventListener('click', ()=>{
-      CUSTOM_NAMES['subject1'] = subject1Input.value.trim();
-      CUSTOM_NAMES['subject2'] = subject2Input.value.trim();
-      CUSTOM_NAMES['subject3'] = subject3Input.value.trim();
-      CUSTOM_NAMES['user1']    = user1Input.value.trim();
-      CUSTOM_NAMES['user2']    = user2Input.value.trim();
-      CUSTOM_NAMES['user3']    = user3Input.value.trim();
+    function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
 
-      saveNames();
-      populateModesUI();
-      if (modeSelect && currentMode) { modeSelect.value = currentMode; }
-      if (modeNameEl) { modeNameEl.textContent = modeLabel(currentMode).replace(/ mode$/i,''); }
+    function format(sec){
+      const m=String(Math.floor(sec/60)).padStart(2,'0');
+      const s=String(sec%60).padStart(2,'0');
+      return `${m}:${s}`;
+    }
 
-      saveNamesBtn.textContent = 'Saved';
-      setTimeout(()=>{ saveNamesBtn.textContent = 'Save names'; }, 900);
-    });
-
-    [subject1Input,subject2Input,subject3Input,user1Input,user2Input,user3Input]
-      .forEach(inp=>{
-        inp?.addEventListener('input', ()=>{
-          const id = inp.id.replace('Input','');
-          const key = id;
-          CUSTOM_NAMES[key] = inp.value;
-          populateModesUI();
-        });
-      });
-
-    // Subscription placeholders
+    // Auth placeholders (unchanged minimal)
     const subBtn = document.getElementById('subBtn');
     const subStatus = document.getElementById('subStatus');
     subBtn?.addEventListener('click', ()=>{
-      S.subActive = true;
-      S.plan = 'Pro';
-      save();
-      subStatus.textContent = 'Plan: Pro — 52 weeks unlocked';
-      subBtn.disabled = true;
-      subBtn.textContent = 'Unlocked';
+      S.subActive = true; S.plan = 'Pro'; save(); subStatus.textContent = 'Plan: Pro — 52 weeks unlocked'; subBtn.disabled = true; subBtn.textContent = 'Unlocked';
     });
-
-    // Email link auth placeholders
     const emailInput = document.getElementById('emailInput');
     const sendLinkBtn = document.getElementById('sendLinkBtn');
     const signOutBtn = document.getElementById('signOutBtn');
@@ -988,52 +1014,41 @@
     const sendLinkBtnBottom = document.getElementById('sendLinkBtnBottom');
     const signOutBtnBottom = document.getElementById('signOutBtnBottom');
     const authState = document.getElementById('authState');
-
-    function setSignedIn(email) {
-      const GLOB = loadGlobal();
-      GLOB.userEmail = email;
-      localStorage.setItem(GLOBAL_KEY, JSON.stringify(GLOB));
-      authState.textContent = `Signed in as ${email}`;
-    }
-    function setSignedOut() {
-      const GLOB = loadGlobal();
-      delete GLOB.userEmail;
-      localStorage.setItem(GLOBAL_KEY, JSON.stringify(GLOB));
-      authState.textContent = 'Signed out';
-    }
-
-    sendLinkBtn?.addEventListener('click', ()=>{
-      const email = String(emailInput?.value||'').trim();
-      if (!email) return;
-      setSignedIn(email);
-    });
-    sendLinkBtnBottom?.addEventListener('click', ()=>{
-      const email = String(emailInputBottom?.value||'').trim();
-      if (!email) return;
-      setSignedIn(email);
-    });
+    function setSignedIn(email){ const GLOB = loadGlobal(); GLOB.userEmail = email; localStorage.setItem(GLOBAL_KEY, JSON.stringify(GLOB)); authState.textContent = `Signed in as ${email}`; }
+    function setSignedOut(){ const GLOB = loadGlobal(); delete GLOB.userEmail; localStorage.setItem(GLOBAL_KEY, JSON.stringify(GLOB)); authState.textContent = 'Signed out'; }
+    sendLinkBtn?.addEventListener('click', ()=>{ const email=String(emailInput?.value||'').trim(); if(!email) return; setSignedIn(email); });
+    sendLinkBtnBottom?.addEventListener('click', ()=>{ const email=String(emailInputBottom?.value||'').trim(); if(!email) return; setSignedIn(email); });
     signOutBtn?.addEventListener('click', setSignedOut);
     signOutBtnBottom?.addEventListener('click', setSignedOut);
 
-    // Ensure Modes panel is default visible
-    document.querySelectorAll('.tab').forEach(t=>{
-      t.classList.toggle('active', t.getAttribute('data-tab')==='modesPanel');
-    });
-    document.querySelectorAll('.panelCard').forEach(p=>{
-      p.style.display = (p.id==='modesPanel') ? 'flex' : 'none';
-    });
-
-    // INITIALIZE
-    rolloverWeekIfNeeded();
-    renderLeavesFromState();
-    timerTypeSel.value = S.timerType || 'pomodoro';
-    customTimeRow.style.display = (S.timerType==='custom') ? 'flex' : 'none';
-    setClockToSession();
-    renderHUD();
-
-    // Wire buttons
+    // Buttons
     startBtn.addEventListener('click', startFlow);
     resetBtn.addEventListener('click', resetTimer);
+
+    // INIT
+    // Prepare country datalist
+    (function initCountries(){
+      const frag=document.createDocumentFragment();
+      Object.keys(COUNTRY_TZ_MAP).sort().forEach(name=>{
+        const opt=document.createElement('option');
+        opt.value=name; frag.appendChild(opt);
+      });
+      document.getElementById('countryList').appendChild(frag);
+      updateCountryUI();
+    })();
+
+    function updateCountryUI(){
+      countryInput.value = G.country || '';
+      tzLabel.textContent = `TZ: ${G.timeZone || ''}`;
+    }
+
+    rolloverWeekIfNeeded();
+    renderLeavesFromState();
+    // Active timer UI
+    timerTypeSel.value = S.activeTimer || 'pomodoro';
+    customTimeRow.style.display = (S.activeTimer==='custom') ? 'flex' : 'none';
+    setClockToSession();
+    renderHUD();
   </script>
 </body>
 </html>
