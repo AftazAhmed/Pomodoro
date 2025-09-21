@@ -24,7 +24,6 @@
       --z-labels: 2000;
       --z-tree: 3000;
       --z-saplings: 4000;
-      --z-leaves: 5000;    /* NEW: ensure leaves render above everything in tree SVG */
       --z-rain: 9999;
     }
 
@@ -130,26 +129,23 @@
     .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-saplings); }
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:var(--z-tree); }
 
-    /* Rain overlay: uniform top, denser overall */
+    /* Rain overlay: uniform, denser, only when running (via JS) */
     .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:none; overflow:hidden; }
     .rainTop.active{ display:block; }
     .rainTop .drop{
       position:absolute;
-      top: calc(-90px - (var(--randY, 0) * 90px)); /* spread starts above to avoid top band */
+      top: calc(-90px - (var(--randY, 0) * 90px));
       width:1.2px; height:34px; background:rgba(14,42,112,.55); border-radius:2px;
       animation:rainFall var(--spd, 1.05s) linear infinite;
     }
     .rainTop .drop.far{ opacity:.6; transform:scale(.9); --spd: 1.35s; }
     @keyframes rainFall{ to{ transform:translateY(900px); } }
 
-    /* Leaf animations: ensure visible and above by class + z-order */
+    /* Leaf animations: only when running by class toggle */
     @keyframes leafBlinkHue { 0%{ fill:#22c55e; } 50%{ fill:#15803d; } 100%{ fill:#22c55e; } }
     .leaf-live path.leafFill{ animation: leafBlinkHue 900ms linear infinite; }
     @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
     .leaf-pop{ animation: leafPop 380ms ease-out forwards; transform-origin:center; transform-box:fill-box; }
-
-    /* Make leafLayer group always on top visually inside SVG by CSS pointer-events and filter; also add CSS z-index via foreignObject isolation trick if needed */
-    #leafLayer{ pointer-events:none; }
 
     .tabsWrap{ margin:12px auto; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:14px; width:760px; max-width:100%; position:relative; z-index:var(--z-tabs); }
     .tabs{ display:flex; gap:8px; flex-wrap:wrap; padding:8px; border:1px solid var(--line); border-radius:999px; background:var(--surface-2); justify-content:center; }
@@ -274,7 +270,6 @@
             <div id="xySky" class="skyOverlay" style="display:none;">0 / 0 leaves</div>
             <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
 
-            <!-- Saplings on top layer -->
             <svg id="saplingsSVG" width="560" height="560" viewBox="0 0 560 560" class="saplingsLayer" aria-hidden="true">
               <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <defs>
@@ -320,7 +315,6 @@
                 <path d="M 280 380 C 280 350, 280 320, 280 284" fill="none" stroke="#4e342e" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
                 <path d="M 280 284 C 270 270, 258 255, 248 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
                 <path d="M 280 284 C 290 270, 302 255, 312 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
-                <!-- Ensure leafLayer is the last child so it renders on top -->
                 <g id="leafLayer" filter="url(#leafShadow)"></g>
               </g>
             </svg>
@@ -405,7 +399,7 @@
 
   <script>
     // App keys and constants
-    const APP_KEY='pomodoroTree_singlefile_final_leafFront_rainDenser';
+    const APP_KEY='pomodoroTree_singlefile_restored_leafRainOnly';
     const GLOBAL_KEY=APP_KEY+'_global';
     const NAMES_KEY=APP_KEY+'_names';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simplex:'simplex' };
@@ -462,7 +456,7 @@
     let currentTimerType = G.timerType || TIMER_TYPES.pomodoro;
     let S = loadState(currentMode, currentTimerType);
 
-    // DOM
+    // DOM refs
     const $ = id => document.getElementById(id);
 
     const modeSelect = $('modeSelect');
@@ -500,9 +494,7 @@
 
     const treeGrid=$('treeGrid'), gridCount=$('gridCount');
 
-    const treeSVG = document.getElementById('treeSVG');
-    const leafLayer = treeSVG.querySelector('#leafLayer');
-    const canopyGroup = document.getElementById('canopyGroup');
+    const leafLayer = document.querySelector('#treeSVG #leafLayer');
 
     // Names
     let CUSTOM_NAMES = load(NAMES_KEY,{});
@@ -562,10 +554,9 @@
       renderStats();
       setClockAndButtons();
       hydrateInputsFromState();
-      updateXY();
     });
 
-    // Country dropdown (UI only)
+    // Country dropdown
     const countrySearch=$('countrySearch'), countryList=$('countryList');
     const COUNTRY_TZ=[{name:'Japan',tz:'Asia/Tokyo'},{name:'India',tz:'Asia/Kolkata'},{name:'United Kingdom',tz:'Europe/London'},{name:'United States',tz:'America/New_York'},{name:'Canada',tz:'America/Toronto'},{name:'Australia',tz:'Australia/Sydney'},{name:'UAE',tz:'Asia/Dubai'},{name:'Bangladesh',tz:'Asia/Dhaka'},{name:'China',tz:'Asia/Shanghai'},{name:'Germany',tz:'Europe/Berlin'},{name:'France',tz:'Europe/Paris'},{name:'Brazil',tz:'America/Sao_Paulo'}].sort((a,b)=> a.name.localeCompare(b.name));
     function renderCountryList(filter=''){
@@ -699,7 +690,7 @@
       pctRange.style.background = `linear-gradient(90deg, var(--slider-green) ${pct}%, var(--slider-done) ${pct}%)`;
     }
 
-    // Canopy-safe leaf positions
+    // Canopy-safe leaf points (unchanged prior logic)
     const CANOPY_BOX = { xMin:140, xMax:420, yMin:200, yMax:300, cx:280, cy:250 };
     const LEAF_R = 22;
     function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx, dy); }
@@ -724,7 +715,7 @@
           const x = CANOPY_BOX.cx + r*Math.cos(angle)*160;
           const y = CANOPY_BOX.cy + r*Math.sin(angle)*90*0.95;
           if(!insideCanopy(x,y)) continue;
-          if(y>284) continue; // avoid trunk/branches
+          if(y>284) continue;
           let ok=true;
           for(const q of base){ if(dist({x,y}, q)<LEAF_R) { ok=false; break; } }
           if(ok){ base.push({x,y}); placed=true; }
@@ -738,7 +729,7 @@
     }
 
     function renderLeaves(){
-      // Ensure leaf layer is last/top in SVG to stay in front
+      // keep leaf layer last for visibility
       const group = document.getElementById('canopyGroup');
       const layer = document.getElementById('leafLayer');
       if(group && layer && layer !== group.lastElementChild){
@@ -751,7 +742,7 @@
       const g = [];
       for(let i=0;i<placed;i++){
         const p=pts[i];
-        // Toggle animation only via class; no other changes
+        // Only class toggle for animation
         g.push(`<g class="leaf-pop${isRunning?' leaf-live':''}"><path class="leafFill" d="M ${p.x} ${p.y} c 8 -10, 16 -10, 22 0 c -8 10, -16 10, -22 0 z" fill="#22c55e" stroke="#15803d" stroke-width="2"/></g>`);
       }
       leafLayer.innerHTML = g.join('');
@@ -779,7 +770,7 @@
       setClockAndButtons();
     }
 
-    // Rain: denser and uniform; only while running
+    // Rain only when running, denser and uniform
     let rainRAF=null;
     function spawnRain(count){
       rainTop.innerHTML='';
@@ -798,9 +789,9 @@
     function startRain(){
       if(rainRAF) return;
       rainTop.classList.add('active');
-      const base = Math.max(220, Math.floor((rainTop.clientWidth||560)/2.2)); // denser
+      const base = Math.max(200, Math.floor((rainTop.clientWidth||560)/2.5)); // denser
       spawnRain(base);
-      const loop=()=>{ rainRAF = requestAnimationFrame(()=>{ if(!isRunning){ stopRain(); return; } if(Math.random()<0.025){ spawnRain(base); } loop(); }); };
+      const loop=()=>{ rainRAF = requestAnimationFrame(()=>{ if(!isRunning){ stopRain(); return; } if(Math.random()<0.02){ spawnRain(base); } loop(); }); };
       loop();
     }
     function stopRain(){
@@ -810,53 +801,6 @@
     }
 
     // Timer engine
-    let ticker=null, isRunning=false;
-
-    function getSessionSeconds(){
-      if(currentTimerType==='pomodoro') return 25*60;
-      if(currentTimerType==='custom')   return Math.max(60, Number(S.customSeconds)||1500);
-      return Math.max(60, Number(S.simpleSeconds)||1500);
-    }
-
-    function format(s){
-      const v = Math.max(0, Math.round(s));
-      const m=String(Math.floor(v/60)).padStart(2,'0');
-      const ss=String(v%60).padStart(2,'0');
-      return `${m}:${ss}`;
-    }
-
-    function setClockAndButtons(){
-      clockEl.textContent = format(S.secondsLeft);
-      startBtn.textContent = isRunning ? 'Running…' : `Start ${format(getSessionSeconds())}`;
-    }
-
-    function sessionMinutes(){ return Math.round(getSessionSeconds()/60); }
-    function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-    function ensureTodayCounters(){ const k=todayKey(); if(S.todayDateKey!==k){ S.todayDateKey=k; S.todayLeafCount=0; S.todayExtraSeconds=0; } }
-
-    function renderTodayDuration(){
-      ensureTodayCounters();
-      const elapsedLive = isRunning && S.targetEndTS ? Math.max(0, Math.floor((Date.now() - (S.targetEndTS - getSessionSeconds()*1000))/1000)) : 0;
-      const totalMins = S.todayLeafCount*sessionMinutes() + Math.floor((S.todayExtraSeconds + elapsedLive)/60);
-      todaySky.textContent = `Total duration (today): ${totalMins} mins`;
-    }
-
-    function renderWeeklyTarget(){
-      const perLeafMin = Math.round(getSessionSeconds()/60);
-      const totalMins = (Number(S.leavesPerTree)||0) * perLeafMin;
-      const h = Math.floor(totalMins/60), m = totalMins%60;
-      weeklyTargetEl.textContent = `Weekly target = ${h} hrs ${m} mins`;
-    }
-
-    function updateSliderFill(){
-      const total = Math.max(1, Number(S.leavesPerTree)||1);
-      const done = Math.min(S.weeklyLeaves||0, total);
-      const pct = Math.round((done/total)*100);
-      pctRange.value = String(pct);
-      thePctValue.textContent = `${pct}%`;
-      pctRange.style.background = `linear-gradient(90deg, var(--slider-green) ${pct}%, var(--slider-done) ${pct}%)`;
-    }
-
     function startTimer(){
       if(isRunning) return;
       isRunning = true;
@@ -868,8 +812,7 @@
       }
       S.lastRealTS = now;
       saveState(currentMode,currentTimerType,S);
-      // Toggle animations on start
-      renderLeaves();
+      renderLeaves(); // add animation class
       startRain();
       setClockAndButtons();
 
@@ -886,7 +829,7 @@
           S.placed = Math.min((S.placed||0)+1, S.leavesPerTree||0);
           saveState(currentMode,currentTimerType,S);
           stopRain();
-          renderAll();
+          renderAll(); // removes animation class automatically
           try{ ensureAudio(); playAlarm10s(); }catch{}
         }
       }, 250);
@@ -899,11 +842,11 @@
       S.secondsLeft = getSessionSeconds();
       saveState(currentMode,currentTimerType,S);
       stopRain();
-      renderLeaves(); // removes animation class
+      renderLeaves(); // remove animation class by re-render
       setClockAndButtons();
     }
 
-    // Helpers
+    // Apply/Set helpers (unchanged)
     function clampInt(v, min, max){ v = Math.floor(Number(v)||0); return Math.min(max, Math.max(min, v)); }
 
     function applyLeavesPerWeek(newLpt){
@@ -939,47 +882,24 @@
       simpleMin.value = String(Math.round((S.simpleSeconds||1500)/60));
     }
 
-    function updateXY(){
-      const x = Math.min(S.placed||0, S.leavesPerTree||0);
-      const y = Math.max(S.leavesPerTree||0, 0);
-      xySky.textContent = `${x} / ${y} leaves`;
-      xySky.style.display = (currentTimerType==='simplex') ? 'none' : 'block';
-    }
-
-    function updateModeVisibility(){
-      customInputs.style.display = currentTimerType==='custom' ? 'flex' : 'none';
-      simpleInputs.classList.toggle('hidden', currentTimerType!=='simplex');
-    }
-
-    function renderStats(){
-      renderWeeklyTarget();
-      updateSliderFill();
-      renderTodayDuration();
-      updateXY();
-    }
-
-    function renderAll(){
-      renderLeaves();
-      renderGrid();
-      renderStats();
-      setClockAndButtons();
-    }
-
     // Wire controls
     startBtn.addEventListener('click', (e)=>{ e.preventDefault(); startTimer(); });
     resetBtn.addEventListener('click', (e)=>{ e.preventDefault(); resetTimer(); });
+
     lptSetBtn.addEventListener('click', (e)=>{
       e.preventDefault();
       const v = clampInt(lptInput.value, 1, 200);
       lptInput.value = String(v);
       applyLeavesPerWeek(v);
     });
+
     applyCustomBtn.addEventListener('click', (e)=>{
       e.preventDefault();
       const v = clampInt(customMin.value, 1, 999);
       customMin.value = String(v);
       applyCustomMinutes(v);
     });
+
     applySimpleBtn.addEventListener('click', (e)=>{
       e.preventDefault();
       const v = clampInt(simpleMin.value, 1, 999);
