@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Bigger Tree + Fixes</title>
+  <title>Pomodoro Tree — Rain Inside Canvas</title>
 
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
@@ -56,40 +56,35 @@
     .miniNote{ color:#4a6894; font-weight:700; font-size:var(--fs-sm); }
     .noteBig{ font-size:var(--fs-md); color:#0b1a33; font-weight:800; }
 
-    /* Canvas: positioned wrapper for overlays (rain, labels) */
+    /* Canvas wrapper (positioning context) */
     .canvas{
       position:relative;
       width:100%;
       max-width:560px;
       margin:10px auto;
-      isolation:isolate; /* ensure z-index stacking is contained */
+      isolation:isolate;
     }
-
-    /* Aspect-ratio wrapper for square sky/soil canvas */
     .canvas .aspect{
       position:relative;
       width:100%;
       height:0;
-      padding-bottom:100%; /* 1:1 */
-      overflow:hidden; /* clip overlays like rain inside canvas */
+      padding-bottom:100%;
+      overflow:hidden; /* clips rain to canvas */
       border:1px solid var(--line);
       border-radius:14px;
       background:#cfe8ff;
     }
 
-    /* Sky/Soil SVG fills the box */
     .skySvg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
-
-    /* Tree SVG fills the same box; scaled +30% via transform */
     .treeSvg{
       position:absolute; inset:0; width:100%; height:100%;
       display:block; overflow:visible;
-      transform: scale(1.3);              /* increase tree size by 30% */
-      transform-origin: 50% 70%;          /* keep trunk near same ground pivot */
+      transform: scale(1.0);
+      transform-origin: 50% 70%;
       pointer-events:none;
     }
 
-    /* Overlays bound to the canvas area */
+    /* Overlays */
     .xyLabel{
       position:absolute; left:10px; top:10px;
       font:900 18px/1 Inter, system-ui; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:5;
@@ -100,11 +95,20 @@
       background:rgba(255,255,255,.55); padding:3px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8);
     }
 
-    /* Rain overlay spans entire canvas and is clipped by overflow:hidden on .aspect */
+    /* Rain: use top animation from -10% to 110% so drops traverse the full canvas height; overlay is clipped by parent */
     .rain{ position:absolute; top:0; right:0; bottom:0; left:0; pointer-events:none; display:none; z-index:4; }
-    .rain .drop{ position:absolute; top:-6%; width:3px; height:12px; background:rgba(14,42,112,.45); border-radius:2px; animation:rainFall 1s linear infinite; }
-    .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.35s; }
-    @keyframes rainFall{ to{ transform:translateY(112%); } }
+    .rain .drop{
+      position:absolute;
+      left:0; /* will be randomized via JS */
+      width:3px; height:12px; background:rgba(14,42,112,.45); border-radius:2px;
+      top:-10%;
+      animation:rainTop 1.1s linear infinite;
+    }
+    .rain .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.5s; }
+    @keyframes rainTop{
+      0%   { top: -10%; }
+      100% { top: 110%; }
+    } /* Falls inside container bounds using top, not translateY, tied to parent box. [web:286][web:264][web:293] */
 
     .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; }
     .countryWrap{ display:flex; gap:8px; align-items:center; }
@@ -127,7 +131,7 @@
 
     .gridWrap{ margin:12px auto; max-width:980px; background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:var(--pad); flex-direction:column; }
     .gridHead{ justify-content:space-between; gap:8px; color:#4a6894; width:100%; }
-    .grid{ display:grid; gap:8px; grid-template-columns:repeat(8, minmax(0, 1fr)); width:100%; margin-top:8px; } /* 8 per row */
+    .grid{ display:grid; gap:8px; grid-template-columns:repeat(8, minmax(0, 1fr)); width:100%; margin-top:8px; }
     .cell{ position:relative; aspect-ratio:1/1; border-radius:12px; background:#f3f8ff; border:1px dashed #c8d8ee; color:#4e6ea0; display:flex; align-items:center; justify-content:center; font-weight:800; overflow:hidden; font-size:var(--fs-md); }
     .num{ position:relative; z-index:1; color:#4e6ea0; }
     .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:20px; z-index:2; pointer-events:none; }
@@ -188,10 +192,9 @@
       </div>
     </section>
 
-    <!-- Unified canvas: sky/soil + overlays + tree (tree is 30% bigger) -->
+    <!-- Canvas -->
     <section class="canvas" id="canvas">
       <div class="aspect">
-        <!-- sky/soil -->
         <svg class="skySvg" viewBox="0 0 560 560" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <defs>
             <linearGradient id="gradSky" x1="0" y1="0" x2="0" y2="1">
@@ -202,16 +205,13 @@
           <rect x="0" y="0" width="560" height="347.2" fill="url(#gradSky)"/>
           <rect x="0" y="347.2" width="560" height="60" fill="#e8d0b0"/>
           <rect x="0" y="407.2" width="560" height="152.8" fill="#caa879"/>
-          <!-- saplings -->
           <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round"></g>
         </svg>
 
-        <!-- overlays (clipped by .aspect overflow) -->
         <div id="xyLabel" class="xyLabel">0/9 leaves</div>
         <div id="todaySky" class="todaySky">Today: 0 leaves</div>
         <div id="rainLayer" class="rain"></div>
 
-        <!-- tree (scaled 1.3x) -->
         <svg id="treeSVG" class="treeSvg" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet">
           <defs>
             <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -313,45 +313,29 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_BiggerTree_V1';
+    const APP_KEY = 'pomodoroTree_RainInsideCanvas_V1';
     const NAMES_KEY = APP_KEY + '_names';
     const GLOBAL_KEY = APP_KEY + '_global';
     const svgns = 'http://www.w3.org/2000/svg';
 
     const LEAF_SECONDS = 60, POMODORO_SECONDS = 25*60, DEFAULT_CUSTOM_MIN = 20, MAX_CUSTOM_MIN = 180;
 
-    // Modes list includes all requested items
-    const MODE_IDS = [
-      'cycling','exercise','quran','dhikr','digitalDetox','bedTime',
-      'maths','subject1','subject2','subject3','user1','user2','user3'
-    ];
+    const MODE_IDS = ['cycling','exercise','quran','dhikr','digitalDetox','bedTime','maths','subject1','subject2','subject3','user1','user2','user3'];
     const DEFAULT_MODE_NAMES = {
-      cycling:'Cycling mode',
-      exercise:'Exercise mode',
-      quran:'Quran mode',
-      dhikr:'Dhikr mode',
-      digitalDetox:'Digital detox mode',
-      bedTime:'Bedtime mode',
-      maths:'Maths mode',
-      subject1:'Subject 1 mode',
-      subject2:'Subject 2 mode',
-      subject3:'Subject 3 mode',
-      user1:'User 1 mode',
-      user2:'User 2 mode',
-      user3:'User 3 mode'
+      cycling:'Cycling mode', exercise:'Exercise mode', quran:'Quran mode', dhikr:'Dhikr mode',
+      digitalDetox:'Digital detox mode', bedTime:'Bedtime mode', maths:'Maths mode',
+      subject1:'Subject 1 mode', subject2:'Subject 2 mode', subject3:'Subject 3 mode',
+      user1:'User 1 mode', user2:'User 2 mode', user3:'User 3 mode'
     };
 
-    // Minimal TZ map for demo
     const COUNTRY_TZ_MAP = {"India":"Asia/Kolkata"};
 
-    // Global + names
     const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}');
     const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India' }, loadGlobal());
     const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
     const saveGlobal = ()=>localStorage.setItem(GLOBAL_KEY, JSON.stringify(G));
     const saveNames = ()=>localStorage.setItem(NAMES_KEY, JSON.stringify(NAMES));
 
-    // Per-mode state
     const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
     const DEFAULT_STATE = {
       leavesPerTree:9, placed:0,
@@ -371,7 +355,6 @@
     let S = loadState(currentMode);
     const intervals = { pomodoro:null, custom:null };
 
-    // DOM
     const el=id=>document.getElementById(id);
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
     const timerTypeSel=el('timerType'), customTimeRow=el('customTimeRow'), customMinutes=el('customMinutes'), customSecondsEl=el('customSeconds'), applyCustomBtn=el('applyCustomBtn');
@@ -383,7 +366,7 @@
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), todaySky=el('todaySky'), modeNameEl=document.getElementById('modeName');
     const modeSelect=el('modeSelect');
 
-    // Build saplings once
+    // Saplings
     (function buildSaplings(){
       const g=document.getElementById('saplings'); if(!g) return;
       const rows=6, cols=7, startX=28, endX=532, soilYStart=560*0.62 + 20, rowGap=30;
@@ -414,7 +397,7 @@
       }
     })();
 
-    // Accurate timers
+    // Timers
     function startWallClock(timerId){
       stopTimer(timerId);
       const tState = S.timers[timerId];
@@ -456,7 +439,7 @@
       }
     }
 
-    // Tree leaves + fill
+    // Leaves
     const baseAnchors=[{x:280,y:250},{x:220,y:255},{x:350,y:250},{x:220,y:300},{x:340,y:300},{x:255,y:205},{x:340,y:205},{x:390,y:260},{x:190,y:260}];
     function anchorForIndex(i){ if(i<baseAnchors.length) return baseAnchors[i]; const k=i-baseAnchors.length+1, a=k*137.508*Math.PI/180, r=30+0.9*Math.sqrt(k)*8, cx=280, cy=260; return {x:cx+r*Math.cos(a), y:cy+r*Math.sin(a)*0.7}; }
     function createLeafG(n){
@@ -473,7 +456,7 @@
     function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
     function renderLeavesFromState(){ if(!leafLayer) return; leafLayer.innerHTML=''; for(let i=0;i<S.placed;i++){ const g=createLeafG(i+1); placeLeaf(g, anchorForIndex(i)); leafLayer.appendChild(g); } }
 
-    // Grid (8 per row)
+    // Grid
     function buildGrid(){
       treeGrid.innerHTML='';
       for(let i=0;i<52;i++){
@@ -486,7 +469,7 @@
       gridCount.textContent=`${Math.min(S.grid.length, 52)} / 52`;
     }
 
-    // UI updates
+    // Totals
     function updateWeeklyTarget(){
       if(S.activeTimer==='custom'){
         weeklyTargetEl.style.display='none'; customWeekTotalEl.style.display='block';
@@ -515,6 +498,7 @@
     }
     function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
 
+    // Audio
     function ensureAudioUnlocked(){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; if(!window._ac) window._ac=new AC(); if(window._ac.state==='suspended'){ window._ac.resume().catch(()=>{}); } }
     function playAlarm10s(){
       const ctx=window._ac; if(!ctx || ctx.state==='suspended') return;
@@ -542,19 +526,24 @@
     }
 
     function showRain(on){
-      // Keep drops inside .aspect via 100% overlay + overflow hidden on parent
       rainLayer.style.display = on?'block':'none';
-      if(on && rainLayer.childElementCount===0){
-        const mk=(n, cls='')=>{
-          for(let i=0;i<n;i++){
-            const d=document.createElement('div'); d.className='drop'+cls;
-            d.style.left=(Math.random()*100)+'%';
-            d.style.animationDelay=(Math.random()*0.9)+'s';
-            d.style.animationDuration=(cls? (1.0+Math.random()*0.9)+'s' : (0.7+Math.random()*0.6)+'s');
-            rainLayer.appendChild(d);
-          }
-        };
-        mk(140,''); mk(110,' far');
+      if(on){
+        // If drops already created, leave them; else create fresh set
+        if(rainLayer.childElementCount===0){
+          const create = (n, cls='')=>{
+            for(let i=0;i<n;i++){
+              const d=document.createElement('div'); d.className='drop'+cls;
+              d.style.left=(Math.random()*100)+'%';
+              d.style.animationDelay=(Math.random()*0.9)+'s';
+              d.style.animationDuration=(cls? (1.2+Math.random()*0.8)+'s' : (0.8+Math.random()*0.6)+'s');
+              rainLayer.appendChild(d);
+            }
+          };
+          create(140,''); create(110,' far');
+        }
+      }else{
+        // Optional: keep drops for reuse; or uncomment to clear
+        // rainLayer.innerHTML='';
       }
     }
 
@@ -647,16 +636,16 @@
       applyProgress(); lptVal.textContent = String(S.leavesPerTree); renderHUD();
     });
 
-    // Modes UI (include all requested modes; fix saving)
+    // Modes UI and names
     function populateModesUI(){
+      const modeSelect = document.getElementById('modeSelect');
       if(modeSelect){
         const curVal = modeSelect.value;
         modeSelect.innerHTML='';
         const frag=document.createDocumentFragment();
         MODE_IDS.forEach(id=>{
           const opt=document.createElement('option');
-          opt.value=id;
-          opt.textContent = (NAMES[id] && String(NAMES[id]).trim()) ? NAMES[id] : DEFAULT_MODE_NAMES[id] || id;
+          opt.value=id; opt.textContent = (NAMES[id] && String(NAMES[id]).trim()) ? NAMES[id] : DEFAULT_MODE_NAMES[id] || id;
           frag.appendChild(opt);
         });
         modeSelect.appendChild(frag);
@@ -665,22 +654,8 @@
         modeSelect.onchange = ()=>switchMode(modeSelect.value);
       }
 
-      // Bind inputs to names object and persist on input + blur + save button
-      const map = [
-        ['cycling','cyclingInput'],
-        ['exercise','exerciseInput'],
-        ['quran','quranInput'],
-        ['dhikr','dhikrInput'],
-        ['digitalDetox','digitalDetoxInput'],
-        ['bedTime','bedTimeInput'],
-        ['subject1','subject1Input'],
-        ['subject2','subject2Input'],
-        ['subject3','subject3Input'],
-        ['user1','user1Input'],
-        ['user2','user2Input'],
-        ['user3','user3Input']
-      ];
-      map.forEach(([key,id])=>{
+      const pairs=[['cycling','cyclingInput'],['exercise','exerciseInput'],['quran','quranInput'],['dhikr','dhikrInput'],['digitalDetox','digitalDetoxInput'],['bedTime','bedTimeInput'],['subject1','subject1Input'],['subject2','subject2Input'],['subject3','subject3Input'],['user1','user1Input'],['user2','user2Input'],['user3','user3Input']];
+      pairs.forEach(([key,id])=>{
         const inp=document.getElementById(id);
         if(!inp) return;
         inp.value = NAMES[key] || '';
@@ -692,19 +667,14 @@
       const saveNamesBtn=document.getElementById('saveNamesBtn');
       if(saveNamesBtn){
         saveNamesBtn.onclick = ()=>{
-          map.forEach(([key,id])=>{ const inp=document.getElementById(id); if(inp) NAMES[key]=inp.value; });
+          pairs.forEach(([key,id])=>{ const inp=document.getElementById(id); if(inp) NAMES[key]=inp.value; });
           saveNames(); refreshModeName(); populateModesUI();
           saveNamesBtn.textContent='Saved'; setTimeout(()=>saveNamesBtn.textContent='Save names', 900);
         };
       }
-
       refreshModeName();
     }
-    function refreshModeName(){
-      if(modeNameEl){
-        modeNameEl.textContent = (NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode).replace(/ mode$/i,'');
-      }
-    }
+    function refreshModeName(){ const el=document.getElementById('modeName'); if(el) el.textContent=(NAMES[currentMode]||DEFAULT_MODE_NAMES[currentMode]||currentMode).replace(/ mode$/i,''); }
     function switchMode(toId){
       if(!toId || toId===currentMode) return;
       stopTimer('pomodoro'); stopTimer('custom');
@@ -745,6 +715,18 @@
     // Tabs default
     document.querySelectorAll('.tab').forEach(t=>{ t.classList.toggle('active', t.getAttribute('data-tab')==='modesPanel'); });
     document.querySelectorAll('.panelCard').forEach(p=>{ p.style.display = (p.id==='modesPanel') ? 'flex' : 'none'; });
+
+    function buildGrid(){
+      const grid=document.getElementById('treeGrid'); grid.innerHTML='';
+      for(let i=0;i<52;i++){
+        const cell=document.createElement('div'); cell.className='cell';
+        const num=document.createElement('div'); num.className='num'; num.textContent=String(i+1);
+        const icon=document.createElement('div'); icon.className='icon';
+        const entry=S.grid[i]; if(entry){ icon.textContent = entry.live ? '🌳' : ''; if(entry.live){ cell.classList.add('live'); } }
+        cell.appendChild(num); cell.appendChild(icon); grid.appendChild(cell);
+      }
+      document.getElementById('gridCount').textContent=`${Math.min(S.grid.length, 52)} / 52`;
+    }
 
     function renderHUD(){
       clockEl.textContent = String(format(S.timers[S.activeTimer].secondsLeft));
