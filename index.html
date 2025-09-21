@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Single File Build</title>
+  <title>Pomodoro Tree — Single File Build (restored leaf, fill, rain)</title>
 
   <style>
     :root{
@@ -129,14 +129,14 @@
     .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-saplings); }
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:var(--z-tree); }
 
-    /* Rain overlay (reverted: simple staggered drops) */
+    /* Rain overlay (original simple effect; active only while running) */
     .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:none; overflow:hidden; }
     .rainTop.active{ display:block; }
     .rainTop .drop{ position:absolute; top:-28px; width:1px; height:28px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 0.9s linear infinite; }
     .rainTop .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
     @keyframes rainFall{ to{ transform:translateY(760px); } }
 
-    /* Leaf animations (on running only) */
+    /* Leaf animations (play only while running) */
     @keyframes leafBlinkHue { 0%{ fill:#22c55e; } 50%{ fill:#15803d; } 100%{ fill:#22c55e; } }
     .leaf-live path.leafFill{ animation: leafBlinkHue 900ms linear infinite; }
     @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
@@ -273,7 +273,7 @@
                     <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
                   </g>
                 </defs>
-                <!-- 72 saplings (grid) -->
+                <!-- 72 saplings grid -->
                 <g transform="translate(60 380)"><use href="#sapling"/></g><g transform="translate(120 380)"><use href="#sapling"/></g><g transform="translate(180 380)"><use href="#sapling"/></g><g transform="translate(240 380)"><use href="#sapling"/></g><g transform="translate(300 380)"><use href="#sapling"/></g><g transform="translate(360 380)"><use href="#sapling"/></g><g transform="translate(420 380)"><use href="#sapling"/></g><g transform="translate(480 380)"><use href="#sapling"/></g>
                 <g transform="translate(60 400)"><use href="#sapling"/></g><g transform="translate(120 400)"><use href="#sapling"/></g><g transform="translate(180 400)"><use href="#sapling"/></g><g transform="translate(240 400)"><use href="#sapling"/></g><g transform="translate(300 400)"><use href="#sapling"/></g><g transform="translate(360 400)"><use href="#sapling"/></g><g transform="translate(420 400)"><use href="#sapling"/></g><g transform="translate(480 400)"><use href="#sapling"/></g>
                 <g transform="translate(60 420)"><use href="#sapling"/></g><g transform="translate(120 420)"><use href="#sapling"/></g><g transform="translate(180 420)"><use href="#sapling"/></g><g transform="translate(240 420)"><use href="#sapling"/></g><g transform="translate(300 420)"><use href="#sapling"/></g><g transform="translate(360 420)"><use href="#sapling"/></g><g transform="translate(420 420)"><use href="#sapling"/></g><g transform="translate(480 420)"><use href="#sapling"/></g>
@@ -291,13 +291,10 @@
                 <filter id="leafShadow" x="-20%" y="-20%" width="140%" height="140%">
                   <feDropShadow dx="0" dy="1" stdDeviation="1.0" flood-color="#000" flood-opacity="0.15" />
                 </filter>
-
-                <!-- Green fill animation (reverted: mask with rect that grows) -->
                 <mask id="fillMask" maskUnits="userSpaceOnUse" x="100" y="150" width="380" height="220">
                   <rect fill="#000" x="100" y="150" width="380" height="220"/>
                   <rect id="fillRect" x="110" y="316" width="360" height="0" fill="#fff"/>
                 </mask>
-
                 <linearGradient id="canopyBaseDarker" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stop-color="#a3e3b5" />
                   <stop offset="100%" stop-color="#7fce9d" />
@@ -308,18 +305,13 @@
                 <path id="canopyWhite" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="url(#canopyBaseDarker)"/>
                 <path id="canopyFillGreen" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="#3aa85f" mask="url(#fillMask)"/>
                 <path id="canopyOutline" d="M 130 210 C 160 172, 205 158, 235 172 C 255 152, 275 150, 295 165 C 315 150, 335 152, 345 172 C 365 158, 410 170, 430 210 C 446 236, 454 260, 430 284 C 405 306, 360 314, 340 304 C 312 322, 248 322, 220 304 C 195 314, 150 306, 130 284 C 110 262, 112 232, 130 210 Z" fill="transparent" stroke="#065f46" stroke-width="3" />
-
-                <!-- trunk and branches -->
                 <path d="M 280 380 C 280 350, 280 320, 280 284" fill="none" stroke="#4e342e" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
                 <path d="M 280 284 C 270 270, 258 255, 248 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
                 <path d="M 280 284 C 290 270, 302 255, 312 238" fill="none" stroke="#4e342e" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
-
-                <!-- leaf layer -->
                 <g id="leafLayer" filter="url(#leafShadow)"></g>
               </g>
             </svg>
 
-            <!-- Rain overlay (reverted style) -->
             <div id="rainTop" class="rainTop" aria-hidden="true"></div>
 
           </div>
@@ -399,20 +391,16 @@
   </div>
 
   <script>
-    // App keys and constants
-    const APP_KEY='pomodoroTree_singlefile_restore_leaf_fill_rain_original';
+    const APP_KEY='pomodoroTree_singlefile_restored_core';
     const GLOBAL_KEY=APP_KEY+'_global';
     const NAMES_KEY=APP_KEY+'_names';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simplex:'simplex' };
 
-    // Storage helpers
     const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } };
     const save=(k,v)=> localStorage.setItem(k, JSON.stringify(v));
 
-    // Global
     const G = load(GLOBAL_KEY, { selectedMode:'maths', timerType:TIMER_TYPES.pomodoro });
 
-    // State
     const DEFAULT_TIMER_STATE = {
       leavesPerTree:9, placed:0, secondsLeft:25*60,
       weeklyTargetLocked:false, weeklyTargetSetValue:9, lockWeek:undefined, lockYear:undefined,
@@ -432,7 +420,6 @@
     let currentTimerType = G.timerType || TIMER_TYPES.pomodoro;
     let S = loadState(currentMode, currentTimerType);
 
-    // DOM refs
     const $ = id => document.getElementById(id);
 
     const modeSelect = $('modeSelect');
@@ -451,7 +438,6 @@
     const startBtn = $('startBtn');
     const resetBtn = $('resetBtn');
 
-    const lptWrap = $('lptWrap');
     const lptInput = $('lptInput');
     const lptSetBtn = $('lptSetBtn');
     const weeklyTargetEl = $('weeklyTarget');
@@ -470,9 +456,9 @@
 
     const treeGrid=$('treeGrid'), gridCount=$('gridCount');
 
-    const leafLayer = document.querySelector('#treeSVG #leafLayer');
+    const treeSVG = document.getElementById('treeSVG');
+    const leafLayer = treeSVG.querySelector('#leafLayer');
 
-    // Names
     let CUSTOM_NAMES = load(NAMES_KEY,{});
     const DEFAULT_MODE_NAMES={
       exercise:'Exercise mode', cycling:'Cycling mode', digitalDetox:'Digital detox mode', bedTime:'Bed-time mode',
@@ -490,10 +476,8 @@
         o.value=id; o.textContent=nameFor(id);
         f.appendChild(o);
       }
-      modeSelect.innerHTML='';
-      modeSelect.appendChild(f);
-      modeSelect.value=currentMode;
-      refreshModeHeader();
+      modeSelect.innerHTML=''; modeSelect.appendChild(f);
+      modeSelect.value=currentMode; refreshModeHeader();
     }
 
     function refreshModeHeader(){
@@ -519,20 +503,13 @@
     modeSelect.addEventListener('change', ()=>{
       saveState(currentMode,currentTimerType,S);
       currentMode = modeSelect.value;
-      G.selectedMode = currentMode;
-      save(GLOBAL_KEY, G);
+      G.selectedMode = currentMode; save(GLOBAL_KEY, G);
       S = loadState(currentMode, currentTimerType);
       rolloverWeekIfNeeded();
       refreshModeHeader();
-      renderLeaves();
-      renderGrid();
-      updateModeVisibility();
-      renderStats();
-      setClockAndButtons();
-      hydrateInputsFromState();
+      renderLeaves(); renderGrid(); updateModeVisibility(); renderStats(); setClockAndButtons(); hydrateInputsFromState();
     });
 
-    // Country dropdown
     const countrySearch=$('countrySearch'), countryList=$('countryList');
     const COUNTRY_TZ=[{name:'Japan',tz:'Asia/Tokyo'},{name:'India',tz:'Asia/Kolkata'},{name:'United Kingdom',tz:'Europe/London'},{name:'United States',tz:'America/New_York'},{name:'Canada',tz:'America/Toronto'},{name:'Australia',tz:'Australia/Sydney'},{name:'UAE',tz:'Asia/Dubai'},{name:'Bangladesh',tz:'Asia/Dhaka'},{name:'China',tz:'Asia/Shanghai'},{name:'Germany',tz:'Europe/Berlin'},{name:'France',tz:'Europe/Paris'},{name:'Brazil',tz:'America/Sao_Paulo'}].sort((a,b)=> a.name.localeCompare(b.name));
     function renderCountryList(filter=''){
@@ -547,11 +524,10 @@
     document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
     countryList.addEventListener('click', (e)=>{ const it=e.target.closest('.drop-item'); if(!it) return; countrySearch.value=it.getAttribute('data-name'); countryList.style.display='none'; });
 
-    // Week calc
     function sundayWeekOf(date){
       const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       const yearStart = new Date(d.getFullYear(), 0, 1);
-      const startWeekday = yearStart.getDay(); // 0=Sun
+      const startWeekday = yearStart.getDay();
       const offset = (7 - startWeekday) % 7;
       const dayOfYear = Math.floor((d - yearStart)/86400000);
       const week = (dayOfYear < offset) ? 1 : Math.floor((dayOfYear - offset)/7) + 1;
@@ -565,22 +541,17 @@
         const completed = S.placed>=S.leavesPerTree && S.leavesPerTree>0;
         S.grid.unshift({week:S._week,year:S._year,live:completed,ts:Date.now()});
         if(S.grid.length>52) S.grid.pop();
-
         S._week=week; S._year=year;
         S.weeklyLeaves=0; S.weeklyFocusSeconds=0;
         S.placed=0; leafLayer.innerHTML='';
-
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
         S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
-
         S.todayDateKey=null; S.todayLeafCount=0; S.todayExtraSeconds=0;
-
         saveState(currentMode,currentTimerType,S);
         renderGrid();
       }
     }
 
-    // Grid (always 52 cells)
     function renderGrid(){
       treeGrid.innerHTML='';
       for(let i=0;i<52;i++){
@@ -594,7 +565,6 @@
       gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
     }
 
-    // Audio
     let audioCtx=null;
     function ensureAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); } }
     function playAlarm10s(){
@@ -618,7 +588,6 @@
       osc1.stop(now+dur); osc2.stop(now+dur); lfo.stop(now+dur);
     }
 
-    // Timer engine
     let ticker=null, isRunning=false;
 
     function getSessionSeconds(){
@@ -666,7 +635,7 @@
       pctRange.style.background = `linear-gradient(90deg, var(--slider-green) ${pct}%, var(--slider-done) ${pct}%)`;
     }
 
-    // Leaf placement (restored)
+    // Leaf placement and canopy fill updates (restored)
     const CANOPY_BOX = { cx:280, cy:250, rx:160, ry:90 };
     const LEAF_R = 22;
     function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx, dy); }
@@ -698,6 +667,13 @@
     }
 
     function renderLeaves(){
+      // keep leaf layer last so it’s painted on top
+      const group = document.getElementById('canopyGroup');
+      const layer = document.getElementById('leafLayer');
+      if(group && layer && layer !== group.lastElementChild){
+        group.appendChild(layer);
+      }
+
       const max = Math.max(S.leavesPerTree||0,0);
       const pts = generateCanopyPoints(max);
       const placed = Math.min(S.placed||0, pts.length);
@@ -708,7 +684,7 @@
       }
       leafLayer.innerHTML = g.join('');
 
-      // animate green fill by adjusting mask rect height (restored)
+      // Update mask rect to animate green fill level
       const canopyHeight = Math.round((placed/Math.max(1, max))*140);
       const fillRect=document.getElementById('fillRect');
       fillRect.setAttribute('y', String(316 - canopyHeight));
@@ -733,7 +709,7 @@
       setClockAndButtons();
     }
 
-    // Rain (restored simple generator), only when running
+    // Rain (original simple effect)
     let rainRAF=null;
     function spawnRain(count=90){
       rainTop.innerHTML='';
@@ -761,7 +737,6 @@
       rainTop.innerHTML='';
     }
 
-    // Timer engine
     function startTimer(){
       if(isRunning) return;
       isRunning = true;
@@ -773,9 +748,8 @@
       }
       S.lastRealTS = now;
       saveState(currentMode,currentTimerType,S);
-
-      renderLeaves();   // adds animation class for leaves while running
-      startRain();      // start rain (restored style)
+      renderLeaves(); // enable leaf animation via class
+      startRain();    // original rain
       setClockAndButtons();
 
       ticker = setInterval(()=>{
@@ -791,7 +765,7 @@
           S.placed = Math.min((S.placed||0)+1, S.leavesPerTree||0);
           saveState(currentMode,currentTimerType,S);
           stopRain();
-          renderAll();   // removes animation class as isRunning=false
+          renderAll(); // re-renders without animation class
           try{ ensureAudio(); playAlarm10s(); }catch{}
         }
       }, 250);
@@ -804,11 +778,10 @@
       S.secondsLeft = getSessionSeconds();
       saveState(currentMode,currentTimerType,S);
       stopRain();
-      renderLeaves(); // re-render without running class
+      renderLeaves();
       setClockAndButtons();
     }
 
-    // Apply/Set helpers
     function clampInt(v, min, max){ v = Math.floor(Number(v)||0); return Math.min(max, Math.max(min, v)); }
 
     function applyLeavesPerWeek(newLpt){
@@ -844,7 +817,6 @@
       simpleMin.value = String(Math.round((S.simpleSeconds||1500)/60));
     }
 
-    // Wire controls
     startBtn.addEventListener('click', (e)=>{ e.preventDefault(); startTimer(); });
     resetBtn.addEventListener('click', (e)=>{ e.preventDefault(); resetTimer(); });
 
@@ -872,8 +844,7 @@
     timerTypeSelect.addEventListener('change', ()=>{
       saveState(currentMode,currentTimerType,S);
       currentTimerType = timerTypeSelect.value;
-      G.timerType = currentTimerType;
-      save(GLOBAL_KEY, G);
+      G.timerType = currentTimerType; save(GLOBAL_KEY, G);
       S = loadState(currentMode, currentTimerType);
       rolloverWeekIfNeeded();
       updateModeVisibility();
@@ -891,7 +862,6 @@
       document.getElementById(panel).style.display='flex';
     });
 
-    // Initial boot
     (function init(){
       populateModeSelect();
       timerTypeSelect.value=currentTimerType;
