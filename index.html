@@ -129,16 +129,19 @@
     .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-saplings); }
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:var(--z-tree); }
 
-    /* Rain overlay */
     .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:none; overflow:hidden; }
     .rainTop.active{ display:block; }
-    .rainTop .drop{ position:absolute; top:-28px; width:1.2px; height:34px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 0.9s linear infinite; }
-    .rainTop .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.2s; }
+    .rainTop .drop{ position:absolute; top:-28px; width:1.5px; height:36px; background:rgba(14,42,112,.5); border-radius:2px; animation:rainFall 1s linear infinite; }
+    .rainTop .drop.far{ opacity:.7; transform:scale(.9); animation-duration:1.25s; }
     @keyframes rainFall{ to{ transform:translateY(760px); } }
 
-    /* Leaf animations */
-    @keyframes leafBlinkHue { 0%{ fill:#22c55e; } 50%{ fill:#15803d; } 100%{ fill:#22c55e; } }
+    @keyframes leafBlinkHue {
+      0%{ fill:#22c55e; }
+      50%{ fill:#15803d; }
+      100%{ fill:#22c55e; }
+    }
     .leaf-live path.leafFill{ animation: leafBlinkHue 900ms linear infinite; }
+
     @keyframes leafPop { 0%{ transform:scale(0); opacity:0; } 80%{ transform:scale(1.08); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
     .leaf-pop{ animation: leafPop 380ms ease-out forwards; transform-origin:center; transform-box:fill-box; }
 
@@ -409,13 +412,11 @@
       placed:0,
       secondsLeft:25*60,
 
-      // LPT weekly lock fields
       weeklyTargetLocked:false,
       weeklyTargetSetValue:9,
       lockWeek:undefined,
       lockYear:undefined,
 
-      // Custom time lock kept but UI texts removed earlier
       customLocked:false,
       customLockWeek:undefined,
       customLockYear:undefined,
@@ -439,7 +440,9 @@
       todayExtraSeconds:0,
 
       targetEndTS:null,
-      lastRealTS:null
+      lastRealTS:null,
+
+      liveLeafIndex:null
     };
 
     const modeTimerKey=(mode,timer)=> `${APP_KEY}_mode_${mode}_timer_${timer}`;
@@ -472,8 +475,6 @@
     const lptInput = $('lptInput');
     const lptSetBtn = $('lptSetBtn');
     const lptLockNote = $('lptLockNote');
-    const lptLabel = $('lptLabel');
-    const lptHelper = $('lptHelper');
 
     const weeklyTargetEl = $('weeklyTarget');
 
@@ -481,7 +482,7 @@
     const thePctValue = $('pctValue');
 
     const todaySky = $('todaySky');
-    const xySky = document.querySelectorAll('#xySky')[1] || document.querySelector('#xySky'); // second added below treeBox
+    const xySky = document.querySelectorAll('#xySky')[1] || document.querySelector('#xySky');
 
     const rainTop = $('rainTop');
 
@@ -573,7 +574,6 @@
       const {week,year}=sundayWeekOf(new Date());
       if(S._week===undefined || S._year===undefined){
         S._week=week; S._year=year;
-        // reset lock on first init of week
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
         saveState(currentMode,currentTimerType,S);
         return;
@@ -585,13 +585,13 @@
 
         S._week=week; S._year=year;
         S.weeklyLeaves=0; S.weeklyFocusSeconds=0;
-        S.placed=0; leafLayer.innerHTML='';
+        S.placed=0; if(leafLayer) leafLayer.innerHTML='';
 
-        // unlock both LPT and custom at week rollover
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
         S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
 
         S.todayDateKey=null; S.todayLeafCount=0; S.todayExtraSeconds=0;
+        S.liveLeafIndex=null;
 
         saveState(currentMode,currentTimerType,S);
         renderGrid();
@@ -681,7 +681,6 @@
       pctRange.style.background = `linear-gradient(90deg, var(--slider-green) ${pct}%, var(--slider-done) ${pct}%)`;
     }
 
-    // Leaves placement rules
     const CANOPY_BOX = { cx:280, cy:250, rx:160, ry:90 };
     const LEAF_R = 22;
     const LEAF_MARGIN = 10;
@@ -694,13 +693,13 @@
       const ny=(y-CANOPY_BOX.cy)/(CANOPY_BOX.ry - LEAF_MARGIN);
       const inside = (nx*nx + ny*ny) <= 1.0;
       if(!inside) return false;
-      if(y > 272) return false; // avoid trunk/branches area
+      if(y > 272) return false;
       return true;
     }
 
     function generateCanopyPoints(maxPoints){
       const pts = [];
-      const triesPerPoint = 200;
+      const triesPerPoint = 220;
       for(let i=0;i<maxPoints;i++){
         let placed=false, attempts=0;
         while(!placed && attempts<triesPerPoint){
@@ -720,214 +719,253 @@
       return pts;
     }
 
+    function leafGroupHTML(number, blinking){
+      const textFill = '#ffffff';
+      const baseColor = blinking ? '#22c55e' : '#14532d';
+      return `
+        <g class="${blinking ? 'leaf-live' : ''}">
+          <path class="leafFill" d="M 0 0 C 14 -8, 26 -6, 34 0 C 26 6, 14 8, 0 0 z" fill="${baseColor}" stroke="#166534" stroke-width="2"/>
+          <path d="M 0 0 C 8 -2, 20 -2, 34 0" fill="none" stroke="#14532d" stroke-width="1.4" />
+          <text x="17" y="3.5" text-anchor="middle" dominant-baseline="middle" font-weight="800" font-size="14" fill="${textFill}">${number}</text>
+        </g>
+      `;
+    }
+
     function renderLeaves(){
+      if(!leafLayer) return;
+      leafLayer.innerHTML = '';
       const max = Math.max(S.leavesPerTree||0, 0);
       const pts = generateCanopyPoints(max);
-      const placed = Math.min(S.placed||0, pts.length);
-      const g = [];
-      for(let i=0;i<placed;i++){
-        const p=pts[i];
-        g.push(`<g class="leaf-pop${isRunning?' leaf-live':''}"><path class="leafFill" d="M ${p.x} ${p.y} c 8 -10, 16 -10, 22 0 c -8 10, -16 10, -22 0 z" fill="#22c55e" stroke="#15803d" stroke-width="2"/></g>`);
+      if(!S.canopySeedWeek || S.canopySeedWeek!==S._week || S.canopySeedYear!==S._year){
+        S.canopyPoints = pts;
+        S.canopySeedWeek = S._week;
+        S.canopySeedYear = S._year;
+        saveState(currentMode,currentTimerType,S);
+      } else if (!Array.isArray(S.canopyPoints) || S.canopyPoints.length<max){
+        S.canopyPoints = pts;
+        saveState(currentMode,currentTimerType,S);
       }
-      leafLayer.innerHTML = g.join('');
-      const canopyHeight = Math.round((placed/Math.max(1, max))*140);
-      const fillRect=document.getElementById('fillRect');
-      fillRect.setAttribute('y', String(316 - canopyHeight));
-      fillRect.setAttribute('height', String(canopyHeight));
-    }
+      const points = (S.canopyPoints||pts).slice(0, max);
+      const placed = Math.min(S.placed||0, points.length);
 
-    function updateModeVisibility(){
-      const isSimplex = currentTimerType==='simplex';
-      // LPT hidden entirely in simplex
-      lptWrap.classList.toggle('hidden', isSimplex);
-      // x/y shown only for pomodoro/custom
-      xySky.style.display = isSimplex ? 'none' : 'block';
-      // minute inputs visibility per timer
-      customInputs.style.display = currentTimerType==='custom' ? 'flex' : 'none';
-      simpleInputs.classList.toggle('hidden', !isSimplex);
-      // lock note only relevant in pomodoro/custom
-      lptLockNote.classList.toggle('hidden', isSimplex || !S.weeklyTargetLocked);
-      // disable LPT inputs when locked (pomodoro/custom)
-      lptInput.disabled = (!isSimplex) && S.weeklyTargetLocked;
-      lptSetBtn.disabled = (!isSimplex) && S.weeklyTargetLocked;
-      lptHelper.textContent = isSimplex ? 'Simplex mode does not track weekly leaves' : 'LPT = No. of timer sessions per week';
-      lptLabel.textContent = isSimplex ? 'Leaves per week (disabled in Simplex)' : 'Leaves per week (LPT)';
-    }
+      const frag = document.createDocumentFragment();
+      // Completed/static leaves
+      for(let i=0;i<placed;i++){
+        const p = points[i];
+        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.setAttribute('class','leaf-pop');
+        g.setAttribute('transform',`translate(${p.x-17}, ${p.y-10}) rotate(${(p.x+p.y)%40-20})`);
+        g.innerHTML = leafGroupHTML(i+1, false);
+        frag.appendChild(g);
+      }
 
-    function renderStats(){
-      renderWeeklyTarget();
-      updateSliderFill();
-      renderTodayDuration();
+      // Live blinking leaf while timer is running
+      if(isRunning){
+        // Ensure the live index is the next slot
+        S.liveLeafIndex = placed < points.length ? placed : null;
+      }else{
+        // Not running: no live leaf unless secondsLeft>0 started; keep null
+        S.liveLeafIndex = null;
+      }
+
+      if(S.liveLeafIndex!=null && points[S.liveLeafIndex]){
+        const p = points[S.liveLeafIndex];
+        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        // Put live leaf last so it stays top-most visually
+        g.setAttribute('class','leaf-pop');
+        g.setAttribute('transform',`translate(${p.x-17}, ${p.y-10}) rotate(${(p.x+p.y)%40-20})`);
+        g.innerHTML = leafGroupHTML(placed+1, true);
+        frag.appendChild(g);
+      }
+
+      leafLayer.appendChild(frag);
       updateXY();
     }
 
     function updateXY(){
-      if(currentTimerType==='simplex'){
-        xySky.style.display='none';
-        return;
-      }
-      const x = Math.min(S.placed||0, S.leavesPerTree||0);
-      const y = Math.max(S.leavesPerTree||0, 0);
-      xySky.textContent = `${x} / ${y} leaves`;
-      xySky.style.display='block';
+      const total = Math.max(0, Number(S.leavesPerTree)||0);
+      const placed = Math.min(Number(S.placed)||0, total);
+      if(xySky){ xySky.style.display='block'; xySky.textContent = `${placed} / ${total} leaves`; }
     }
 
-    function renderAll(){
+    function updateModeVisibility(){
+      customInputs.style.display = currentTimerType==='custom' ? 'block' : 'none';
+      simpleInputs.classList.toggle('hidden', currentTimerType!=='simplex');
+    }
+
+    function hydrateInputsFromState(){
+      lptInput.value = S.leavesPerTree||9;
+      customMin.value = Math.max(1, Math.round((S.customSeconds||1500)/60));
+      simpleMin.value = Math.max(1, Math.round((S.simpleSeconds||1500)/60));
+      lptLockNote.classList.toggle('hidden', !S.weeklyTargetLocked);
+      lptInput.disabled = !!S.weeklyTargetLocked;
+      lptSetBtn.disabled = !!S.weeklyTargetLocked;
+      renderWeeklyTarget();
+      updateSliderFill();
+    }
+
+    function plantOneLeaf(){
+      S.placed = Math.min((S.placed||0)+1, Math.max(0, S.leavesPerTree||0));
+      S.weeklyLeaves = (S.weeklyLeaves||0)+1;
+      S.todayLeafCount = (S.todayLeafCount||0)+1;
+      S.liveLeafIndex = null;
       renderLeaves();
-      renderGrid();
-      renderStats();
-      setClockAndButtons();
+      updateSliderFill();
+      saveState(currentMode,currentTimerType,S);
     }
 
-    // Rain control (only when running; denser)
-    let rainRAF=null;
-    function spawnRain(count){
-      rainTop.innerHTML='';
-      const rect = rainTop.getBoundingClientRect();
-      const width = rect.width || 560;
-      for(let i=0;i<count;i++){
-        const d=document.createElement('div');
-        d.className='drop'+(Math.random()<0.45?' far':'');
-        d.style.left = Math.round(Math.random()*width)+'px';
-        d.style.animationDelay = (Math.random()*1.2)+'s';
-        d.style.height = (22+Math.random()*28)+'px';
-        rainTop.appendChild(d);
-      }
-    }
-    function startRain(){
-      if(rainRAF) return;
-      rainTop.classList.add('active');
-      const base = Math.max(200, Math.floor((rainTop.clientWidth||560)/2.5));
-      spawnRain(base);
-      const loop=()=>{ rainRAF = requestAnimationFrame(()=>{ if(!isRunning){ stopRain(); return; } if(Math.random()<0.02){ spawnRain(base); } loop(); }); };
-      loop();
-    }
-    function stopRain(){
-      if(rainRAF){ cancelAnimationFrame(rainRAF); rainRAF=null; }
-      rainTop.classList.remove('active');
-      rainTop.innerHTML='';
+    function ensureTicker(){
+      if(ticker) return;
+      ticker = setInterval(()=>{
+        if(!isRunning) return;
+        const now = Date.now();
+        if(!S.lastRealTS) S.lastRealTS = now;
+        const delta = Math.max(0, now - S.lastRealTS);
+        S.lastRealTS = now;
+
+        S.secondsLeft = Math.max(0, (S.targetEndTS ? Math.ceil((S.targetEndTS - now)/1000) : S.secondsLeft - Math.round(delta/1000)));
+        if(S.secondsLeft <= 0){
+          isRunning = false;
+          S.secondsLeft = 0;
+          S.targetEndTS = null;
+          S.lastRealTS = null;
+          S.totalFocusSeconds = (S.totalFocusSeconds||0) + getSessionSeconds();
+          S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + getSessionSeconds();
+          plantOneLeaf();
+          try{ playAlarm10s(); }catch(e){}
+          setClockAndButtons();
+          renderTodayDuration();
+          stopRain();
+          saveState(currentMode,currentTimerType,S);
+          return;
+        }
+
+        ensureTodayCounters();
+        S.todayExtraSeconds = (S.todayExtraSeconds||0) + Math.round(delta/1000);
+        // While running, keep the live blinking leaf rendered
+        renderLeaves();
+        setClockAndButtons();
+        renderTodayDuration();
+        saveState(currentMode,currentTimerType,S);
+      }, 250);
     }
 
     function startTimer(){
       if(isRunning) return;
       isRunning = true;
-      const now = Date.now();
-      const session = getSessionSeconds();
-      if(!S.targetEndTS){
-        S.secondsLeft = session;
-        S.targetEndTS = now + session*1000;
+      const secs = getSessionSeconds();
+      if(S.secondsLeft<=0 || Math.abs(S.secondsLeft - secs) > 1){
+        S.secondsLeft = secs;
       }
-      S.lastRealTS = now;
-      saveState(currentMode,currentTimerType,S);
-      ensureAudio();
-      renderLeaves();
-      startRain();
+      S.targetEndTS = Date.now() + S.secondsLeft*1000;
+      S.lastRealTS = Date.now();
       setClockAndButtons();
-
-      ticker = setInterval(()=>{
-        const now = Date.now();
-        S.secondsLeft = Math.max(0, Math.round((S.targetEndTS - now)/1000));
-        setClockAndButtons();
-        renderTodayDuration();
-        if(S.secondsLeft<=0){
-          clearInterval(ticker); ticker=null; isRunning=false;
-          S.targetEndTS=null; S.lastRealTS=null;
-          S.weeklyLeaves = (S.weeklyLeaves||0)+1;
-          S.todayLeafCount = (S.todayLeafCount||0)+1;
-          S.placed = Math.min((S.placed||0)+1, S.leavesPerTree||0);
-          saveState(currentMode,currentTimerType,S);
-          stopRain();
-          renderAll();
-          try{ playAlarm10s(); }catch{}
-        }
-      }, 250);
+      ensureTicker();
+      renderTodayDuration();
+      startRain();
+      renderLeaves();
+      saveState(currentMode,currentTimerType,S);
     }
 
     function resetTimer(){
-      if(ticker){ clearInterval(ticker); ticker=null; }
-      isRunning=false;
-      S.targetEndTS=null; S.lastRealTS=null;
+      isRunning = false;
+      S.targetEndTS = null;
+      S.lastRealTS = null;
       S.secondsLeft = getSessionSeconds();
-      saveState(currentMode,currentTimerType,S);
+      S.liveLeafIndex = null; // remove the running leaf
       stopRain();
-      renderLeaves();
       setClockAndButtons();
+      renderTodayDuration();
+      renderLeaves(); // re-render without live leaf
+      saveState(currentMode,currentTimerType,S);
     }
 
-    function clampInt(v, min, max){ v = Math.floor(Number(v)||0); return Math.min(max, Math.max(min, v)); }
-
-    // Enforce weekly lock for LPT in pomodoro/custom; hide in simplex
-    function applyLeavesPerWeek(newLpt){
-      const {week,year}=sundayWeekOf(new Date());
-      const isSimplex = currentTimerType==='simplex';
-      if(isSimplex){
-        return; // not applicable
-      }
-      if(S.weeklyTargetLocked && S.lockWeek===week && S.lockYear===year){
-        updateModeVisibility();
-        return;
-      }
-      S.leavesPerTree = newLpt;
-      S.weeklyTargetSetValue = newLpt;
-      // lock now for this week
+    function lockWeeklyTarget(){
       S.weeklyTargetLocked = true;
-      S.lockWeek = week;
-      S.lockYear = year;
-      saveState(currentMode, currentTimerType, S);
+      S.weeklyTargetSetValue = S.leavesPerTree||9;
+      S.lockWeek = S._week;
+      S.lockYear = S._year;
+    }
+
+    function tryUnlockOnWeekRollover(){
+      if(S.lockWeek!==S._week || S.lockYear!==S._year){
+        S.weeklyTargetLocked = false;
+        S.lockWeek = undefined;
+        S.lockYear = undefined;
+      }
+    }
+
+    function setLeavesPerTree(v){
+      const n = Math.max(1, Math.min(200, Math.round(Number(v)||9)));
+      if(S.weeklyTargetLocked) return;
+      S.leavesPerTree = n;
+      S.placed = Math.min(S.placed||0, n);
+      if(S.liveLeafIndex!=null && S.liveLeafIndex>=n) S.liveLeafIndex=null;
       renderWeeklyTarget();
       updateSliderFill();
       renderLeaves();
-      updateModeVisibility();
-      updateXY();
+      saveState(currentMode,currentTimerType,S);
     }
 
-    function applyCustomMinutes(min){
-      const secs = clampInt(min, 1, 999)*60;
-      S.customSeconds = secs;
-      if(!isRunning){ S.secondsLeft = secs; }
-      saveState(currentMode, currentTimerType, S);
-      renderWeeklyTarget();
-      setClockAndButtons();
+    function setCustomMinutes(mins){
+      const m = Math.max(1, Math.min(999, Math.round(Number(mins)||25)));
+      S.customSeconds = m*60;
+      if(currentTimerType==='custom'){
+        S.secondsLeft = S.customSeconds;
+        setClockAndButtons();
+        renderWeeklyTarget();
+      }
+      saveState(currentMode,currentTimerType,S);
     }
 
-    function applySimpleMinutes(min){
-      const secs = clampInt(min, 1, 999)*60;
-      S.simpleSeconds = secs;
-      if(!isRunning){ S.secondsLeft = secs; }
-      saveState(currentMode, currentTimerType, S);
-      renderWeeklyTarget();
-      setClockAndButtons();
+    function setSimpleMinutes(mins){
+      const m = Math.max(1, Math.min(999, Math.round(Number(mins)||25)));
+      S.simpleSeconds = m*60;
+      if(currentTimerType==='simplex'){
+        S.secondsLeft = S.simpleSeconds;
+        setClockAndButtons();
+        renderWeeklyTarget();
+      }
+      saveState(currentMode,currentTimerType,S);
     }
 
-    function hydrateInputsFromState(){
-      lptInput.value = String(S.weeklyTargetSetValue||S.leavesPerTree||9);
-      customMin.value = String(Math.round((S.customSeconds||1500)/60));
-      simpleMin.value = String(Math.round((S.simpleSeconds||1500)/60));
+    // Improved rain: evenly spaced lanes with staggered time, randomized speed within bound
+    function startRain(){
+      rainTop.innerHTML = '';
+      const lanes = 28; // moderate density across width
+      const w = rainTop.clientWidth || 560;
+      // Use equal spacing to avoid spatial clumps
+      for(let i=0;i<lanes;i++){
+        const d = document.createElement('div');
+        d.className = 'drop';
+        const leftPct = ((i+0.5)/lanes)*100; // center each lane
+        d.style.left = leftPct+'%';
+        // Staggered negative delays so drops are distributed over time
+        const dur = 0.9 + (i%3)*0.15; // small set of durations to break sync
+        const phase = -(i/lanes)*dur; // spread along timeline
+        d.style.animationDuration = dur+'s';
+        d.style.animationDelay = phase+'s';
+        if(i%4===0) d.classList.add('far');
+        rainTop.appendChild(d);
+      }
+      rainTop.classList.add('active');
+    }
+    function stopRain(){
+      rainTop.classList.remove('active');
+      rainTop.innerHTML = '';
     }
 
-    startBtn.addEventListener('click', (e)=>{ e.preventDefault(); startTimer(); });
-    resetBtn.addEventListener('click', (e)=>{ e.preventDefault(); resetTimer(); });
+    startBtn.addEventListener('click', startTimer);
+    resetBtn.addEventListener('click', resetTimer);
 
-    lptSetBtn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      const v = clampInt(lptInput.value, 1, 200);
-      lptInput.value = String(v);
-      applyLeavesPerWeek(v);
+    lptSetBtn.addEventListener('click', ()=>{
+      setLeavesPerTree(lptInput.value);
+      lockWeeklyTarget();
+      hydrateInputsFromState();
     });
 
-    applyCustomBtn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      const v = clampInt(customMin.value, 1, 999);
-      customMin.value = String(v);
-      applyCustomMinutes(v);
-    });
-
-    applySimpleBtn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      const v = clampInt(simpleMin.value, 1, 999);
-      simpleMin.value = String(v);
-      applySimpleMinutes(v);
-    });
+    applyCustomBtn.addEventListener('click', ()=> setCustomMinutes(customMin.value));
+    applySimpleBtn.addEventListener('click', ()=> setSimpleMinutes(simpleMin.value));
 
     timerTypeSelect.addEventListener('change', ()=>{
       saveState(currentMode,currentTimerType,S);
@@ -936,29 +974,40 @@
       S = loadState(currentMode, currentTimerType);
       rolloverWeekIfNeeded();
       updateModeVisibility();
+      renderWeeklyTarget();
+      updateSliderFill();
+      renderLeaves();
+      setClockAndButtons();
       hydrateInputsFromState();
-      renderAll();
+      updateXY();
     });
 
-    const tabs = document.getElementById('tabs');
+    const tabs = $('tabs');
     tabs.addEventListener('click', (e)=>{
       const t = e.target.closest('.tab'); if(!t) return;
-      document.querySelectorAll('.tab').forEach(x=> x.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       t.classList.add('active');
-      const panel=t.getAttribute('data-tab');
+      const id = t.getAttribute('data-tab');
       document.querySelectorAll('.panelCard').forEach(p=> p.style.display='none');
-      document.getElementById(panel).style.display='flex';
+      $(id).style.display = 'flex';
     });
+
+    function renderStats(){ renderWeeklyTarget(); renderTodayDuration(); updateSliderFill(); }
 
     (function init(){
       populateModeSelect();
-      timerTypeSelect.value=currentTimerType;
+      timerTypeSelect.value = currentTimerType;
       rolloverWeekIfNeeded();
+      tryUnlockOnWeekRollover();
+      renderGrid();
       updateModeVisibility();
       hydrateInputsFromState();
-      renderAll();
+      renderLeaves();
+      S.secondsLeft = getSessionSeconds();
+      setClockAndButtons();
+      renderTodayDuration();
       updateXY();
-      window.addEventListener('resize', ()=>{ if(isRunning) startRain(); });
+      ensureTicker();
     })();
   </script>
 </body>
