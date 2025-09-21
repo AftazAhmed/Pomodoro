@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Study Mode (01:00)</title>
+  <title>Pomodoro Tree — Study Mode</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-G91N05XLB3"></script>
@@ -27,6 +27,10 @@
       --btn-neutral:#334155; --btn-neutral-hover:#1f2937; --btn-focus:#0ea5e9;
       --progress-green:#16a34a; --progress-red:#ef4444; --track-bg:#e6efff;
       --xy-font:28.35px;
+
+      /* soil colors for grass band only */
+      --soil-top:#e8d0b0;
+      --soil-deep:#caa879;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
@@ -63,14 +67,24 @@
 
     .settings{ gap:12px; margin-top:10px; flex-wrap:wrap; justify-content:center; color:var(--dim); flex-direction:column; align-items:center; }
     input[type=range][readonly]{ pointer-events:none; }
-    .numWrap{ display:flex; align-items:center; gap:8px; }
+    .numWrap{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
     .numWrap input{ width:96px; padding:8px 10px; border-radius:12px; border:1px solid var(--line); text-align:center; font-weight:800; }
+
     .estWrap{ margin-top:6px; color:#0b1a33; font-weight:700; font-size:9px; line-height:1.25; text-align:center; min-height:22px; display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; order:-1; width:100%; }
     .miniNote{ color:#4a6894; font-weight:700; }
 
     .treePanel{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; flex-direction:column; box-shadow:var(--shadow); }
     .treeBox{ position:relative; width:560px; height:560px; margin:6px auto; border:1px solid var(--line); border-radius:18px; overflow:hidden; }
-    .sky{ position:absolute; inset:0; background:linear-gradient(180deg,#cfe8ff 0%, #8ec5ff 62%, #bfeec7 62%, #8edaa0 100%); }
+    /* Only green band -> soil */
+    .sky{
+      position:absolute; inset:0;
+      background:linear-gradient(180deg,
+        #cfe8ff 0%,
+        #8ec5ff 62%,
+        var(--soil-top) 62%,
+        var(--soil-deep) 100%);
+    }
+
     .percentLabel{ position:absolute; left:14px; bottom:8px; font:900 81px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#ef4444; text-shadow:0 3px 0 #fff, 0 0 10px rgba(255,255,255,.75); pointer-events:none; letter-spacing:1.5px; z-index:2; }
     .xyLabel{ position:absolute; left:16px; top:14px; font:900 28.35px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; letter-spacing:1px; z-index:2; }
     .todaySky{ position:absolute; left:16px; top:52px; font:800 21px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); pointer-events:none; z-index:2; background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
@@ -129,9 +143,9 @@
     <!-- TOP: Timer and Tree directly under header -->
     <div class="topStack">
       <section class="timerCard">
-        <div class="time" id="clock">01:00</div>
+        <div class="time" id="clock">25:00</div>
         <div class="controls">
-          <button id="startBtn">Start 01:00</button>
+          <button id="startBtn">Start 25:00</button>
           <button id="resetBtn">Reset</button>
         </div>
 
@@ -145,7 +159,7 @@
             </select>
             <div id="customTimeRow" class="numWrap" style="display:none;">
               <label class="miniNote" for="customMinutes">Min</label>
-              <input id="customMinutes" type="number" min="1" max="180" step="1" value="25" />
+              <input id="customMinutes" type="number" min="1" max="180" step="1" value="20" />
               <label class="miniNote" for="customSeconds">Sec</label>
               <input id="customSeconds" type="number" min="0" max="59" step="1" value="0" />
               <button id="applyCustomBtn">Apply</button>
@@ -167,6 +181,7 @@
             <input type="range" id="lptRange" min="1" max="200" step="1" value="9" readonly />
             <span id="lptVal">9</span>
           </div>
+          <!-- Weekly target hidden in custom mode; shows mins only in Pomodoro mode -->
           <div id="weeklyTarget" class="miniNote" style="order:3;">Weekly target = 9 mins (as per LPT)</div>
         </div>
       </section>
@@ -226,12 +241,12 @@
     <!-- Tabs below timezone -->
     <section class="tabsWrap">
       <div class="tabs">
-        <div class="tab active" data-tab="subPanel">Subscription</div>
+        <div class="tab" data-tab="subPanel">Subscription</div>
         <div class="tab" data-tab="syncPanel">Sync</div>
-        <div class="tab" data-tab="modesPanel">Modes</div>
+        <div class="tab active" data-tab="modesPanel">Modes</div>
       </div>
 
-      <div id="subPanel" class="panelCard" style="display:flex;">
+      <div id="subPanel" class="panelCard">
         <div id="subStatus">Plan: Free — 4 weeks cap. Unlock remaining 48 weeks for $1/year.</div>
         <button id="subBtn">Unlock 48 weeks — $1</button>
       </div>
@@ -243,7 +258,7 @@
         <button id="signOutBtn">Sign out</button>
       </div>
 
-      <div id="modesPanel" class="panelCard">
+      <div id="modesPanel" class="panelCard" style="display:flex;">
         <div class="modesBar">
           <div class="modeEditRow" style="flex-basis:100%;">
             <label for="modeSelect" class="modeNote">Mode</label>
@@ -279,16 +294,16 @@
   </div>
 
   <script>
-    const APP_KEY = 'pomodoroTree_SingleMode_1min_V1';
+    const APP_KEY = 'pomodoroTree_SoilFix_V1';
     const NAMES_KEY = APP_KEY + '_customNames';
     const GLOBAL_KEY = APP_KEY + '_global';
     const svgns='http://www.w3.org/2000/svg';
 
-    // Original leaf session length (1 min) remains for progress math
+    // One leaf = 1 minute for weekly target math (unchanged)
     const LEAF_SECONDS=60;
 
-    // New: timer mode switch support
-    const POMODORO_SECONDS = 25*60;        // standard 25:00
+    // Timer selection
+    const POMODORO_SECONDS = 25*60;
     const DEFAULT_CUSTOM_MIN = 20;
     const MAX_CUSTOM_MIN = 180;
 
@@ -320,7 +335,7 @@
 
     const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
     const DEFAULT_STATE = {
-      leavesPerTree:9, placed:0, secondsLeft:LEAF_SECONDS, running:false,
+      leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS, running:false,
       leavesTotal:0, leavesToday:0, weeklyLeaves:0,
       weeklyFocusSeconds:0, totalFocusSeconds:0,
       grid:[],
@@ -330,8 +345,8 @@
       weeklyTargetLocked:false, weeklyTargetSetValue:9,
       freeWeeksCap:4,
 
-      // NEW: timer selection persisted per mode
-      timerType:'pomodoro',      // 'pomodoro' | 'custom'
+      // timer selection persisted
+      timerType:'pomodoro',
       customSeconds: DEFAULT_CUSTOM_MIN*60
     };
     function loadState(modeId){
@@ -356,7 +371,7 @@
     const startBtn=el('startBtn');
     const resetBtn=el('resetBtn');
 
-    // NEW: timer switch controls
+    // Timer switch controls
     const timerTypeSel = el('timerType');
     const customTimeRow = el('customTimeRow');
     const customMinutes = el('customMinutes');
@@ -383,8 +398,8 @@
       const t=e.target.closest('.tab'); if(!t) return;
       document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       t.classList.add('active');
-      const id=t.getAttribute('data-tab');
       document.querySelectorAll('.panelCard').forEach(p=>p.style.display='none');
+      const id=t.getAttribute('data-tab');
       const panel=document.getElementById(id);
       if(panel) panel.style.display='flex';
     });
@@ -442,6 +457,45 @@
       save();
     }
 
+    // Accurate, drift-resistant countdown using wall clock (Date.now baseline)
+    // Avoid relying on setInterval increments only. [web:67][web:84][web:89]
+    function startSessionWallClock(){
+      const thisMode = currentMode;
+      const targetEpoch = Date.now() + (S.secondsLeft * 1000);
+
+      const tick = ()=>{
+        if(thisMode !== currentMode){ clearModeInterval(thisMode); return; }
+        const remainingMs = Math.max(0, targetEpoch - Date.now());
+        S.secondsLeft = Math.ceil(remainingMs / 1000);
+        clockEl.textContent = format(S.secondsLeft);
+        paintProgressUI();
+        if (remainingMs <= 0) {
+          clearModeInterval(thisMode);
+          onSessionComplete();
+        }
+      };
+
+      const onVisibility=()=>{ if(document.visibilityState==='visible' && intervals[thisMode]) tick(); };
+
+      setRunning(true);
+      tick();
+      clearModeInterval(thisMode);
+      intervals[thisMode] = setInterval(tick, 250); // tighter tick to feel responsive
+      document.addEventListener('visibilitychange', onVisibility, { passive:true });
+
+      startBtn._cleanupVisibility = ()=>document.removeEventListener('visibilitychange', onVisibility);
+    }
+
+    function getSessionSeconds(){
+      return S.timerType==='custom' ? Math.max(1, S.customSeconds|0) : POMODORO_SECONDS;
+    }
+    function setClockToSession(){
+      const sec = getSessionSeconds();
+      S.secondsLeft = sec;
+      clockEl.textContent = format(sec);
+      startBtn.textContent = `Start ${format(sec)}`;
+    }
+
     function rolloverWeekIfNeeded(){
       const nowTz = nowInTZ();
       const { week:wk, year:yr } = isoWeekOf(nowTz);
@@ -453,7 +507,8 @@
         S.weeklyLeaves=0; S.leavesToday=0; S.weeklyFocusSeconds=0;
         S.weeklyComplete=false; S.weeklyTargetLocked=false; S.weeklyTargetSetValue=S.leavesPerTree;
         S.placed=0; S.secondsLeft=getSessionSeconds();
-        if(leafLayer) leafLayer.innerHTML='';
+        const layer=document.querySelector('#treeSVG #leafLayer');
+        if(layer) layer.innerHTML='';
         save();
       }
     }
@@ -496,27 +551,34 @@
       }
     }
 
+    // Natural saplings: slight bends and buds
     function buildSaplings(){
       const g=document.getElementById('saplings');
       if(!g) return;
       g.innerHTML='';
       const cols=7, rows=7;
       const startX=28, endX=532;
-      const grassYStart=560*0.62 + 18;
+      const soilYStart=560*0.62 + 18;
       const rowGap=26;
+      const rnd=(a,b)=>a+Math.random()*(b-a);
+
       for(let r=0;r<rows;r++){
         for(let c=0;c<cols;c++){
-          const x = Math.round(startX + c * ((endX - startX)/(cols-1)));
-          const y = Math.round(grassYStart + r*rowGap);
+          const x = Math.round(startX + c * ((endX - startX)/(cols-1)) + rnd(-5,5));
+          const y = Math.round(soilYStart + r*rowGap + rnd(-2,2));
+          const h = rnd(10,20);
+          const bend = rnd(-4,4);
+          const yTop = y - h;
+
           const stem = document.createElementNS(svgns,'path');
-          stem.setAttribute('d', `M ${x} ${y} l 0 -14`);
+          stem.setAttribute('d', `M ${x} ${y} Q ${x + bend} ${y - h*0.5}, ${x} ${yTop}`);
           stem.setAttribute('stroke','#2f6f3a');
           stem.setAttribute('stroke-width','2');
           stem.setAttribute('fill','none');
           stem.setAttribute('stroke-linecap','round');
 
           const leafL = document.createElementNS(svgns,'path');
-          leafL.setAttribute('d', `M ${x} ${y-12} c -6 -2, -10 -6, -12 -10`);
+          leafL.setAttribute('d', `M ${x} ${yTop} q -6 -3, -10 -8`);
           leafL.setAttribute('stroke','#2f6f3a');
           leafL.setAttribute('stroke-width','2');
           leafL.setAttribute('fill','none');
@@ -524,16 +586,23 @@
           leafL.setAttribute('stroke-linejoin','round');
 
           const leafR = document.createElementNS(svgns,'path');
-          leafR.setAttribute('d', `M ${x} ${y-12} c 6 -2, 10 -6, 12 -10`);
+          leafR.setAttribute('d', `M ${x} ${yTop} q 6 -3, 10 -8`);
           leafR.setAttribute('stroke','#2f6f3a');
           leafR.setAttribute('stroke-width','2');
           leafR.setAttribute('fill','none');
           leafR.setAttribute('stroke-linecap','round');
           leafR.setAttribute('stroke-linejoin','round');
 
+          const bud = document.createElementNS(svgns,'circle');
+          bud.setAttribute('cx', String(x + rnd(-1.2,1.2)));
+          bud.setAttribute('cy', String(yTop + rnd(-1.2,1.2)));
+          bud.setAttribute('r', '1.4');
+          bud.setAttribute('fill', '#356742');
+
           g.appendChild(stem);
           g.appendChild(leafL);
           g.appendChild(leafR);
+          g.appendChild(bud);
         }
       }
     }
@@ -557,12 +626,18 @@
     }
 
     function updateWeeklyTarget(){
-      const mins = S.leavesPerTree; // 1 min per leaf
-      weeklyTargetEl.textContent = `Weekly target = ${mins} mins (as per LPT)`;
+      // Hide weekly target in custom mode
+      if(S.timerType==='custom'){
+        weeklyTargetEl.style.display='none';
+      }else{
+        weeklyTargetEl.style.display='block';
+        const mins = S.leavesPerTree; // 1 min per leaf
+        weeklyTargetEl.textContent = `Weekly target = ${mins} mins (as per LPT)`;
+      }
       lptNoteEl.textContent = 'LPT = No. of 1 min sessions per week';
     }
     function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
-    function minutesForLeaves(n){ return n; } // 1 minute per leaf
+    function minutesForLeaves(n){ return n; }
 
     function renderTotals(){
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
@@ -583,17 +658,6 @@
       const m=String(Math.floor(sec/60)).padStart(2,'0');
       const s=String(sec%60).padStart(2,'0');
       return `${m}:${s}`;
-    }
-
-    function getSessionSeconds(){
-      return S.timerType==='custom' ? Math.max(1, S.customSeconds|0) : POMODORO_SECONDS;
-    }
-
-    function setClockToSession(){
-      const sec = getSessionSeconds();
-      S.secondsLeft = sec;
-      clockEl.textContent = format(sec);
-      startBtn.textContent = `Start ${format(sec)}`;
     }
 
     function setRunning(on){
@@ -625,13 +689,16 @@
       renderTotals();
       populateTimeZonesIfNeeded();
       populateModesUI();
-      // sync timer switch UI
+
+      // Sync timer switch UI and button text
       timerTypeSel.value = S.timerType || 'pomodoro';
       customTimeRow.style.display = (S.timerType==='custom') ? 'flex' : 'none';
       const mins = Math.floor((S.customSeconds||DEFAULT_CUSTOM_MIN*60)/60);
       const secs = (S.customSeconds||DEFAULT_CUSTOM_MIN*60)%60;
       customMinutes.value = Math.min(MAX_CUSTOM_MIN, Math.max(1, mins));
       customSeconds.value = Math.min(59, Math.max(0, secs));
+      startBtn.textContent = `Start ${format(getSessionSeconds())}`;
+
       save();
     }
 
@@ -654,7 +721,7 @@
     function onSessionComplete(){
       playAlarm10s();
 
-      // Progress and totals still use 1-min per leaf accounting
+      // weekly/overall are tracked in seconds; add leaf seconds to keep consistent with old UI chips
       S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
 
@@ -676,34 +743,6 @@
       clockEl.textContent=format(S.secondsLeft);
       save();
       renderHUD();
-    }
-
-    function startSessionWallClock(){
-      const thisMode = currentMode;
-      const targetEpoch = Date.now() + (S.secondsLeft * 1000);
-
-      const tick = ()=>{
-        if(thisMode !== currentMode){ clearModeInterval(thisMode); return; }
-        const remainingMs = Math.max(0, targetEpoch - Date.now());
-        S.secondsLeft = Math.ceil(remainingMs / 1000);
-        clockEl.textContent = format(S.secondsLeft);
-        paintProgressUI();
-        if (remainingMs <= 0) {
-          clearModeInterval(thisMode);
-          onSessionComplete();
-        }
-      };
-
-      const onVisibility=()=>{ if(document.visibilityState==='visible' && intervals[thisMode]) tick(); };
-
-      setRunning(true);
-      renderHUD();
-      tick();
-      clearModeInterval(thisMode);
-      intervals[thisMode] = setInterval(tick, 1000);
-      document.addEventListener('visibilitychange', onVisibility, { passive:true });
-
-      startBtn._cleanupVisibility = ()=>document.removeEventListener('visibilitychange', onVisibility);
     }
 
     function startFlow(){
@@ -744,6 +783,7 @@
       S.timerType = timerTypeSel.value==='custom' ? 'custom' : 'pomodoro';
       customTimeRow.style.display = (S.timerType==='custom') ? 'flex' : 'none';
       setClockToSession();
+      updateWeeklyTarget(); // hide if custom
       save();
       renderHUD();
     });
@@ -754,6 +794,7 @@
       S.customSeconds = min*60 + sec;
       if(S.timerType!=='custom'){ S.timerType='custom'; }
       setClockToSession();
+      updateWeeklyTarget();
       save();
       renderHUD();
     });
@@ -762,14 +803,10 @@
     lptInput.addEventListener('input', ()=>{
       const v = clamp(lptInput.value);
       lptVal.textContent = String(v);
-      updateWeeklyTargetPreview(v);
-    });
-    function updateWeeklyTargetPreview(nextLPT){
-      const v = Math.max(1, Math.min(200, Number(nextLPT)||1));
       const mins = v; // 1 min each
       weeklyTargetEl.textContent = `Weekly target = ${mins} mins (as per LPT)`;
       lptNoteEl.textContent = 'LPT = No. of 1 min sessions per week';
-    }
+    });
 
     lptSetBtn.addEventListener('click', ()=>{
       rolloverWeekIfNeeded();
@@ -884,7 +921,8 @@
       G.selectedMode = toId;
       S = loadState(currentMode);
 
-      if (S.secondsLeft <= 0 || S.secondsLeft > 24*3600) S.secondsLeft = getSessionSeconds();
+      const sessionSec = getSessionSeconds();
+      if (S.secondsLeft <= 0 || S.secondsLeft > 24*3600) S.secondsLeft = sessionSec;
 
       const layer=document.querySelector('#treeSVG #leafLayer');
       if(layer) layer.innerHTML='';
@@ -968,9 +1006,16 @@
     signOutBtnBottom?.addEventListener('click', setSignedOut);
 
     // INITIALIZE
+    // Ensure Modes panel is default visible
+    document.querySelectorAll('.tab').forEach(t=>{
+      t.classList.toggle('active', t.getAttribute('data-tab')==='modesPanel');
+    });
+    document.querySelectorAll('.panelCard').forEach(p=>{
+      p.style.display = (p.id==='modesPanel') ? 'flex' : 'none';
+    });
+
     rolloverWeekIfNeeded();
     renderLeavesFromState();
-    // Ensure timer UI and clock reflect state
     timerTypeSel.value = S.timerType || 'pomodoro';
     customTimeRow.style.display = (S.timerType==='custom') ? 'flex' : 'none';
     setClockToSession();
