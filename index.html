@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Pomodoro Tree — Per-Mode, Per-Timer Isolation</title>
+  <title>Pomodoro Tree — Real-Time Timer, Per-Mode/Timer Isolation</title>
   <style>
     :root{
       --bg:#eaf3ff; --surface:#ffffff; --surface-2:#eef6ff; --line:#caddf8;
@@ -12,7 +12,9 @@
       --btn-primary:#2563eb; --btn-primary-hover:#1e40af;
       --btn-success:#16a34a; --btn-danger:#ef4444; --btn-neutral:#334155;
 
-      --slider-done:#16a34a; --slider-left:#e6efff; --slider-track:#e6efff;
+      --slider-done:#ef4444;  /* red base */
+      --slider-left:#e6efff;  /* pale base */
+      --slider-green:#16a34a; /* green completion */
 
       --soil-top:#d1a470; --soil-bottom:#b37b3e;
 
@@ -20,6 +22,7 @@
       --z-dropdown: 1000;
       --z-labels: 2000;
       --z-tree: 3000;
+      --z-saplings: 4000; /* saplings above tree */
       --z-rain: 9999;
     }
     *{ box-sizing:border-box; }
@@ -60,14 +63,14 @@
     #pctRange{
       -webkit-appearance:none; appearance:none;
       width:100%; max-width:360px; height:12px; border-radius:999px; outline:none;
-      background:var(--slider-track); border:1px solid var(--line);
+      background:var(--slider-left); border:1px solid var(--line);
       pointer-events:none;
     }
     #pctRange::-webkit-slider-runnable-track{ height:12px; background:transparent; border-radius:999px; }
     #pctRange::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:0; height:0; border:none; background:transparent; }
     #pctRange::-moz-range-thumb{ width:0; height:0; border:none; background:transparent; }
     #pctRange::-ms-thumb{ width:0; height:0; border:none; background:transparent; }
-    #pctRange::-moz-range-track{ height:12px; background:var(--slider-track); border-radius:999px; }
+    #pctRange::-moz-range-track{ height:12px; background:var(--slider-left); border-radius:999px; }
     #pctValue{ min-width:44px; text-align:right; }
 
     .treePanel{ display:flex; align-items:center; background:#fff; border:1px solid var(--line); border-radius:18px; padding:14px; flex-direction:column; box-shadow:var(--shadow); }
@@ -79,11 +82,13 @@
     .skyOverlay{ position:absolute; left:14px; top:10px; font:800 18px/1.2 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#0b1a33; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
     .todaySky{ position:absolute; left:14px; top:38px; font:800 18px/1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#14563a; text-shadow:0 2px 0 rgba(255,255,255,.65); z-index:var(--z-labels); background:rgba(255,255,255,.55); padding:4px 8px; border-radius:10px; border:1px solid rgba(200,216,238,.8); }
 
-    .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:1; }
+    /* Saplings on top */
+    .saplingsLayer{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-saplings); }
+
     #treeSVG{ position:absolute; left:50%; transform:translateX(-50%) scale(1.2); transform-origin:center bottom; bottom:12px; overflow:visible; width:680px; height:620px; z-index:var(--z-tree); }
 
     .rainTop{ position:absolute; inset:0; pointer-events:none; z-index:var(--z-rain); display:none; }
-    .rainTop .drop{ position:absolute; top:-28px; width:3px; height:28px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 0.8s linear infinite; }
+    .rainTop .drop{ position:absolute; top:-28px; width:1.2px; height:28px; background:rgba(14,42,112,.55); border-radius:2px; animation:rainFall 0.8s linear infinite; }
     .rainTop .drop.far{ opacity:.6; transform:scale(.9); animation-duration:1.1s; }
     @keyframes rainFall{ to{ transform:translateY(760px); } }
 
@@ -119,10 +124,6 @@
     .cell.live{ background:linear-gradient(180deg,#e9fff1,#ffffff); border:2px solid #16a34a; color:#14563a; }
     .icon{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:16px; pointer-events:none; }
 
-    .bottomAuth{ margin:18px auto 0; max-width:560px; justify-content:center; gap:10px; flex-wrap:wrap; color:#4a6894; display:flex; flex-direction:column; align-items:stretch; }
-    .bottomAuth input{ padding:10px 12px; border-radius:12px; border:1px solid var(--line); font-weight:700; }
-    .authRow{ display:flex; gap:8px; flex-wrap:wrap; }
-
     .hidden{ display:none !important; }
 
     @media (max-width: 640px){
@@ -147,6 +148,7 @@
     <div class="topStack">
       <div class="centerRow">
         <section class="timerTypeBar fixedCard vstack" aria-label="Timer type and minutes">
+          <span class="miniNote">Change timer here</span>
           <select id="timerTypeSelect">
             <option value="pomodoro">Pomodoro timer (25 min)</option>
             <option value="custom">Custom timer</option>
@@ -185,16 +187,15 @@
               <div style="display:flex; gap:8px; align-items:center;">
                 <input id="lptInput" type="number" min="1" max="200" step="1" value="9" />
                 <button id="lptSetBtn">Set</button>
-                <span id="lptLockNote" class="miniNote">Editable once per ISO week</span>
+                <span id="lptLockNote" class="miniNote">Editable once per week</span>
               </div>
               <div class="pctRow">
                 <input id="pctRange" type="range" min="0" max="100" step="1" value="0" />
                 <span id="pctValue" class="miniNote">0%</span>
               </div>
               <span id="lptHelper" class="miniNote">LPT = No. of timer sessions per week</span>
+              <div id="weeklyTarget" class="miniNote">Weekly target = 3 hrs 45 mins</div>
             </div>
-            <div id="weeklyTarget" class="miniNote">Weekly target = 3 hrs 45 mins</div>
-            <div id="leavesProgress" class="miniNote"></div>
           </div>
         </section>
       </div>
@@ -208,8 +209,28 @@
             <div id="xySky" class="skyOverlay" style="display:none;">0 / 0 leaves</div>
             <div id="todaySky" class="todaySky">Total duration (today): 0 mins</div>
 
+            <!-- Saplings on top layer -->
             <svg id="saplingsSVG" width="560" height="560" viewBox="0 0 560 560" class="saplingsLayer" aria-hidden="true">
-              <!-- saplings grid omitted for brevity -->
+              <g id="saplings" stroke="#2f6f3a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <defs>
+                  <g id="sapling">
+                    <path d="M0 0 C 0 -7, 5 -14, 9 -20" />
+                    <path d="M9 -20 c 7 2, 10 5, 12 10 c -7 -2, -10 -5, -12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                    <path d="M0 0 C 0 -6, -5 -12, -9 -18" />
+                    <path d="M-9 -18 c -7 2, -10 5, -12 10 c 7 -2, 10 -5, 12 -10 z" fill="#2e7d32" stroke="#1b5e20"/>
+                  </g>
+                </defs>
+                <!-- 72 saplings -->
+                <g transform="translate(60 380)"><use href="#sapling"/></g><g transform="translate(120 380)"><use href="#sapling"/></g><g transform="translate(180 380)"><use href="#sapling"/></g><g transform="translate(240 380)"><use href="#sapling"/></g><g transform="translate(300 380)"><use href="#sapling"/></g><g transform="translate(360 380)"><use href="#sapling"/></g><g transform="translate(420 380)"><use href="#sapling"/></g><g transform="translate(480 380)"><use href="#sapling"/></g>
+                <g transform="translate(60 400)"><use href="#sapling"/></g><g transform="translate(120 400)"><use href="#sapling"/></g><g transform="translate(180 400)"><use href="#sapling"/></g><g transform="translate(240 400)"><use href="#sapling"/></g><g transform="translate(300 400)"><use href="#sapling"/></g><g transform="translate(360 400)"><use href="#sapling"/></g><g transform="translate(420 400)"><use href="#sapling"/></g><g transform="translate(480 400)"><use href="#sapling"/></g>
+                <g transform="translate(60 420)"><use href="#sapling"/></g><g transform="translate(120 420)"><use href="#sapling"/></g><g transform="translate(180 420)"><use href="#sapling"/></g><g transform="translate(240 420)"><use href="#sapling"/></g><g transform="translate(300 420)"><use href="#sapling"/></g><g transform="translate(360 420)"><use href="#sapling"/></g><g transform="translate(420 420)"><use href="#sapling"/></g><g transform="translate(480 420)"><use href="#sapling"/></g>
+                <g transform="translate(60 440)"><use href="#sapling"/></g><g transform="translate(120 440)"><use href="#sapling"/></g><g transform="translate(180 440)"><use href="#sapling"/></g><g transform="translate(240 440)"><use href="#sapling"/></g><g transform="translate(300 440)"><use href="#sapling"/></g><g transform="translate(360 440)"><use href="#sapling"/></g><g transform="translate(420 440)"><use href="#sapling"/></g><g transform="translate(480 440)"><use href="#sapling"/></g>
+                <g transform="translate(60 460)"><use href="#sapling"/></g><g transform="translate(120 460)"><use href="#sapling"/></g><g transform="translate(180 460)"><use href="#sapling"/></g><g transform="translate(240 460)"><use href="#sapling"/></g><g transform="translate(300 460)"><use href="#sapling"/></g><g transform="translate(360 460)"><use href="#sapling"/></g><g transform="translate(420 460)"><use href="#sapling"/></g><g transform="translate(480 460)"><use href="#sapling"/></g>
+                <g transform="translate(60 480)"><use href="#sapling"/></g><g transform="translate(120 480)"><use href="#sapling"/></g><g transform="translate(180 480)"><use href="#sapling"/></g><g transform="translate(240 480)"><use href="#sapling"/></g><g transform="translate(300 480)"><use href="#sapling"/></g><g transform="translate(360 480)"><use href="#sapling"/></g><g transform="translate(420 480)"><use href="#sapling"/></g><g transform="translate(480 480)"><use href="#sapling"/></g>
+                <g transform="translate(60 500)"><use href="#sapling"/></g><g transform="translate(120 500)"><use href="#sapling"/></g><g transform="translate(180 500)"><use href="#sapling"/></g><g transform="translate(240 500)"><use href="#sapling"/></g><g transform="translate(300 500)"><use href="#sapling"/></g><g transform="translate(360 500)"><use href="#sapling"/></g><g transform="translate(420 500)"><use href="#sapling"/></g><g transform="translate(480 500)"><use href="#sapling"/></g>
+                <g transform="translate(60 520)"><use href="#sapling"/></g><g transform="translate(120 520)"><use href="#sapling"/></g><g transform="translate(180 520)"><use href="#sapling"/></g><g transform="translate(240 520)"><use href="#sapling"/></g><g transform="translate(300 520)"><use href="#sapling"/></g><g transform="translate(360 520)"><use href="#sapling"/></g><g transform="translate(420 520)"><use href="#sapling"/></g><g transform="translate(480 520)"><use href="#sapling"/></g>
+                <g transform="translate(60 540)"><use href="#sapling"/></g><g transform="translate(120 540)"><use href="#sapling"/></g><g transform="translate(180 540)"><use href="#sapling"/></g><g transform="translate(240 540)"><use href="#sapling"/></g><g transform="translate(300 540)"><use href="#sapling"/></g><g transform="translate(360 540)"><use href="#sapling"/></g><g transform="translate(420 540)"><use href="#sapling"/></g><g transform="translate(480 540)"><use href="#sapling"/></g>
+              </g>
             </svg>
 
             <svg id="treeSVG" width="680" height="620" viewBox="0 0 560 410" preserveAspectRatio="xMidYMid meet">
@@ -313,20 +334,20 @@
   </div>
 
   <script>
-    const APP_KEY='pomodoroTree_v13_sundayWeek_JapanDefaultTZ';
+    const APP_KEY='pomodoroTree_v15_realtime_timer_redSlider_canopySafeSaplingsTop';
     const GLOBAL_KEY=APP_KEY+'_global', NAMES_KEY=APP_KEY+'_names';
     const svgns='http://www.w3.org/2000/svg';
     const TIMER_TYPES={ pomodoro:'pomodoro', custom:'custom', simplex:'simplex' };
     const POMODORO_SECONDS=25*60;
 
     // Per-mode+timer storage isolation
-    const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } }; /* [web:107] */
+    const load=(k,d)=>{ try{ return Object.assign({}, d||{}, JSON.parse(localStorage.getItem(k)||'{}')); }catch{ return Object.assign({}, d||{}); } }; /* [web:100][web:97] */
     const save=(k,v)=> localStorage.setItem(k, JSON.stringify(v)); /* [web:110] */
 
-    // Global stores selectedMode and selected timerType
+    // Global
     const G = load(GLOBAL_KEY, { timerType:TIMER_TYPES.pomodoro, selectedMode:'maths' });
 
-    // Timer state template
+    // Timer state
     const DEFAULT_TIMER_STATE = {
       leavesPerTree:9, placed:0, secondsLeft:POMODORO_SECONDS,
       weeklyTargetLocked:false, weeklyTargetSetValue:9, lockWeek:undefined, lockYear:undefined,
@@ -334,7 +355,11 @@
       grid:[], weeklyLeaves:0, totalFocusSeconds:0, weeklyFocusSeconds:0,
       _week:undefined, _year:undefined,
       canopyPoints:[], canopySeedWeek:undefined, canopySeedYear:undefined,
-      customSeconds:25*60, simpleSeconds:25*60
+      customSeconds:25*60, simpleSeconds:25*60,
+      todayDateKey: null, todayLeafCount: 0, todayExtraSeconds: 0,
+      // real-time refs
+      lastRealTS: null, // ms
+      targetEndTS: null // ms absolute
     };
 
     const modeTimerKey=(modeId, timerType)=> `${APP_KEY}_mode_${modeId}_timer_${timerType}`;
@@ -351,11 +376,9 @@
     const simpleInputs=el('simpleInputs'), simpleMin=el('simpleMin'), applySimpleBtn=el('applySimpleBtn');
     const clockEl=el('clock'), startBtn=el('startBtn'), resetBtn=el('resetBtn');
     const lptWrap=el('lptWrap'), lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), weeklyTargetEl=el('weeklyTarget');
-    const leavesProgress=el('leavesProgress');
     const pctRange=el('pctRange'), pctValue=el('pctValue');
     const todaySky=el('todaySky'), xySky=el('xySky');
-    const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect');
-    const canopyGroup=document.getElementById('canopyGroup');
+    const leafLayer=document.querySelector('#treeSVG #leafLayer'), canopyGroup=document.getElementById('canopyGroup');
     const rainTop=el('rainTop');
     const modeSelect=el('modeSelect'), modeNameHeader=el('modeName');
     const subject1Input=el('subject1Input'), subject2Input=el('subject2Input'), subject3Input=el('subject3Input');
@@ -363,10 +386,6 @@
     const saveNamesBtn=el('saveNamesBtn');
     const treeGrid=el('treeGrid'), gridCount=el('gridCount');
     const countrySearch=el('countrySearch'), countryList=el('countryList');
-
-    // Default time zone to Japan; note that Intl API can resolve client TZ; we default UI string to Japan per request. [web:116][web:118]
-    const DEFAULT_TZ_NAME = 'Japan'; /* [web:116] */
-    countrySearch.value = DEFAULT_TZ_NAME;
 
     let CUSTOM_NAMES=load(NAMES_KEY,{});
     const DEFAULT_MODE_NAMES={
@@ -386,38 +405,17 @@
       }
       modeSelect.appendChild(f);
       modeSelect.value=currentMode;
-      refreshModeHeader();
+      refreshModeHeader(); /* immediate reflect */
     }
     function refreshModeHeader(){
       const opt=modeSelect.options[modeSelect.selectedIndex];
       const label=opt? opt.text : nameFor(currentMode);
-      modeNameHeader.textContent=label.replace(/ mode$/i,'');
+      modeNameHeader.textContent=label.replace(/ mode$/i,''); /* reflect now */ /* [web:133][web:139] */
     }
-    function populateNamesInputs(){
-      subject1Input.value=CUSTOM_NAMES.subject1||''; subject2Input.value=CUSTOM_NAMES.subject2||''; subject3Input.value=CUSTOM_NAMES.subject3||'';
-      user1Input.value=CUSTOM_NAMES.user1||''; user2Input.value=CUSTOM_NAMES.user2||''; user3Input.value=CUSTOM_NAMES.user3||'';
-    }
-    saveNamesBtn.addEventListener('click', ()=>{
-      CUSTOM_NAMES=Object.assign({}, CUSTOM_NAMES, {
-        subject1: subject1Input.value || CUSTOM_NAMES.subject1 || '',
-        subject2: subject2Input.value || CUSTOM_NAMES.subject2 || '',
-        subject3: subject3Input.value || CUSTOM_NAMES.subject3 || '',
-        user1: user1Input.value || CUSTOM_NAMES.user1 || '',
-        user2: user2Input.value || CUSTOM_NAMES.user2 || '',
-        user3: user3Input.value || CUSTOM_NAMES.user3 || ''
-      });
-      save(NAMES_KEY, CUSTOM_NAMES);
-      for(const id of MODE_IDS){
-        const opt=modeSelect.querySelector(`option[value="${id}"]`); if(opt) opt.textContent=nameFor(id);
-      }
-      refreshModeHeader();
-    });
 
-    function showPanel(id){ ['modesPanel','subPanel','syncPanel'].forEach(p=> document.getElementById(p).style.display='none'); const panel=document.getElementById(id); if(panel) panel.style.display='flex'; }
-    document.getElementById('tabs').addEventListener('click', (e)=>{ const t=e.target.closest('.tab'); if(!t) return; document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); showPanel(t.getAttribute('data-tab')); });
-
-    // Countries list demo
+    // Countries (UI only)
     const COUNTRY_TZ=[{name:'Japan',tz:'Asia/Tokyo'},{name:'India',tz:'Asia/Kolkata'},{name:'United Kingdom',tz:'Europe/London'},{name:'United States',tz:'America/New_York'},{name:'Canada',tz:'America/Toronto'},{name:'Australia',tz:'Australia/Sydney'},{name:'UAE',tz:'Asia/Dubai'},{name:'Bangladesh',tz:'Asia/Dhaka'},{name:'China',tz:'Asia/Shanghai'},{name:'Germany',tz:'Europe/Berlin'},{name:'France',tz:'Europe/Paris'},{name:'Brazil',tz:'America/Sao_Paulo'}].sort((a,b)=> a.name.localeCompare(b.name));
+    const countryList=el('countryList');
     function renderCountryList(filter=''){
       const q=filter.trim().toLowerCase(); const items=COUNTRY_TZ.filter(c=> c.name.toLowerCase().includes(q));
       if(items.length===0){ countryList.style.display='none'; countryList.innerHTML=''; return; }
@@ -429,24 +427,19 @@
     document.addEventListener('click', (e)=>{ if(!countryList.contains(e.target) && e.target!==countrySearch) countryList.style.display='none'; });
     countryList.addEventListener('click', (e)=>{ const it=e.target.closest('.drop-item'); if(!it) return; countrySearch.value=it.getAttribute('data-name'); countryList.style.display='none'; });
 
-    // Sunday-based week helper: week starts on Sunday (0), ends on Saturday (6). [web:112]
+    // Sunday week
     function sundayWeekOf(date){
       const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       const yearStart = new Date(d.getFullYear(), 0, 1);
-      const dayOfYear = Math.floor((d - yearStart)/86400000);
       const startWeekday = yearStart.getDay(); // 0=Sun
-      const offset = (7 - startWeekday) % 7; // days to first Sunday
-      const adj = dayOfYear - ((startWeekday===0)? 0 : (7-startWeekday));
+      const offset = (7 - startWeekday) % 7;
+      const dayOfYear = Math.floor((d - yearStart)/86400000);
       const week = (dayOfYear < offset) ? 1 : Math.floor((dayOfYear - offset)/7) + 1;
       return { week, year: d.getFullYear() };
     }
 
-    function isoWeekOfWrapperSunday(date){
-      return sundayWeekOf(date);
-    }
-
     function rolloverWeekIfNeeded(){
-      const {week,year}=isoWeekOfWrapperSunday(new Date());
+      const {week,year}=sundayWeekOf(new Date());
       if(S._week===undefined || S._year===undefined){ S._week=week; S._year=year; saveState(currentMode,currentTimerType,S); return; }
       if(S._week!==week || S._year!==year){
         const completed = S.placed>=S.leavesPerTree && S.leavesPerTree>0;
@@ -459,6 +452,8 @@
 
         S.weeklyTargetLocked=false; S.lockWeek=undefined; S.lockYear=undefined;
         S.customLocked=false; S.customLockWeek=undefined; S.customLockYear=undefined;
+
+        S.todayDateKey = null; S.todayLeafCount = 0; S.todayExtraSeconds = 0;
 
         saveState(currentMode,currentTimerType,S);
         renderGrid();
@@ -478,7 +473,7 @@
       gridCount.textContent=`${Math.min(S.grid.length,52)} / 52`;
     }
 
-    // Audio (pleasant 10s)
+    // Pleasant alarm
     let audioCtx=null;
     function ensureAudio(){
       if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); /* [web:21] */
@@ -499,14 +494,13 @@
       gain.gain.exponentialRampToValueAtTime(sustain, now+attack+decay);
       gain.gain.setValueAtTime(sustain, now+dur-release);
       gain.gain.exponentialRampToValueAtTime(0.0001, now+dur);
-
       osc1.connect(biquad); osc2.connect(biquad);
       biquad.connect(gain); gain.connect(audioCtx.destination);
       lfo.start(now); osc1.start(now); osc2.start(now);
       osc1.stop(now+dur); osc2.stop(now+dur); lfo.stop(now+dur); /* [web:22] */
     }
 
-    // Timer + UI
+    // Real-time timer: measure by absolute timestamps to survive throttling
     let ticker=null, isRunning=false;
     let currentLiveLeafIndex = null;
 
@@ -515,23 +509,41 @@
       if(currentTimerType==='custom') return Math.max(60, Number(S.customSeconds)||1500);
       return Math.max(60, Number(S.simpleSeconds)||1500);
     }
-    function format(s){ const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(s%60).padStart(2,'0'); return `${m}:${ss}`; }
+    function format(s){ const m=String(Math.floor(s/60)).padStart(2,'0'); const ss=String(Math.max(0,s%60)).padStart(2,'0'); return `${m}:${ss}`; }
     function setClockAndButtons(){
-      const secs=getSessionSeconds();
-      if(S.secondsLeft<=0 || S.secondsLeft>secs) S.secondsLeft=secs;
-      clockEl.textContent=format(S.secondsLeft);
-      startBtn.textContent = isRunning ? 'Running…' : `Start ${format(secs)}`;
+      clockEl.textContent = format(Math.max(0, Math.round(S.secondsLeft)));
+      startBtn.textContent = isRunning ? 'Running…' : `Start ${format(getSessionSeconds())}`;
     }
 
+    function sessionMinutes(){ return Math.round(getSessionSeconds()/60); }
+    function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    function ensureTodayCounters(){ const k=todayKey(); if(S.todayDateKey!==k){ S.todayDateKey=k; S.todayLeafCount=0; S.todayExtraSeconds=0; } }
+    function renderTodayDuration(){
+      ensureTodayCounters();
+      const elapsedLive = isRunning && S.targetEndTS ? Math.max(0, Math.floor((Date.now() - (S.targetEndTS - getSessionSeconds()*1000))/1000)) : 0;
+      const totalMins = S.todayLeafCount*sessionMinutes() + Math.floor((S.todayExtraSeconds + elapsedLive)/60);
+      todaySky.textContent = `Total duration (today): ${totalMins} mins`; /* [web:139][web:133] */
+    }
+
+    // Weekly target line
+    function renderWeeklyTarget(){
+      const perLeafMin = Math.round(getSessionSeconds()/60);
+      const totalMins = (Number(S.leavesPerTree)||0) * perLeafMin;
+      const h = Math.floor(totalMins/60), m = totalMins%60;
+      weeklyTargetEl.textContent = `Weekly target = ${h} hrs ${m} mins`;
+    }
+
+    // Red slider with green progress overlay (using background linear-gradient)
     function updateSliderFill(){
       const total = Math.max(1, Number(S.leavesPerTree)||1);
       const done = Math.min(S.weeklyLeaves||0, total);
       const pct = Math.round((done/total)*100);
       pctRange.value = String(pct);
       pctValue.textContent = `${pct}%`;
-      pctRange.style.background = `linear-gradient(90deg, var(--slider-done) ${pct}%, var(--slider-left) ${pct}%)`;
+      pctRange.style.background = `linear-gradient(90deg, var(--slider-green) ${pct}%, var(--slider-done) ${pct}%)`; /* [web:59] */
     }
 
+    // Canopy-safe anchors (no touch trunk/branches; avoid y>284 band)
     const CANOPY_BOX = { xMin:140, xMax:420, yMin:200, yMax:300, cx:280, cy:250 };
     const LEAF_R = 22;
     function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx, dy); }
@@ -541,51 +553,32 @@
       const nx=(x-cx)/rx, ny=(y-cy)/ry;
       return (nx*nx + ny*ny) <= 1.02;
     }
-    function sundayWeek(){ return sundayWeekOf(new Date()); }
-
     function generateCanopyPoints(maxPoints){
-      const {week,year}=sundayWeek();
-      if(Array.isArray(S.canopyPoints) && S.canopyPoints.length>=maxPoints && S.canopySeedWeek===week && S.canopySeedYear===year){
-        return S.canopyPoints.slice(0, maxPoints);
-      }
-      const pts=[];
+      const pts = S.canopyPoints || [];
+      if(pts.length>=maxPoints) return pts.slice(0,maxPoints);
+      const base=pts.slice();
       const triesPerPoint=80;
-      while(pts.length<maxPoints){
+      while(base.length<maxPoints){
         let placed=false, attempts=0;
         while(!placed && attempts<triesPerPoint){
           attempts++;
           const angle = Math.random()*Math.PI*2;
-          const radius = Math.random();
-          const r = Math.sqrt(radius);
-          const x = CANOPY_BOX.cx + r* (Math.cos(angle))*160;
-          const y = CANOPY_BOX.cy + r* (Math.sin(angle))*90*0.95;
+          const r = Math.sqrt(Math.random());
+          const x = CANOPY_BOX.cx + r*Math.cos(angle)*160;
+          const y = CANOPY_BOX.cy + r*Math.sin(angle)*90*0.95;
           if(!insideCanopy(x,y)) continue;
-          if(y>284) continue;
+          if(y>284) continue; // no-go near branches/trunk
           let ok=true;
-          for(const q of pts){ if(dist({x,y}, q)<LEAF_R) { ok=false; break; } }
-          if(ok){ pts.push({x,y}); placed=true; }
+          for(const q of base){ if(dist({x,y}, q)<LEAF_R) { ok=false; break; } }
+          if(ok){ base.push({x,y}); placed=true; }
         }
-        if(!placed){
-          let tries=0;
-          while(tries<200 && !placed){
-            tries++;
-            const x = CANOPY_BOX.xMin + Math.random()*(CANOPY_BOX.xMax-CANOPY_BOX.xMin);
-            const y = CANOPY_BOX.yMin + Math.random()*(CANOPY_BOX.yMax-CANOPY_BOX.yMin-8);
-            if(!insideCanopy(x,y) || y>284) continue;
-            let ok=true;
-            for(const q of pts){ if(dist({x,y}, q)<LEAF_R) { ok=false; break; } }
-            if(ok){ pts.push({x,y}); placed=true; }
-          }
-          if(!placed) break;
-        }
+        if(!placed) break;
       }
-      pts.sort((a,b)=> dist(a, CANOPY_BOX) - dist(b, CANOPY_BOX));
-      S.canopyPoints = pts;
-      S.canopySeedWeek=week; S.canopySeedYear=year;
+      base.sort((a,b)=> dist(a, CANOPY_BOX) - dist(b, CANOPY_BOX)); // center-out growth
+      S.canopyPoints = base;
       saveState(currentMode,currentTimerType,S);
-      return pts.slice(0, maxPoints);
+      return base.slice(0,maxPoints);
     }
-
     function anchorForIndex(i){
       const pts = generateCanopyPoints(Math.max(S.leavesPerTree||9, i+1));
       return pts[i] || {x:CANOPY_BOX.cx, y:CANOPY_BOX.cy};
@@ -642,9 +635,13 @@
       }
       S.placed++;
       S.weeklyLeaves++;
+      ensureTodayCounters();
+      S.todayLeafCount = (S.todayLeafCount||0)+1;
+      S.todayExtraSeconds = 0;
       currentLiveLeafIndex = null;
       saveState(currentMode,currentTimerType,S);
       updateSliderFill();
+      renderTodayDuration();
     }
     function invalidateLiveLeaf(){
       const last = leafLayer.lastElementChild;
@@ -656,28 +653,67 @@
 
     function updateInSkyXY(){
       const show = (currentTimerType===TIMER_TYPES.pomodoro || currentTimerType===TIMER_TYPES.custom);
+      xySky.style.display = show?'block':'none';
       if(show){
-        xySky.style.display='block';
         const x = S.weeklyLeaves||0;
         const y = Math.max(1, Number(S.leavesPerTree)||1);
         xySky.textContent = `${x} / ${y} leaves`;
-      }else{
-        xySky.style.display='none';
       }
     }
 
     function renderStats(){
-      weeklyTargetEl.style.display='none';
-      leavesProgress.style.display='none';
+      renderWeeklyTarget();
       updateInSkyXY();
       updateSliderFill();
+      renderTodayDuration();
+    }
+
+    function getSessionDurationMs(){ return getSessionSeconds()*1000; }
+
+    function startRealTimer(){
+      // Set absolute target end timestamp so background throttling won't affect accuracy. [web:148][web:157]
+      const now = Date.now();
+      if(!S.targetEndTS){
+        S.targetEndTS = now + Math.max(0, Math.round(S.secondsLeft))*1000;
+      }
+      S.lastRealTS = now;
+      saveState(currentMode,currentTimerType,S);
+
+      if(ticker) clearInterval(ticker);
+      ticker = setInterval(()=>{
+        const tnow = Date.now();
+        if(S.targetEndTS){
+          const remaining = Math.max(0, Math.round((S.targetEndTS - tnow)/1000));
+          S.secondsLeft = remaining;
+        }
+        clockEl.textContent = format(S.secondsLeft);
+        S.totalFocusSeconds++; S.weeklyFocusSeconds++;
+        renderTodayDuration();
+        if(S.secondsLeft<=0){
+          stopTicker();
+          onTimerEnd();
+        }
+        saveState(currentMode,currentTimerType,S);
+      }, 500); // faster UI updates while remaining accurate by targetEndTS [web:144][web:151]
     }
 
     function stopTicker(){
       if(ticker){ clearInterval(ticker); ticker=null; }
       isRunning=false;
       rainTop.style.display='none';
+      // accumulate any remainder into todayExtraSeconds
+      if(S.targetEndTS){
+        const elapsed = Math.max(0, Math.round((Date.now() - (S.targetEndTS - getSessionDurationMs()))/1000));
+        if(elapsed>0){
+          ensureTodayCounters();
+          S.todayExtraSeconds += elapsed;
+        }
+      }
+      S.targetEndTS = null;
+      S.lastRealTS = null;
       setClockAndButtons();
+      saveState(currentMode,currentTimerType,S);
+      renderTodayDuration();
     }
 
     function onTimerEnd(){
@@ -686,6 +722,8 @@
         playAlarm10s();
       }
       S.secondsLeft = getSessionSeconds();
+      S.targetEndTS = null;
+      S.lastRealTS = null;
       saveState(currentMode,currentTimerType,S);
       renderLeaves();
       renderStats();
@@ -697,18 +735,12 @@
       isRunning=true;
       setClockAndButtons();
       rainTop.style.display='block';
+      // compute targetEndTS using current secondsLeft
+      S.targetEndTS = Date.now() + Math.max(0, Math.round(S.secondsLeft))*1000;
+      S.lastRealTS = Date.now();
+      saveState(currentMode,currentTimerType,S);
       renderLeaves();
-      if(ticker) clearInterval(ticker);
-      ticker=setInterval(()=>{
-        S.secondsLeft = Math.max(0, S.secondsLeft-1);
-        clockEl.textContent = format(S.secondsLeft);
-        S.totalFocusSeconds++; S.weeklyFocusSeconds++;
-        if(S.secondsLeft<=0){
-          stopTicker();
-          onTimerEnd();
-        }
-        saveState(currentMode,currentTimerType,S);
-      }, 1000);
+      startRealTimer();
     }
 
     function resetTimer(){
@@ -721,6 +753,7 @@
       setClockAndButtons();
     }
 
+    // Events
     startBtn.addEventListener('click', ()=>{
       if(isRunning) return;
       if(S.secondsLeft<=0 || S.secondsLeft>getSessionSeconds()){
@@ -731,6 +764,7 @@
     });
     resetBtn.addEventListener('click', resetTimer);
 
+    // LPT
     lptSetBtn.addEventListener('click', ()=>{
       const v = Math.max(1, Math.min(200, Number(lptInput.value)||S.leavesPerTree));
       const {week,year}=sundayWeekOf(new Date());
@@ -741,7 +775,6 @@
         S.lockWeek = week; S.lockYear = year;
         lptInput.value = String(v);
         saveState(currentMode,currentTimerType,S);
-        updateSliderFill();
         renderStats();
       }else{
         if(S.lockWeek!==week || S.lockYear!==year){
@@ -756,6 +789,7 @@
       renderLeaves();
     });
 
+    // Custom
     applyCustomBtn.addEventListener('click', ()=>{
       const mins = Math.max(1, Math.min(999, Number(customMin.value)||25));
       const secs = mins*60;
@@ -784,6 +818,7 @@
       }
     });
 
+    // Simplex
     applySimpleBtn.addEventListener('click', ()=>{
       const mins = Math.max(1, Math.min(999, Number(simpleMin.value)||25));
       const secs = mins*60;
@@ -806,6 +841,7 @@
       save(GLOBAL_KEY, G);
       S = loadState(currentMode, currentTimerType);
       rolloverWeekIfNeeded();
+      refreshModeHeader(); /* reflect now */
       renderLeaves();
       renderGrid();
       updateModeVisibility();
@@ -815,7 +851,6 @@
       customMin.value = String(Math.round((S.customSeconds||1500)/60));
       simpleMin.value = String(Math.round((S.simpleSeconds||1500)/60));
     }
-
     modeSelect.addEventListener('change', ()=> switchMode(modeSelect.value));
 
     function switchTimerType(newType){
@@ -834,7 +869,6 @@
       customMin.value = String(Math.round((S.customSeconds||1500)/60));
       simpleMin.value = String(Math.round((S.simpleSeconds||1500)/60));
     }
-
     timerTypeSelect.addEventListener('change', ()=> switchTimerType(timerTypeSelect.value));
 
     function updateModeVisibility(){
@@ -852,11 +886,10 @@
         customInputs.style.display='none';
         simpleInputs.style.display='none'; simpleInputs.classList.add('hidden');
       }
-      weeklyTargetEl.style.display='none';
-      leavesProgress.style.display='none';
-      updateInSkyXY();
       setClockAndButtons();
       updateSliderFill();
+      renderWeeklyTarget();
+      renderTodayDuration();
     }
 
     function ensureRainDrops(){
@@ -867,7 +900,7 @@
           d.style.left=Math.round(Math.random()*100)+'%';
           d.style.animationDelay=(Math.random()*1.0).toFixed(2)+'s';
           const h = 20 + Math.random()*24;
-          const w = 2 + Math.random()*2.2;
+          const w = 0.8 + Math.random()*0.9; /* narrow drizzle */
           d.style.height = h.toFixed(0)+'px';
           d.style.width = w.toFixed(1)+'px';
           d.style.animationDuration = (0.7 + Math.random()*0.7).toFixed(2)+'s';
@@ -879,7 +912,8 @@
 
     function init(){
       populateModeSelect();
-      populateNamesInputs();
+      subject1Input.value=CUSTOM_NAMES.subject1||''; subject2Input.value=CUSTOM_NAMES.subject2||''; subject3Input.value=CUSTOM_NAMES.subject3||'';
+      user1Input.value=CUSTOM_NAMES.user1||''; user2Input.value=CUSTOM_NAMES.user2||''; user3Input.value=CUSTOM_NAMES.user3||'';
       timerTypeSelect.value=currentTimerType;
       renderGrid();
       rolloverWeekIfNeeded();
@@ -895,7 +929,26 @@
       ensureRainDrops();
     }
 
-    document.addEventListener('visibilitychange', ()=>{ if(document.hidden && ticker){ resetTimer(); } });
+    // Handle background/visibility changes: recompute against absolute target to avoid drift. [web:148][web:157]
+    document.addEventListener('visibilitychange', ()=>{
+      if(isRunning){
+        // On hide/show, recompute remaining by targetEndTS
+        if(S.targetEndTS){
+          S.secondsLeft = Math.max(0, Math.round((S.targetEndTS - Date.now())/1000));
+          setClockAndButtons();
+          renderTodayDuration();
+          saveState(currentMode,currentTimerType,S);
+        }
+      }
+    });
+
+    window.addEventListener('focus', ()=>{
+      if(isRunning && S.targetEndTS){
+        S.secondsLeft = Math.max(0, Math.round((S.targetEndTS - Date.now())/1000));
+        setClockAndButtons();
+        renderTodayDuration();
+      }
+    });
 
     init();
   </script>
