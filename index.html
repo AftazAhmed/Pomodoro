@@ -332,7 +332,7 @@
     };
 
     // Global + names
-    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}'); // localStorage persistence [web:1]
+    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}'); // localStorage persistence
     const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India' }, loadGlobal());
     const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
     const saveGlobal = ()=>localStorage.setItem(GLOBAL_KEY, JSON.stringify(G));
@@ -380,8 +380,9 @@
     const canopyFillPath = document.getElementById('canopyFillGreen');
     const canopyOutline = document.getElementById('canopyOutline');
     const modeSelect=el('modeSelect');
+    const countryInput=el('countryInput'); const tzLabel=el('tzLabel'); const countryList=el('countryList');
 
-    // ISO-like week/year (for weekly lock)
+    // ISO-like week/year
     function isoWeekYear(date=new Date()){
       const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
       const dayNum = d.getUTCDay()||7;
@@ -391,7 +392,6 @@
       return {week, year:d.getUTCFullYear()};
     }
 
-    // Handle week rollover per mode (unlocks for new week only in this mode)
     function rolloverWeekIfNeeded(){
       const {week, year} = isoWeekYear(new Date());
       if(!S.week){ S.week=week; S.year=year; return; }
@@ -421,7 +421,6 @@
         if(remainingMs <= 0){ stopTimer(timerId); onSessionComplete(timerId); }
       };
       setRunning(timerId, true);
-      // Show blinking preview only while running
       ensureCurrentLeafPreview();
       intervals[timerId] = setInterval(tick, 250);
       tick();
@@ -430,7 +429,7 @@
 
     function getSessionSecondsFor(timerId){ return timerId==='pomodoro' ? POMODORO_SECONDS : Math.max(1, S.timers.custom.sessionSeconds|0); }
 
-    // Leaf placement utilities
+    // Leaf placement
     const LEAF_RADIUS = 16;
     function createLeafG(n){
       const g=document.createElementNS(svgns,'g'); g.setAttribute('filter','url(#leafShadow)');
@@ -446,7 +445,6 @@
     }
     function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
 
-    // Robust canopy hit-test: prefer createSVGPoint (Chromium), fallback to DOMPoint
     function pointInsideCanopy(x,y){
       try{
         if(!canopyFillPath) return false;
@@ -470,7 +468,7 @@
         if(y < outlineBox.y+pad || y > outlineBox.y+outlineBox.height-pad) return false;
       }
       const dx = Math.abs(x-280), dy = Math.abs(y-284);
-      if(dx < 26 && dy < 60) return false; // trunk exclusion
+      if(dx < 26 && dy < 60) return false;
       return true;
     }
 
@@ -510,11 +508,9 @@
       });
     }
 
-    // Preview should appear ONLY when timer is running
     function ensureCurrentLeafPreview(){
       const nextIndex = S.placedPositions.length;
       if(nextIndex >= S.leavesPerTree) { Array.from(leafLayer.children).forEach(n=>n.classList.remove('animate-leaf')); return; }
-      // If not running, ensure no preview exists
       if(!S.timers[S.activeTimer].running){
         const last = leafLayer.lastElementChild;
         if(last && last.classList.contains('animate-leaf')) leafLayer.removeChild(last);
@@ -566,7 +562,6 @@
         if(on){
           ensureCurrentLeafPreview();
         }else{
-          // hide preview when stopping without committing
           const last = leafLayer.lastElementChild;
           if(last && last.classList.contains('animate-leaf')) leafLayer.removeChild(last);
         }
@@ -575,7 +570,6 @@
       save();
     }
 
-    // Alarm: silent in Bedtime mode; use Web Audio API otherwise
     function playAlarmIfAllowed(){
       if(currentMode==='bedTime') return;
       try{
@@ -593,7 +587,6 @@
       }catch(e){}
     }
 
-    // ENFORCE LOCK — helper to set and reflect lock immediately
     function enforceWeeklyLock(){
       if(!S.weeklyTargetLocked){
         S.weeklyTargetLocked = true;
@@ -620,7 +613,6 @@
       S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
 
-      // Commit preview as static leaf in the same place
       const nextIndex = S.placedPositions.length;
       const prev = leafLayer.lastElementChild;
       let anchor;
@@ -631,7 +623,6 @@
       }else{
         anchor = findAnchorForIndex(nextIndex);
       }
-      // Remove blinking preview if present before pushing static
       if(prev && prev.classList.contains('animate-leaf')) leafLayer.removeChild(prev);
 
       S.placedPositions.push(anchor);
@@ -675,7 +666,6 @@
 
     function resetTimer(){
       stopTimer(S.activeTimer); showRain(false);
-      // Remove blinking preview leaf when resetting
       const last = leafLayer.lastElementChild;
       if(last && last.classList.contains('animate-leaf')){
         leafLayer.removeChild(last);
@@ -689,7 +679,6 @@
       reflectModeSpecificUI();
     }
 
-    // LPT input and Set button (lock immediately on first set this week)
     const clamp = (v)=>Math.max(1, Math.min(200, Number(v)||1));
     lptInput.addEventListener('input', ()=>{
       if(S.weeklyTargetLocked){
@@ -715,7 +704,6 @@
       lptVal.textContent = String(S.leavesPerTree);
       save();
       reflectModeSpecificUI();
-      // Do not create preview here; only on start
     });
 
     function reflectLockUI(){
@@ -741,7 +729,6 @@
       }
     }
 
-    // Timer type switching
     timerTypeSel.addEventListener('change', ()=>{
       const next = timerTypeSel.value==='custom' ? 'custom' : 'pomodoro';
       if(next===S.activeTimer) return;
@@ -754,7 +741,6 @@
       startBtn.textContent = `Start ${format(sec)}`;
       save();
       reflectModeSpecificUI();
-      // Do not create preview here; only on start
     });
 
     applyCustomBtn.addEventListener('click', ()=>{
@@ -770,12 +756,49 @@
       reflectModeSpecificUI();
     });
 
-    // Country list minimal
+    // Country list + Time zone wiring
     (function populateCountryList(){
-      const COUNTRY_TZ_MAP = {"India":"Asia/Kolkata"};
+      // Minimal map; extendable. Fallback uses browser-detected IANA tz.
+      const COUNTRY_TZ_MAP = {
+        "India":"Asia/Kolkata",
+        "United States":"America/New_York",
+        "United Kingdom":"Europe/London",
+        "United Arab Emirates":"Asia/Dubai",
+        "Australia":"Australia/Sydney",
+        "Japan":"Asia/Tokyo",
+        "Singapore":"Asia/Singapore",
+        "Nepal":"Asia/Kathmandu",
+        "Pakistan":"Asia/Karachi",
+        "Bangladesh":"Asia/Dhaka",
+        "Sri Lanka":"Asia/Colombo"
+      };
       const datalist=document.getElementById('countryList'); if(!datalist) return;
-      const frag=document.createDocumentFragment(); Object.keys(COUNTRY_TZ_MAP).sort().forEach(name=>{ const opt=document.createElement('option'); opt.value=name; frag.appendChild(opt); });
-      datalist.appendChild(frag);
+      const frag=document.createDocumentFragment();
+      Object.keys(COUNTRY_TZ_MAP).sort().forEach(name=>{
+        const opt=document.createElement('option'); opt.value=name; frag.appendChild(opt);
+      });
+      datalist.innerHTML=''; datalist.appendChild(frag);
+
+      // Initialize input and tz label from saved global or system
+      const systemTZ = (Intl.DateTimeFormat().resolvedOptions()||{}).timeZone || 'UTC';
+      if(!G.timeZone){ G.timeZone = systemTZ; }
+      countryInput.value = G.country || '';
+      tzLabel.textContent = `TZ: ${G.timeZone}`;
+
+      // When user changes country, set tz from map or fall back to system
+      const applyCountry = ()=>{
+        const c = (countryInput.value||'').trim();
+        if(!c) return;
+        G.country = c;
+        const mapped = COUNTRY_TZ_MAP[c];
+        const fallback = (Intl.DateTimeFormat().resolvedOptions()||{}).timeZone || 'UTC';
+        G.timeZone = mapped || fallback;
+        tzLabel.textContent = `TZ: ${G.timeZone}`;
+        saveGlobal();
+      };
+      countryInput.addEventListener('change', applyCountry);
+      countryInput.addEventListener('blur', applyCountry);
+      countryInput.addEventListener('input', ()=>{ /* live typing ignored; commit on change/blur */ });
     })();
 
     // Build completed grid
@@ -843,7 +866,6 @@
         renderTotals();
         reflectLockUI();
         reflectModeSpecificUI();
-        // Do not create preview when switching; only on start
         buildGrid();
       };
     }
@@ -859,7 +881,6 @@
       });
     });
 
-    // Rain effect control
     function showRain(on){
       if(!rainLayer) return;
       if(on){
@@ -880,14 +901,11 @@
       }
     }
 
-    // Grid init
     buildGrid();
 
-    // Actions
     document.getElementById('startBtn').addEventListener('click', startFlow);
     document.getElementById('resetBtn').addEventListener('click', resetTimer);
 
-    // Initial UI setup
     clockEl.textContent = format(getSessionSecondsFor(S.activeTimer));
     startBtn.textContent = `Start ${format(getSessionSecondsFor(S.activeTimer))}`;
     renderLeavesFromState();
@@ -898,8 +916,6 @@
     reflectModeSpecificUI();
     populateModesUI();
     refreshModeName();
-    // Ensure no preview at startup
-    // (avoid calling ensureCurrentLeafPreview here to prevent pre-start leaf)
   </script>
 </body>
 </html>
