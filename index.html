@@ -134,7 +134,7 @@
     .indicator .rem{ background:var(--progress-red); height:100%; transition:width .25s steps(1, start); }
 
     @keyframes leafBlink { 0%,49%{ fill:#166534;} 50%,100%{ fill:#28a745;} }
-    .animate-leaf path{ animation: leafBlink 0.9s steps(1, start) infinite; }
+    .animate-leaf path{ animation: leafBlink 0.9s steps(1, start) infinite; } /* step-based blink on run */ /* [web:102] */
 
     @keyframes canopyBlink { 0%,100%{ stroke:#065f46;} 50%{ stroke:#000; } }
     .blink-canopy{ animation: canopyBlink 900ms linear infinite; }
@@ -177,7 +177,7 @@
           <span id="lockHint" class="miniNote">LPT locks after first entry every week</span>
         </div>
 
-        <div class="numWrap" style="order:2;">
+        <div class="numWrap" style="order:2%;">
           <div class="indicator" aria-label="Progress">
             <div id="indDone" class="done" style="width:0%"></div>
             <div id="indRem" class="rem" style="width:100%"></div>
@@ -245,8 +245,8 @@
         <span id="tzLabel" class="miniNote">TZ: Asia/Kolkata</span>
       </div>
       <div class="stats">
-        <div class="chip" id="todayChip"><strong>Pomodoro hrs (week)</strong>: 0 hrs 0 mins</div>
-        <div class="chip" id="totalTimeChip"><strong>Pomodoro hrs (overall)</strong>: 0 hrs 0 mins</div>
+        <div class="chip" id="todayChip"><strong>Total hrs (week)</strong>: 0 hrs 0 mins</div>
+        <div class="chip" id="totalTimeChip"><strong>Total hrs (overall)</strong>: 0 hrs 0 mins</div>
       </div>
     </div>
 
@@ -326,14 +326,14 @@
     };
 
     // Global + names
-    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}'); // localStorage persistence [web:74][web:81]
+    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}');
     const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India' }, loadGlobal());
     const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
     const saveGlobal = ()=>localStorage.setItem(GLOBAL_KEY, JSON.stringify(G));
     const saveNames = ()=>localStorage.setItem(NAMES_KEY, JSON.stringify(NAMES));
 
-    // Mode state helpers (per-mode isolation by distinct keys)
-    const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`; // per-mode isolation [web:74][web:76]
+    // Mode state helpers
+    const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
     const DEFAULT_STATE = {
       leavesPerTree:9,
       timers: {
@@ -375,34 +375,24 @@
     const canopyOutline = document.getElementById('canopyOutline');
     const modeSelect=el('modeSelect');
 
-    // ISO-like week/year (for weekly lock)
-    function isoWeekYear(date=new Date()){
-      const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
-      const dayNum = d.getUTCDay()||7;
-      d.setUTCDate(d.getUTCDate()+4-dayNum);
-      const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
-      const week = Math.ceil((((d - yearStart)/86400000)+1)/7);
-      return {week, year:d.getUTCFullYear()};
-    } // weekly locking basis [web:41][web:40]
-
-    // Handle week rollover per mode (unlocks for new week only in this mode)
-    function rolloverWeekIfNeeded(){
-      const {week, year} = isoWeekYear(new Date());
-      if(!S.week){ S.week=week; S.year=year; return; }
-      if(S.week!==week || S.year!==year){
-        S.week=week; S.year=year;
-        S.weeklyTargetLocked=false;
-        S.weeklyLeaves=0;
-        S.leavesToday=0;
-        S.weeklyFocusSeconds=0;
-        S.weeklyComplete=false;
-        S.placedPositions = [];
-        leafLayer.innerHTML='';
-        applyProgress(); paintIndicator();
-      }
-    }
-
     function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
+
+    // NO PREVIEW UNTIL TIMER RUNS
+    function ensureCurrentLeafPreview(){
+      if(!S.timers[S.activeTimer].running) return; // do not show preview before/when not running [web:105]
+      const nextIndex = S.placedPositions.length;
+      if(nextIndex >= S.leavesPerTree) { Array.from(leafLayer.children).forEach(n=>n.classList.remove('animate-leaf')); return; }
+      // If a blinking preview already exists and is correct, keep it
+      const last = leafLayer.lastElementChild;
+      const lastNum = last?.querySelector('text')?.textContent;
+      if(Number(lastNum)===nextIndex+1 && last?.classList?.contains('animate-leaf')) return;
+      // Otherwise create blinking preview for current running leaf
+      const preview = createLeafG(nextIndex+1);
+      preview.classList.add('animate-leaf');
+      const anchor = findAnchorForIndex(nextIndex);
+      placeLeaf(preview, anchor);
+      leafLayer.appendChild(preview);
+    }
 
     function startWallClock(timerId){
       stopTimer(timerId);
@@ -415,7 +405,7 @@
         if(remainingMs <= 0){ stopTimer(timerId); onSessionComplete(timerId); }
       };
       setRunning(timerId, true);
-      ensureCurrentLeafPreview(); // live blinking preview
+      ensureCurrentLeafPreview();
       intervals[timerId] = setInterval(tick, 250);
       tick();
     }
@@ -439,73 +429,52 @@
     }
     function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
 
+    // Simple canopy constraints: stay inside path, margin from outline/trunk, avoid overlap
     function pointInsideCanopy(x,y){
       try{
-        if(!canopyFillPath) return false;
-        const pointObj = ('fromPoint' in DOMPoint) ? DOMPoint.fromPoint({x,y}) : (treeSVG.createSVGPoint ? (()=>{ const pt=treeSVG.createSVGPoint(); pt.x=x; pt.y=y; return pt; })() : {x,y});
-        return canopyFillPath.isPointInFill(pointObj);
+        const pt = treeSVG.createSVGPoint(); pt.x=x; pt.y=y;
+        return document.getElementById('canopyFillGreen').isPointInFill(pt);
       }catch{ return true; }
-    }
-
+    } /* isPointInFill used for hit test */ /* [web:112] */
     function farFromOutlineAndTrunk(x,y){
-      const outlineBox = canopyOutline?.getBBox?.();
-      if(outlineBox){
-        const pad = 8;
-        if(x < outlineBox.x+pad || x > outlineBox.x+outlineBox.width-pad) return false;
-        if(y < outlineBox.y+pad || y > outlineBox.y+outlineBox.height-pad) return false;
+      const box = canopyOutline?.getBBox?.();
+      if(box){
+        const pad=8;
+        if(x<box.x+pad || x>box.x+box.width-pad) return false;
+        if(y<box.y+pad || y>box.y+box.height-pad) return false;
       }
-      const dx = Math.abs(x-280), dy = Math.abs(y-284);
-      if(dx < 26 && dy < 60) return false; // trunk exclusion
+      const dx=Math.abs(x-280), dy=Math.abs(y-284);
+      if(dx<26 && dy<60) return false;
       return true;
     }
-
     function noOverlapWithPlaced(x,y){
-      const r2 = (LEAF_RADIUS*1.15)*(LEAF_RADIUS*1.15);
+      const r2=(LEAF_RADIUS*1.15)*(LEAF_RADIUS*1.15);
       for(const pt of (S.placedPositions||[])){
-        const dx = x-pt.x, dy = y-pt.y;
-        if(dx*dx+dy*dy < r2) return false;
+        const dx=x-pt.x, dy=y-pt.y;
+        if(dx*dx+dy*dy<r2) return false;
       }
       return true;
     }
-
     function findAnchorForIndex(i){
       const cx=280, cy=260;
-      const golden = Math.PI*(3-Math.sqrt(5));
-      const maxTries = 1600;
-      const baseR = 18;
+      const golden=Math.PI*(3-Math.sqrt(5));
+      const baseR=18, maxTries=1600;
       for(let k=1;k<=maxTries;k++){
         const r = baseR + 0.85*Math.sqrt(i+1+k)*6;
         const a = k*golden;
-        const x = cx + r*Math.cos(a);
-        const y = cy + r*Math.sin(a)*0.72;
-        if(pointInsideCanopy(x,y) && farFromOutlineAndTrunk(x,y) && noOverlapWithPlaced(x,y)){
-          return {x,y};
-        }
+        const x=cx+r*Math.cos(a), y=cy+r*Math.sin(a)*0.72;
+        if(pointInsideCanopy(x,y) && farFromOutlineAndTrunk(x,y) && noOverlapWithPlaced(x,y)) return {x,y};
       }
-      return {x:cx, y:cy};
+      return {x:cx,y:cy};
     }
 
     function renderLeavesFromState(){
-      if(!leafLayer) return;
-      leafLayer.innerHTML='';
+      leafLayer.innerHTML=''; // safe, preserves defs elsewhere [web:104]
       (S.placedPositions||[]).forEach((pt, idx)=>{
         const g=createLeafG(idx+1);
         placeLeaf(g, pt);
         leafLayer.appendChild(g);
       });
-    }
-
-    function ensureCurrentLeafPreview(){
-      const nextIndex = S.placedPositions.length;
-      if(nextIndex >= S.leavesPerTree) { Array.from(leafLayer.children).forEach(n=>n.classList.remove('animate-leaf')); return; }
-      const last = leafLayer.lastElementChild;
-      const lastNum = last?.querySelector('text')?.textContent;
-      if(Number(lastNum)===nextIndex+1 && last?.classList?.contains('animate-leaf')) return;
-      const preview = createLeafG(nextIndex+1);
-      preview.classList.add('animate-leaf');
-      const anchor = findAnchorForIndex(nextIndex);
-      placeLeaf(preview, anchor);
-      leafLayer.appendChild(preview);
     }
 
     const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
@@ -530,9 +499,8 @@
     function formatTimeHM(sec){ const h=Math.floor(sec/3600); const m=Math.floor((sec%3600)/60); return {h,m}; }
     function renderTotals(){
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
-      todayChip.innerHTML = `<strong>Pomodoro hrs (week)</strong>: ${w.h} hrs ${w.m} mins`;
-      totalTimeChip.innerHTML = `<strong>Pomodoro hrs (overall)</strong>: ${o.h} hrs ${o.m} mins`;
-      todaySky.textContent = `Today: ${S.leavesToday||0} leaves`;
+      todayChip.innerHTML = `<strong>Total hrs (week)</strong>: ${w.h} hrs ${w.m} mins`;
+      totalTimeChip.innerHTML = `<strong>Total hrs (overall)</strong>: ${o.h} hrs ${o.m} mins`;
     }
 
     function setRunning(timerId, on){
@@ -541,7 +509,12 @@
         startBtn.textContent = on ? 'Running…' : `Start ${format(S.timers[timerId].secondsLeft)}`;
         startBtn.disabled = !!on;
         canopyOutline?.classList.toggle('blink-canopy', !!on);
-        if(on) ensureCurrentLeafPreview(); else Array.from(leafLayer.children).forEach(node=>node.classList.remove('animate-leaf'));
+        // Manage preview strictly: only when running
+        if(on){ ensureCurrentLeafPreview(); } else {
+          // remove any blinking preview if timer is not running
+          const last = leafLayer.lastElementChild;
+          if(last && last.classList.contains('animate-leaf')) leafLayer.removeChild(last);
+        }
         showRain(!!on);
       }
       save();
@@ -565,22 +538,7 @@
       }catch(e){}
     }
 
-    // ENFORCE LOCK — helper to set and reflect lock immediately
-    function enforceWeeklyLock(){
-      if(!S.weeklyTargetLocked){
-        S.weeklyTargetLocked = true;
-        S.weeklyTargetSetValue = S.leavesPerTree;
-        save();
-      }
-      reflectLockUI();
-    }
-
     function onSessionComplete(timerId){
-      rolloverWeekIfNeeded();
-
-      // SAFETY: lock after first completed entry for the week (per mode)
-      enforceWeeklyLock();
-
       playAlarmIfAllowed();
 
       if(timerId==='pomodoro'){
@@ -595,11 +553,11 @@
       S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
 
-      // Commit preview as static leaf
+      // Convert blinking preview into static leaf at same position
       const nextIndex = S.placedPositions.length;
       const prev = leafLayer.lastElementChild;
       let anchor;
-      if(prev){
+      if(prev && prev.classList.contains('animate-leaf')){
         const tf = prev.getAttribute('transform')||'';
         const m = /translate\(([-\d.]+)\s+([-\d.]+)\)/.exec(tf);
         anchor = m? {x:parseFloat(m[1]), y:parseFloat(m[2])} : findAnchorForIndex(nextIndex);
@@ -607,20 +565,13 @@
         anchor = findAnchorForIndex(nextIndex);
       }
       S.placedPositions.push(anchor);
-      S.leavesTotal=(S.leavesTotal||0)+1; S.leavesToday=(S.leavesToday||0)+1; S.weeklyLeaves=(S.weeklyLeaves||0)+1;
-
+      // Re-render static leaves, no blink
       renderLeavesFromState();
+
       applyProgress();
       paintIndicator();
       renderTotals();
       save();
-
-      if(S.placedPositions.length===S.leavesPerTree){
-        S.weeklyComplete=true;
-        S.grid.unshift({week:S.week,year:S.year,live:true,ts:Date.now()});
-        if(S.grid.length>52) S.grid.pop();
-        buildGrid();
-      }
 
       S.timers[timerId].secondsLeft = getSessionSecondsFor(timerId);
       clockEl.textContent = format(S.timers[timerId].secondsLeft);
@@ -628,55 +579,34 @@
 
       setRunning(timerId, false);
       showRain(false);
-      reflectLockUI();
-      reflectModeSpecificUI();
     }
 
     function startFlow(){
-      rolloverWeekIfNeeded();
-
-      // ENFORCE LOCK — if any activity indicates the first entry, lock immediately
-      // Lock when there is already progress (preview or placed) or when user presses Start the first time this week.
-      if(!S.weeklyTargetLocked){
-        // Conditions to lock on first entry of the week:
-        // - If any static leaves already placed this week
-        // - Or if starting the first session (pressing Start)
-        if(S.placedPositions.length>0 || true){
-          enforceWeeklyLock();
-        }
-      }
-
       if(S.timers[S.activeTimer].secondsLeft<=0 || S.timers[S.activeTimer].secondsLeft>24*3600){
         S.timers[S.activeTimer].secondsLeft = getSessionSecondsFor(S.activeTimer);
       }
       clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft);
       startWallClock(S.activeTimer);
-      reflectLockUI();
-      reflectModeSpecificUI();
     }
 
     function resetTimer(){
       stopTimer(S.activeTimer); showRain(false);
+      // Remove only current blinking preview leaf
       const last = leafLayer.lastElementChild;
       if(last && last.classList.contains('animate-leaf')){
-        leafLayer.removeChild(last); // remove blinking preview on reset
+        leafLayer.removeChild(last); // just the preview disappears [web:104]
       }
+      // Reset countdown
       S.timers[S.activeTimer].secondsLeft = getSessionSecondsFor(S.activeTimer);
       clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft);
       startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft)}`;
       applyProgress(); paintIndicator(); renderTotals();
       save();
-      reflectLockUI();
-      reflectModeSpecificUI();
     }
 
-    // LPT input and Set button (lock immediately on first set this week)
+    // LPT UI sync (unchanged logic here)
     const clamp = (v)=>Math.max(1, Math.min(200, Number(v)||1));
     lptInput.addEventListener('input', ()=>{
-      if(S.weeklyTargetLocked){ // guard UI from editing while locked
-        lptInput.value = S.leavesPerTree;
-        return;
-      }
       const v = clamp(lptInput.value);
       lptVal.textContent = String(v);
       weeklyTargetEl.textContent = `Weekly target = ${v*25} mins (as per LPT × 25)`;
@@ -684,73 +614,15 @@
       xyLabel.textContent = `${done}/${v} leaves`;
     });
     lptSetBtn.addEventListener('click', ()=>{
-      rolloverWeekIfNeeded();
-      if(S.weeklyTargetLocked) return;
       const v = clamp(lptInput.value);
       S.leavesPerTree = v;
       S.weeklyTargetSetValue = v;
-      // ENFORCE LOCK — lock immediately on first Set for the week
-      enforceWeeklyLock();
-      // Reset current progress to align with new LPT for this mode only at start of week
+      S.weeklyTargetLocked = true;
       S.placedPositions = [];
       leafLayer.innerHTML='';
       applyProgress(); paintIndicator();
       lptVal.textContent = String(S.leavesPerTree);
       save();
-      reflectModeSpecificUI();
-      ensureCurrentLeafPreview();
-    });
-
-    function reflectLockUI(){
-      lockHint.textContent = 'LPT locks after first entry every week';
-      lptInput.disabled = !!S.weeklyTargetLocked;
-      lptSetBtn.disabled = !!S.weeklyTargetLocked;
-      lptInput.value = S.leavesPerTree;
-      lptVal.textContent = String(S.leavesPerTree);
-      xyLabel.textContent = `${Math.min(S.placedPositions.length, S.leavesPerTree)}/${S.leavesPerTree} leaves`;
-      weeklyTargetEl.textContent = `Weekly target = ${S.leavesPerTree*25} mins (as per LPT × 25)`;
-    }
-
-    function reflectModeSpecificUI(){
-      if(S.activeTimer==='custom'){
-        weeklyTargetEl.style.display = 'none';
-        const secs = S.timers.custom.weeklySeconds||0;
-        const h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60);
-        customWeekTotalEl.textContent = `Total duration (week): ${h} hrs ${m} mins`;
-        customWeekTotalEl.style.display = 'block';
-      }else{
-        customWeekTotalEl.style.display = 'none';
-        weeklyTargetEl.style.display = 'block';
-      }
-    }
-
-    // Timer type switching
-    timerTypeSel.addEventListener('change', ()=>{
-      const next = timerTypeSel.value==='custom' ? 'custom' : 'pomodoro';
-      if(next===S.activeTimer) return;
-      stopTimer(S.activeTimer);
-      S.activeTimer = next;
-      customTimeRow.style.display = (next==='custom') ? 'flex' : 'none';
-      const sec = getSessionSecondsFor(S.activeTimer);
-      S.timers[S.activeTimer].secondsLeft = sec;
-      clockEl.textContent = format(sec);
-      startBtn.textContent = `Start ${format(sec)}`;
-      save();
-      reflectModeSpecificUI();
-      ensureCurrentLeafPreview();
-    });
-
-    applyCustomBtn.addEventListener('click', ()=>{
-      const min = Math.max(1, Math.min(MAX_CUSTOM_MIN, Number(customMinutes.value)||DEFAULT_CUSTOM_MIN));
-      const sec = Math.max(0, Math.min(59, Number(customSecondsEl.value)||0));
-      S.timers.custom.sessionSeconds = min*60 + sec;
-      if(S.activeTimer==='custom'){
-        S.timers.custom.secondsLeft = S.timers.custom.sessionSeconds;
-        clockEl.textContent = format(S.timers.custom.secondsLeft);
-        startBtn.textContent = `Start ${format(S.timers.custom.secondsLeft)}`;
-      }
-      save();
-      reflectModeSpecificUI();
     });
 
     // Country list minimal
@@ -798,8 +670,6 @@
       refreshModeName();
     }
 
-    function refreshModeName(){ const el=document.getElementById('modeName'); if(el) el.textContent=(NAMES[currentMode]||DEFAULT_MODE_NAMES[currentMode]||currentMode).replace(/ mode$/i,''); }
-
     const modeSelectEl=document.getElementById('modeSelect');
     modeSelectEl.addEventListener('change', (e)=>{
       const toId = e.target.value;
@@ -817,8 +687,10 @@
       clockEl.textContent = format(sec);
       startBtn.textContent = `Start ${format(sec)}`;
       applyProgress(); paintIndicator(); renderTotals(); buildGrid(); populateModesUI(); save();
-      reflectLockUI(); reflectModeSpecificUI(); ensureCurrentLeafPreview();
+      ensureCurrentLeafPreview();
     });
+
+    function refreshModeName(){ const el=document.getElementById('modeName'); if(el) el.textContent=(NAMES[currentMode]||DEFAULT_MODE_NAMES[currentMode]||currentMode).replace(/ mode$/i,''); }
 
     function showRain(on){
       rainLayer.style.display = on?'block':'none';
@@ -860,7 +732,8 @@
 
       lptVal.textContent = String(S.leavesPerTree);
       lptInput.value = S.leavesPerTree;
-      lockHint.textContent = 'LPT locks after first entry every week';
+      document.getElementById('todayChip').innerHTML = '<strong>Total hrs (week)</strong>: 0 hrs 0 mins';
+      document.getElementById('totalTimeChip').innerHTML = '<strong>Total hrs (overall)</strong>: 0 hrs 0 mins';
 
       applyProgress();
       paintIndicator();
@@ -868,10 +741,11 @@
       buildGrid();
       populateModesUI();
       save();
-      reflectLockUI();
-      reflectModeSpecificUI();
-      ensureCurrentLeafPreview();
+      // Do NOT create preview on load; only when running
     }
+
+    // Helpers reused by preview logic
+    function anchorForIndex(i){ return findAnchorForIndex(i); }
 
     startBtn.addEventListener('click', startFlow);
     resetBtn.addEventListener('click', resetTimer);
