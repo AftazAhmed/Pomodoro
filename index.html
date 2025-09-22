@@ -247,6 +247,7 @@
       <div class="stats">
         <div class="chip" id="todayChip"><strong>Total hrs (week)</strong>: 0 hrs 0 mins</div>
         <div class="chip" id="totalTimeChip"><strong>Total hrs (overall)</strong>: 0 hrs 0 mins</div>
+        <div class="chip" id="leavesOverallChip"><strong>Leaves overall</strong>: 0</div>
       </div>
     </div>
 
@@ -478,7 +479,7 @@
     const lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptVal=el('lptVal'), lockHint=el('lockHint');
     const weeklyTargetEl=el('weeklyTarget'), customWeekTotalEl=el('customWeekTotal');
     const indDone=el('indDone'), indRem=el('indRem');
-    const todayChip=el('todayChip'), totalTimeChip=el('totalTimeChip');
+    const todayChip=el('todayChip'), totalTimeChip=el('totalTimeChip'), leavesOverallChip=el('leavesOverallChip');
     const xyLabel=el('xyLabel'), rainLayer=el('rainLayer'), treeGrid=el('treeGrid'), gridCount=el('gridCount');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), todaySky=el('todaySky'), modeNameEl=document.getElementById('modeName');
     const modeSelect=el('modeSelect'), countryInput=el('countryInput'), countryList=el('countryList'), tzLabel=el('tzLabel');
@@ -665,6 +666,7 @@
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
       todayChip.innerHTML = `<strong>Total hrs (week)</strong>: ${w.h} hrs ${w.m} mins`;
       totalTimeChip.innerHTML = `<strong>Total hrs (overall)</strong>: ${o.h} hrs ${o.m} mins`;
+      leavesOverallChip.innerHTML = `<strong>Leaves overall</strong>: ${S.leavesTotal||0}`;
       todaySky.textContent = `Today: ${S.leavesToday||0} leaves`;
     }
 
@@ -933,7 +935,10 @@
       MODE_IDS.forEach(id => {
         const option = document.createElement('option');
         option.value = id;
-        option.textContent = NAMES[id] || DEFAULT_MODE_NAMES[id] || id;
+        const modeName = NAMES[id] || DEFAULT_MODE_NAMES[id] || id;
+        // Add (no alarm) for bedtime mode
+        const displayName = id === 'bedTime' ? `${modeName} (no alarm)` : modeName;
+        option.textContent = displayName;
         modeSelect.appendChild(option);
       });
       modeSelect.value = currentMode;
@@ -948,7 +953,9 @@
       G.selectedMode = currentMode;
       S = loadState(currentMode);
       
-      modeNameEl.textContent = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
+      const baseName = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
+      const displayName = currentMode === 'bedTime' ? `${baseName} (no alarm)` : baseName;
+      modeNameEl.textContent = displayName;
       
       timerTypeSel.value = S.activeTimer;
       customTimeRow.style.display = (S.activeTimer==='custom') ? 'flex' : 'none';
@@ -974,7 +981,9 @@
       
       saveNames();
       populateModeSelect();
-      modeNameEl.textContent = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
+      const baseName = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
+      const displayName = currentMode === 'bedTime' ? `${baseName} (no alarm)` : baseName;
+      modeNameEl.textContent = displayName;
     });
 
     // Tab switching
@@ -998,7 +1007,9 @@
     function initApp() {
       populateCountryList();
       populateModeSelect();
-      modeNameEl.textContent = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
+      const baseName = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
+      const displayName = currentMode === 'bedTime' ? `${baseName} (no alarm)` : baseName;
+      modeNameEl.textContent = displayName;
       
       // Set up timezone UI
       countryInput.value = G.country || 'India';
