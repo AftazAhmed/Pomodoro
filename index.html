@@ -456,7 +456,8 @@
       weeklyLeaves:0, leavesToday:0, leavesTotal:0,
       weeklyFocusSeconds:0, totalFocusSeconds:0,
       grid:[], week:undefined, year:undefined, weeklyComplete:false,
-      weeklyTargetLocked:false, weeklyTargetSetValue:9
+      weeklyTargetLocked:false, weeklyTargetSetValue:9,
+      weeklyTargetAchieved:false // NEW: Track if weekly target was achieved
     };
 
     function loadState(modeId){
@@ -649,13 +650,27 @@
       save();
     }
 
-    // Paint indicator with correct completed leaves count
+    // UPDATED: Paint indicator with green staying locked once target is achieved
     function paintIndicator(){
       const total = Math.max(1, Number(S.leavesPerTree)||1);
       const done = Math.max(0, S.completedLeaves);
-      const pct = (done/total)*100;
+      
+      // Check if weekly target was achieved (completed leaves >= target)
+      if(done >= total && !S.weeklyTargetAchieved) {
+        S.weeklyTargetAchieved = true;
+      }
+      
+      // If weekly target was achieved, keep slider green (100%) throughout the week
+      let pct;
+      if(S.weeklyTargetAchieved) {
+        pct = 100;
+      } else {
+        pct = (done/total)*100;
+      }
+      
       indDone.style.width = pct + '%';
       indRem.style.width = (100 - pct) + '%';
+      
       // Allow x > y display when LPT is exceeded
       xyLabel.textContent = `${done}/${total} leaves (week)`;
     }
@@ -722,7 +737,7 @@
       }catch(e){}
     }
 
-    // FIXED: Session completion with proper leaf management and sequential tree filling
+    // UPDATED: Session completion with proper leaf management and sequential tree filling
     function onSessionComplete(timerId){
       const {week, year} = isoWeekYear(new Date());
       if(!S.week){ S.week=week; S.year=year; }
@@ -735,6 +750,7 @@
         S.weeklyFocusSeconds=0;
         S.completedLeaves=0; // Reset completed leaves for new week
         S.weeklyComplete=false;
+        S.weeklyTargetAchieved=false; // Reset target achievement for new week
       }
       if(!S.weeklyTargetLocked){ S.weeklyTargetLocked=true; S.weeklyTargetSetValue=S.leavesPerTree; }
 
@@ -797,6 +813,7 @@
         S.weeklyFocusSeconds=0;
         S.completedLeaves=0;
         S.weeklyComplete=false;
+        S.weeklyTargetAchieved=false; // Reset for new week
       }
       if(S.timers[S.activeTimer].secondsLeft<=0 || S.timers[S.activeTimer].secondsLeft>24*3600){
         S.timers[S.activeTimer].secondsLeft = getSessionSecondsFor(S.activeTimer);
@@ -870,14 +887,14 @@
       const {week, year} = isoWeekYear(new Date());
       if(!S.week){ S.week=week; S.year=year; }
       if(S.week!==week || S.year!==year){
-        S.week=week; S.year=year; S.weeklyTargetLocked=false; S.completedLeaves=0; S.weeklyLeaves=0;
+        S.week=week; S.year=year; S.weeklyTargetLocked=false; S.completedLeaves=0; S.weeklyLeaves=0; S.weeklyTargetAchieved=false;
       }
       if(S.weeklyTargetLocked) return;
       const v = clamp(lptInput.value);
       S.leavesPerTree = v;
       S.weeklyTargetSetValue = v;
       S.weeklyTargetLocked = true;
-      S.completedLeaves = 0; S.weeklyLeaves = 0; S.weeklyComplete = false;
+      S.completedLeaves = 0; S.weeklyLeaves = 0; S.weeklyComplete = false; S.weeklyTargetAchieved = false;
       updateAllUI();
       lptVal.textContent = String(S.leavesPerTree);
       reflectLockUI();
