@@ -332,7 +332,7 @@
     };
 
     // Global + names
-    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}'); // localStorage persistence [web:8]
+    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}'); // localStorage persistence [web:8][web:11]
     const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India' }, loadGlobal());
     const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}'); // [web:8]
     const saveGlobal = ()=>localStorage.setItem(GLOBAL_KEY, JSON.stringify(G)); // [web:8]
@@ -380,24 +380,15 @@
     const canopyFillPath = document.getElementById('canopyFillGreen');
     const canopyOutline = document.getElementById('canopyOutline');
     const modeSelect=el('modeSelect');
-    const tzLabel = el('tzLabel');
-    const countryInput = el('countryInput');
-    const countryList = document.getElementById('countryList');
 
     // ISO-like week/year (for weekly lock)
     function isoWeekYear(date=new Date()){
-      // Use configured time zone to derive the date in that zone [web:42]
-      const tz = G.timeZone || 'Asia/Kolkata';
-      const parts = new Intl.DateTimeFormat('en-CA',{ timeZone:tz, year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(date);
-      const y = Number(parts.find(p=>p.type==='year')?.value);
-      const m = Number(parts.find(p=>p.type==='month')?.value)-1;
-      const d = Number(parts.find(p=>p.type==='day')?.value);
-      const local = new Date(Date.UTC(y,m,d));
-      const dayNum = (local.getUTCDay()||7);
-      local.setUTCDate(local.getUTCDate()+4-dayNum);
-      const yearStart=new Date(Date.UTC(local.getUTCFullYear(),0,1));
-      const week = Math.ceil((((local - yearStart)/86400000)+1)/7);
-      return {week, year:local.getUTCFullYear()};
+      const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+      const dayNum = d.getUTCDay()||7;
+      d.setUTCDate(d.getUTCDate()+4-dayNum);
+      const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+      const week = Math.ceil((((d - yearStart)/86400000)+1)/7);
+      return {week, year:d.getUTCFullYear()};
     }
 
     // Handle week rollover per mode (unlocks for new week only in this mode)
@@ -430,6 +421,7 @@
         if(remainingMs <= 0){ stopTimer(timerId); onSessionComplete(timerId); }
       };
       setRunning(timerId, true);
+      // Show blinking preview only while running
       ensureCurrentLeafPreview();
       intervals[timerId] = setInterval(tick, 250);
       tick();
@@ -454,6 +446,7 @@
     }
     function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
 
+    // Robust canopy hit-test with fallbacks (object -> SVGPoint -> DOMPoint)
     function pointInsideCanopy(x,y){
       try{
         if(!canopyFillPath) return false;
@@ -524,6 +517,7 @@
     function ensureCurrentLeafPreview(){
       const nextIndex = S.placedPositions.length;
       if(nextIndex >= S.leavesPerTree) { Array.from(leafLayer.children).forEach(n=>n.classList.remove('animate-leaf')); return; }
+      // If not running, ensure no preview exists
       if(!S.timers[S.activeTimer].running){
         const last = leafLayer.lastElementChild;
         if(last && last.classList.contains('animate-leaf')) leafLayer.removeChild(last);
@@ -575,6 +569,7 @@
         if(on){
           ensureCurrentLeafPreview();
         }else{
+          // hide preview when stopping without committing
           const last = leafLayer.lastElementChild;
           if(last && last.classList.contains('animate-leaf')) leafLayer.removeChild(last);
         }
@@ -583,10 +578,11 @@
       save();
     }
 
+    // Alarm: silent in Bedtime mode; Web Audio for others
     function playAlarmIfAllowed(){
-      if(currentMode==='bedTime') return;
+      if(currentMode==='bedTime') return; // bedtime silent [web:13][web:16]
       try{
-        const AC = window.AudioContext || window.webkitAudioContext || window.audioContext;
+        const AC = window.AudioContext || window.webkitAudioContext || window.audioContext; // compatibility [web:13]
         if(!AC) return;
         const ctx = new AC();
         const now = ctx.currentTime;
@@ -606,6 +602,7 @@
       }catch(e){}
     }
 
+    // ENFORCE LOCK — helper to set and reflect lock immediately
     function enforceWeeklyLock(){
       if(!S.weeklyTargetLocked){
         S.weeklyTargetLocked = true;
@@ -632,16 +629,18 @@
       S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
 
+      // Commit preview as static leaf in the same place
       const nextIndex = S.placedPositions.length;
       const prev = leafLayer.lastElementChild;
       let anchor;
       if(prev && prev.classList.contains('animate-leaf')){
-        const tf = prev.getAttribute('transform')||';
+        const tf = prev.getAttribute('transform')||'';
         const m = /translate\(([-\d.]+)\s+([-\d.]+)\)/.exec(tf);
         anchor = m? {x:parseFloat(m[1]), y:parseFloat(m[2])} : findAnchorForIndex(nextIndex);
       }else{
         anchor = findAnchorForIndex(nextIndex);
       }
+      // Remove blinking preview if present before pushing static
       if(prev && prev.classList.contains('animate-leaf')) leafLayer.removeChild(prev);
 
       S.placedPositions.push(anchor);
@@ -685,6 +684,7 @@
 
     function resetTimer(){
       stopTimer(S.activeTimer); showRain(false);
+      // Remove blinking preview leaf when resetting
       const last = leafLayer.lastElementChild;
       if(last && last.classList.contains('animate-leaf')){
         leafLayer.removeChild(last);
@@ -698,7 +698,7 @@
       reflectModeSpecificUI();
     }
 
-    // LPT input and Set button
+    // LPT input and Set button (lock immediately on first set this week)
     const clamp = (v)=>Math.max(1, Math.min(200, Number(v)||1));
     lptInput.addEventListener('input', ()=>{
       if(S.weeklyTargetLocked){
@@ -724,6 +724,7 @@
       lptVal.textContent = String(S.leavesPerTree);
       save();
       reflectModeSpecificUI();
+      // Do not create preview here; only on start
     });
 
     function reflectLockUI(){
@@ -762,6 +763,7 @@
       startBtn.textContent = `Start ${format(sec)}`;
       save();
       reflectModeSpecificUI();
+      // Do not create preview here; only on start
     });
 
     applyCustomBtn.addEventListener('click', ()=>{
@@ -777,59 +779,15 @@
       reflectModeSpecificUI();
     });
 
-    // Country list + time zone handling
+    // Country list minimal
     (function populateCountryList(){
-      // Minimal, curated mapping Country -> Primary IANA TZ (expandable) [web:41][web:44]
-      const COUNTRY_TZ_MAP = {
-        "India":"Asia/Kolkata",
-        "United States":"America/New_York",
-        "United Kingdom":"Europe/London",
-        "Germany":"Europe/Berlin",
-        "France":"Europe/Paris",
-        "Canada":"America/Toronto",
-        "Australia":"Australia/Sydney",
-        "Japan":"Asia/Tokyo",
-        "China":"Asia/Shanghai",
-        "Singapore":"Asia/Singapore",
-        "UAE":"Asia/Dubai",
-        "Saudi Arabia":"Asia/Riyadh",
-        "Brazil":"America/Sao_Paulo",
-        "South Africa":"Africa/Johannesburg"
-      };
-      // Populate datalist
-      if(countryList){
-        const frag=document.createDocumentFragment();
-        Object.keys(COUNTRY_TZ_MAP).sort().forEach(name=>{
-          const opt=document.createElement('option'); opt.value=name; frag.appendChild(opt);
-        });
-        countryList.innerHTML = '';
-        countryList.appendChild(frag);
-      }
-      // Restore saved country and TZ label
-      if(countryInput){ countryInput.value = G.country || 'India'; }
-      if(tzLabel){ tzLabel.textContent = `TZ: ${G.timeZone || 'Asia/Kolkata'}`; }
-
-      // Hook selection change: on blur or input match, set TZ and persist [web:42][web:51]
-      function applyCountrySelection(){
-        const c = String(countryInput.value||'').trim();
-        if(!c || !(c in COUNTRY_TZ_MAP)) return;
-        const tz = COUNTRY_TZ_MAP[c];
-        // Validate support where possible
-        try{ new Intl.DateTimeFormat('en-US', { timeZone: tz }).format(new Date()); }catch(e){ return; }
-        G.country = c;
-        G.timeZone = tz;
-        saveGlobal();
-        if(tzLabel) tzLabel.textContent = `TZ: ${tz}`;
-        // Recompute week context and reflect
-        rolloverWeekIfNeeded();
-        reflectLockUI();
-      }
-      countryInput?.addEventListener('change', applyCountrySelection);
-      countryInput?.addEventListener('blur', applyCountrySelection);
-      countryInput?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') applyCountrySelection(); });
+      const COUNTRY_TZ_MAP = {"India":"Asia/Kolkata"};
+      const datalist=document.getElementById('countryList'); if(!datalist) return;
+      const frag=document.createDocumentFragment(); Object.keys(COUNTRY_TZ_MAP).sort().forEach(name=>{ const opt=document.createElement('option'); opt.value=name; frag.appendChild(opt); });
+      datalist.appendChild(frag);
     })();
 
-    // Build completed grid
+    // Build completed grid (defensive)
     function buildGrid(){
       const list = Array.isArray(S.grid) ? S.grid : [];
       gridCount.textContent = `${list.length} / 52`;
@@ -845,7 +803,7 @@
       treeGrid.appendChild(frag);
     }
 
-    // Modes UI population and persistence
+    // Modes UI: names + select
     function refreshModeName(){
       const label = (NAMES[currentMode] && String(NAMES[currentMode]).trim())
         ? NAMES[currentMode]
@@ -895,10 +853,10 @@
 
     function switchMode(nextId){
       if(!MODE_IDS.includes(nextId)) return;
-      save();
+      save(); // persist current mode first [web:8]
       currentMode = nextId;
       G.selectedMode = nextId;
-      saveGlobal();
+      saveGlobal(); // [web:8]
       S = loadState(currentMode);
       refreshModeName();
       populateModesUI();
@@ -934,25 +892,25 @@
         const v = String(e.value||'').trim();
         if(v) NAMES[modeId] = v; else delete NAMES[modeId];
       });
-      saveNames();
+      saveNames(); // [web:8]
       refreshModeName();
       populateModesUI();
     }
     document.getElementById('saveNamesBtn')?.addEventListener('click', persistNamesFromInputs);
 
-    // Rain bounded to canvas — moderately denser now
+    // Rain bounded to canvas and toggled while running
     function showRain(on){
       if(!rainLayer) return;
       if(on){
         rainLayer.innerHTML = '';
         rainLayer.style.display = 'block';
         const W = rainLayer.clientWidth || 560;
-        const drops = 110; // increased from ~60 to moderately denser [web:60]
+        const drops = 60;
         for(let i=0;i<drops;i++){
           const d = document.createElement('div');
-          d.className = 'drop' + (Math.random()<0.4 ? ' far':'');
+          d.className = 'drop' + (Math.random()<0.5 ? ' far':'');
           d.style.left = Math.round(Math.random()*W) + 'px';
-          d.style.animationDelay = (Math.random()*0.9).toFixed(2)+'s';
+          d.style.animationDelay = (Math.random()*1.2).toFixed(2)+'s';
           d.style.top = '-10%';
           rainLayer.appendChild(d);
         }
@@ -987,10 +945,6 @@
 
     // Init
     (function init(){
-      // Reflect saved country/time zone on load
-      if(countryInput) countryInput.value = G.country || 'India';
-      if(tzLabel) tzLabel.textContent = `TZ: ${G.timeZone || 'Asia/Kolkata'}`;
-
       rolloverWeekIfNeeded();
       refreshModeName();
       populateModesUI();
@@ -1003,6 +957,7 @@
       buildGrid();
       reflectLockUI();
       reflectModeSpecificUI();
+      // ensure start button label matches
       const sec = getSessionSecondsFor(S.activeTimer);
       S.timers[S.activeTimer].secondsLeft = Math.min(Math.max(1, S.timers[S.activeTimer].secondsLeft|0), 24*3600);
       clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft || sec);
