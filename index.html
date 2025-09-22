@@ -316,13 +316,13 @@
     const DEFAULT_CUSTOM_MIN = 20;
     const MAX_CUSTOM_MIN = 180;
 
-    const PRESET_MODES = ['cycling','exercise','quran','dhikr','digitalDetox','bedTime'];
+    const PRESET_MODES = ['cycling','exercise','quran','dhikr','digitalDetox','bedTime','masterSkill'];
     const MODE_IDS = [...PRESET_MODES, 'maths','subject1','subject2','subject3','user1','user2','user3'];
 
     const DEFAULT_MODE_NAMES = {
       cycling:'Cycling mode', exercise:'Exercise mode', quran:'Quran mode', dhikr:'Dhikr mode',
-      digitalDetox:'Digital detox mode', bedTime:'Bedtime mode', maths:'Maths mode',
-      subject1:'Subject 1 mode', subject2:'Subject 2 mode', subject3:'Subject 3 mode',
+      digitalDetox:'Digital detox mode', bedTime:'Bedtime mode', masterSkill:'Master a skill',
+      maths:'Maths mode', subject1:'Subject 1 mode', subject2:'Subject 2 mode', subject3:'Subject 3 mode',
       user1:'User 1 mode', user2:'User 2 mode', user3:'User 3 mode'
     };
 
@@ -438,7 +438,7 @@
 
     // Global + names
     const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}');
-    const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India' }, loadGlobal());
+    const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India', completedTreesSequence:0 }, loadGlobal());
     const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
     const saveGlobal = ()=>localStorage.setItem(GLOBAL_KEY, JSON.stringify(G));
     const saveNames = ()=>localStorage.setItem(NAMES_KEY, JSON.stringify(NAMES));
@@ -722,7 +722,7 @@
       }catch(e){}
     }
 
-    // FIXED: Session completion with proper leaf management
+    // FIXED: Session completion with proper leaf management and sequential tree filling
     function onSessionComplete(timerId){
       const {week, year} = isoWeekYear(new Date());
       if(!S.week){ S.week=week; S.year=year; }
@@ -763,8 +763,13 @@
       // Check if LPT is complete (but continue allowing timer usage)
       if(S.completedLeaves >= S.leavesPerTree && !S.weeklyComplete){
         S.weeklyComplete=true;
-        S.grid.unshift({week:S.week,year:S.year,live:true,ts:Date.now()});
-        if(S.grid.length>52) S.grid.pop();
+        // Increment global sequence counter and add to next available slot
+        G.completedTreesSequence += 1;
+        const nextSlot = G.completedTreesSequence;
+        S.grid.push({week:nextSlot, year:year, live:true, ts:Date.now()});
+        // Keep only the most recent 52 completed trees
+        if(S.grid.length>52) S.grid.shift();
+        saveGlobal(); // Save the updated sequence counter
       }
 
       // Update all UI elements
@@ -820,7 +825,7 @@
       reflectModeSpecificUI();
     }
 
-    // Build grid with week numbers 1-52
+    // Build grid with week numbers 1-52, filling from 1 onwards
     function buildGrid() {
       if (!treeGrid) return;
       treeGrid.innerHTML = '';
@@ -834,6 +839,7 @@
         num.textContent = weekNum;
         cell.appendChild(num);
         
+        // Check if this slot is filled by looking at grid entries
         const completed = S.grid.find(g => g.week === weekNum && g.live);
         if (completed) {
           cell.classList.add('live');
