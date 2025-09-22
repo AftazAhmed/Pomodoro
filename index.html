@@ -332,11 +332,11 @@
     };
 
     // Global + names
-    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}'); // localStorage persistence [web:1]
+    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}'); // localStorage persistence [web:8]
     const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India' }, loadGlobal());
-    const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
-    const saveGlobal = ()=>localStorage.setItem(GLOBAL_KEY, JSON.stringify(G));
-    const saveNames = ()=>localStorage.setItem(NAMES_KEY, JSON.stringify(NAMES));
+    const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}'); // [web:8]
+    const saveGlobal = ()=>localStorage.setItem(GLOBAL_KEY, JSON.stringify(G)); // [web:8]
+    const saveNames = ()=>localStorage.setItem(NAMES_KEY, JSON.stringify(NAMES)); // [web:8]
 
     // Mode state helpers (per-mode isolation by distinct keys)
     const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
@@ -354,12 +354,12 @@
       placedPositions:[]
     };
     function loadState(modeId){
-      const raw = localStorage.getItem(modeKey(modeId));
+      const raw = localStorage.getItem(modeKey(modeId)); // [web:8]
       try{ return Object.assign({}, DEFAULT_STATE, raw? JSON.parse(raw): {}); }
       catch{ return Object.assign({}, DEFAULT_STATE); }
     }
-    function saveState(modeId, S){ localStorage.setItem(modeKey(modeId), JSON.stringify(S)); }
-    function save(){ saveState(currentMode, S); saveGlobal(); }
+    function saveState(modeId, S){ localStorage.setItem(modeKey(modeId), JSON.stringify(S)); } // [web:8]
+    function save(){ saveState(currentMode, S); saveGlobal(); } // [web:8]
 
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
@@ -380,15 +380,24 @@
     const canopyFillPath = document.getElementById('canopyFillGreen');
     const canopyOutline = document.getElementById('canopyOutline');
     const modeSelect=el('modeSelect');
+    const tzLabel = el('tzLabel');
+    const countryInput = el('countryInput');
+    const countryList = document.getElementById('countryList');
 
     // ISO-like week/year (for weekly lock)
     function isoWeekYear(date=new Date()){
-      const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
-      const dayNum = d.getUTCDay()||7;
-      d.setUTCDate(d.getUTCDate()+4-dayNum);
-      const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
-      const week = Math.ceil((((d - yearStart)/86400000)+1)/7);
-      return {week, year:d.getUTCFullYear()};
+      // Use configured time zone to derive the date in that zone [web:42]
+      const tz = G.timeZone || 'Asia/Kolkata';
+      const parts = new Intl.DateTimeFormat('en-CA',{ timeZone:tz, year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(date);
+      const y = Number(parts.find(p=>p.type==='year')?.value);
+      const m = Number(parts.find(p=>p.type==='month')?.value)-1;
+      const d = Number(parts.find(p=>p.type==='day')?.value);
+      const local = new Date(Date.UTC(y,m,d));
+      const dayNum = (local.getUTCDay()||7);
+      local.setUTCDate(local.getUTCDate()+4-dayNum);
+      const yearStart=new Date(Date.UTC(local.getUTCFullYear(),0,1));
+      const week = Math.ceil((((local - yearStart)/86400000)+1)/7);
+      return {week, year:local.getUTCFullYear()};
     }
 
     // Handle week rollover per mode (unlocks for new week only in this mode)
@@ -421,7 +430,6 @@
         if(remainingMs <= 0){ stopTimer(timerId); onSessionComplete(timerId); }
       };
       setRunning(timerId, true);
-      // Show blinking preview only while running
       ensureCurrentLeafPreview();
       intervals[timerId] = setInterval(tick, 250);
       tick();
@@ -446,19 +454,21 @@
     }
     function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
 
-    // Robust canopy hit-test: prefer createSVGPoint (Chromium), fallback to DOMPoint
     function pointInsideCanopy(x,y){
       try{
         if(!canopyFillPath) return false;
-        if (treeSVG && typeof treeSVG.createSVGPoint === 'function') {
-          const pt = treeSVG.createSVGPoint(); pt.x=x; pt.y=y;
-          return canopyFillPath.isPointInFill(pt);
+        try{ return canopyFillPath.isPointInFill({x,y}); }
+        catch(_e){
+          if (treeSVG && typeof treeSVG.createSVGPoint === 'function') {
+            const pt = treeSVG.createSVGPoint(); pt.x=x; pt.y=y;
+            return canopyFillPath.isPointInFill(pt);
+          }
+          if (typeof DOMPoint === 'function') {
+            const pt = new DOMPoint(x,y);
+            return canopyFillPath.isPointInFill(pt);
+          }
+          return true;
         }
-        if ('fromPoint' in DOMPoint) {
-          const pt = DOMPoint.fromPoint({x,y});
-          return canopyFillPath.isPointInFill(pt);
-        }
-        return true;
       }catch{ return true; }
     }
 
@@ -514,7 +524,6 @@
     function ensureCurrentLeafPreview(){
       const nextIndex = S.placedPositions.length;
       if(nextIndex >= S.leavesPerTree) { Array.from(leafLayer.children).forEach(n=>n.classList.remove('animate-leaf')); return; }
-      // If not running, ensure no preview exists
       if(!S.timers[S.activeTimer].running){
         const last = leafLayer.lastElementChild;
         if(last && last.classList.contains('animate-leaf')) leafLayer.removeChild(last);
@@ -566,7 +575,6 @@
         if(on){
           ensureCurrentLeafPreview();
         }else{
-          // hide preview when stopping without committing
           const last = leafLayer.lastElementChild;
           if(last && last.classList.contains('animate-leaf')) leafLayer.removeChild(last);
         }
@@ -575,25 +583,29 @@
       save();
     }
 
-    // Alarm: silent in Bedtime mode; use Web Audio API otherwise
     function playAlarmIfAllowed(){
       if(currentMode==='bedTime') return;
       try{
-        const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+        const AC = window.AudioContext || window.webkitAudioContext || window.audioContext;
+        if(!AC) return;
         const ctx = new AC();
         const now = ctx.currentTime;
-        const master = ctx.createGain(); master.gain.setValueAtTime(0.0001, now); master.gain.linearRampToValueAtTime(0.9, now + 0.03);
-        master.gain.setValueAtTime(0.9, now + 9.7); master.gain.linearRampToValueAtTime(0.0001, now + 10.0); master.connect(ctx.destination);
-        const oscA = ctx.createOscillator(); oscA.type='square'; oscA.frequency.setValueAtTime(880, now);
+
+        const master = ctx.createGain();
+        master.gain.setValueAtTime(0.0001, now);
+        master.gain.linearRampToValueAtTime(0.9, now + 0.03);
+        master.gain.setValueAtTime(0.9, now + 2.5);
+        master.gain.linearRampToValueAtTime(0.0001, now + 2.8);
+        master.connect(ctx.destination);
+
+        const oscA = ctx.createOscillator(); oscA.type='square';   oscA.frequency.setValueAtTime(880, now);
         const oscB = ctx.createOscillator(); oscB.type='sawtooth'; oscB.frequency.setValueAtTime(440, now);
-        const trem = ctx.createOscillator(); trem.type='sine'; trem.frequency.setValueAtTime(6, now);
-        const tremGain = ctx.createGain(); tremGain.gain.setValueAtTime(0.5, now);
-        trem.connect(tremGain); tremGain.connect(master.gain); oscA.connect(master); oscB.connect(master);
-        trem.start(now); oscA.start(now); oscB.start(now); oscA.stop(now + 10.1); oscB.stop(now + 10.1); trem.stop(now + 10.1);
+        oscA.connect(master); oscB.connect(master);
+        oscA.start(now); oscB.start(now);
+        oscA.stop(now + 2.9); oscB.stop(now + 2.9);
       }catch(e){}
     }
 
-    // ENFORCE LOCK — helper to set and reflect lock immediately
     function enforceWeeklyLock(){
       if(!S.weeklyTargetLocked){
         S.weeklyTargetLocked = true;
@@ -620,18 +632,16 @@
       S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
 
-      // Commit preview as static leaf in the same place
       const nextIndex = S.placedPositions.length;
       const prev = leafLayer.lastElementChild;
       let anchor;
       if(prev && prev.classList.contains('animate-leaf')){
-        const tf = prev.getAttribute('transform')||'';
+        const tf = prev.getAttribute('transform')||';
         const m = /translate\(([-\d.]+)\s+([-\d.]+)\)/.exec(tf);
         anchor = m? {x:parseFloat(m[1]), y:parseFloat(m[2])} : findAnchorForIndex(nextIndex);
       }else{
         anchor = findAnchorForIndex(nextIndex);
       }
-      // Remove blinking preview if present before pushing static
       if(prev && prev.classList.contains('animate-leaf')) leafLayer.removeChild(prev);
 
       S.placedPositions.push(anchor);
@@ -675,7 +685,6 @@
 
     function resetTimer(){
       stopTimer(S.activeTimer); showRain(false);
-      // Remove blinking preview leaf when resetting
       const last = leafLayer.lastElementChild;
       if(last && last.classList.contains('animate-leaf')){
         leafLayer.removeChild(last);
@@ -689,7 +698,7 @@
       reflectModeSpecificUI();
     }
 
-    // LPT input and Set button (lock immediately on first set this week)
+    // LPT input and Set button
     const clamp = (v)=>Math.max(1, Math.min(200, Number(v)||1));
     lptInput.addEventListener('input', ()=>{
       if(S.weeklyTargetLocked){
@@ -715,7 +724,6 @@
       lptVal.textContent = String(S.leavesPerTree);
       save();
       reflectModeSpecificUI();
-      // Do not create preview here; only on start
     });
 
     function reflectLockUI(){
@@ -754,7 +762,6 @@
       startBtn.textContent = `Start ${format(sec)}`;
       save();
       reflectModeSpecificUI();
-      // Do not create preview here; only on start
     });
 
     applyCustomBtn.addEventListener('click', ()=>{
@@ -770,22 +777,69 @@
       reflectModeSpecificUI();
     });
 
-    // Country list minimal
+    // Country list + time zone handling
     (function populateCountryList(){
-      const COUNTRY_TZ_MAP = {"India":"Asia/Kolkata"};
-      const datalist=document.getElementById('countryList'); if(!datalist) return;
-      const frag=document.createDocumentFragment(); Object.keys(COUNTRY_TZ_MAP).sort().forEach(name=>{ const opt=document.createElement('option'); opt.value=name; frag.appendChild(opt); });
-      datalist.appendChild(frag);
+      // Minimal, curated mapping Country -> Primary IANA TZ (expandable) [web:41][web:44]
+      const COUNTRY_TZ_MAP = {
+        "India":"Asia/Kolkata",
+        "United States":"America/New_York",
+        "United Kingdom":"Europe/London",
+        "Germany":"Europe/Berlin",
+        "France":"Europe/Paris",
+        "Canada":"America/Toronto",
+        "Australia":"Australia/Sydney",
+        "Japan":"Asia/Tokyo",
+        "China":"Asia/Shanghai",
+        "Singapore":"Asia/Singapore",
+        "UAE":"Asia/Dubai",
+        "Saudi Arabia":"Asia/Riyadh",
+        "Brazil":"America/Sao_Paulo",
+        "South Africa":"Africa/Johannesburg"
+      };
+      // Populate datalist
+      if(countryList){
+        const frag=document.createDocumentFragment();
+        Object.keys(COUNTRY_TZ_MAP).sort().forEach(name=>{
+          const opt=document.createElement('option'); opt.value=name; frag.appendChild(opt);
+        });
+        countryList.innerHTML = '';
+        countryList.appendChild(frag);
+      }
+      // Restore saved country and TZ label
+      if(countryInput){ countryInput.value = G.country || 'India'; }
+      if(tzLabel){ tzLabel.textContent = `TZ: ${G.timeZone || 'Asia/Kolkata'}`; }
+
+      // Hook selection change: on blur or input match, set TZ and persist [web:42][web:51]
+      function applyCountrySelection(){
+        const c = String(countryInput.value||'').trim();
+        if(!c || !(c in COUNTRY_TZ_MAP)) return;
+        const tz = COUNTRY_TZ_MAP[c];
+        // Validate support where possible
+        try{ new Intl.DateTimeFormat('en-US', { timeZone: tz }).format(new Date()); }catch(e){ return; }
+        G.country = c;
+        G.timeZone = tz;
+        saveGlobal();
+        if(tzLabel) tzLabel.textContent = `TZ: ${tz}`;
+        // Recompute week context and reflect
+        rolloverWeekIfNeeded();
+        reflectLockUI();
+      }
+      countryInput?.addEventListener('change', applyCountrySelection);
+      countryInput?.addEventListener('blur', applyCountrySelection);
+      countryInput?.addEventListener('keydown', (e)=>{ if(e.key==='Enter') applyCountrySelection(); });
     })();
 
     // Build completed grid
     function buildGrid(){
-      gridCount.textContent = `${S.grid.filter(g=>g).length} / 52`;
-      treeGrid.innerHTML='';
-      const frag=document.createDocumentFragment();
-      (S.grid||[]).forEach((cell, idx)=>{
-        const d=document.createElement('div'); d.className='cell' + (cell.live?' live':'');
-        d.innerHTML = `<span class="num">${String(cell.week).padStart(2,'0')}</span><div class="icon">${cell.live?'🌳':'🌱'}</div>`;
+      const list = Array.isArray(S.grid) ? S.grid : [];
+      gridCount.textContent = `${list.length} / 52`;
+      treeGrid.innerHTML = '';
+      const frag = document.createDocumentFragment();
+      list.forEach(cell=>{
+        const d = document.createElement('div');
+        d.className = 'cell' + (cell && cell.live ? ' live':'');
+        const wk = cell && typeof cell.week==='number' ? cell.week : 0;
+        d.innerHTML = `<span class="num">${String(wk).padStart(2,'0')}</span><div class="icon">${cell && cell.live ? '🌳':'🌱'}</div>`;
         frag.appendChild(d);
       });
       treeGrid.appendChild(frag);
@@ -800,106 +854,160 @@
     }
 
     function populateModesUI(){
-      const modeSelect = document.getElementById('modeSelect');
-      if(modeSelect){
-        const prev = modeSelect.value;
-        modeSelect.innerHTML='';
-        const frag=document.createDocumentFragment();
-        MODE_IDS.forEach(id=>{
-          const opt=document.createElement('option');
-          opt.value=id;
-          opt.textContent = (NAMES[id] && String(NAMES[id]).trim()) ? NAMES[id] : (DEFAULT_MODE_NAMES[id] || id);
-          frag.appendChild(opt);
-        });
-        modeSelect.appendChild(frag);
-        modeSelect.value = MODE_IDS.includes(prev) ? prev : (MODE_IDS.includes(currentMode)? currentMode : MODE_IDS[0]);
-      }
-      const editableRow = document.getElementById('editableNamesRow');
-      if(editableRow){ editableRow.style.display = PRESET_MODES.includes(currentMode) ? 'none' : 'flex'; }
-
-      [['subject1','subject1Input'],['subject2','subject2Input'],['subject3','subject3Input'],
-       ['user1','user1Input'],['user2','user2Input'],['user3','user3Input']].forEach(([key,id])=>{
-        const inp=document.getElementById(id);
-        if(!inp) return;
-        inp.value = NAMES[key] || '';
-        const persist = ()=>{ NAMES[key]=inp.value; saveNames(); refreshModeName(); populateModesUI(); };
-        inp.oninput = persist; inp.onblur = persist;
+      const modeSelectEl = document.getElementById('modeSelect');
+      if(!modeSelectEl) return;
+      const prev = modeSelectEl.value || currentMode;
+      modeSelectEl.innerHTML = '';
+      const frag = document.createDocumentFragment();
+      MODE_IDS.forEach(id=>{
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = (NAMES[id] && String(NAMES[id]).trim()) ? NAMES[id] : (DEFAULT_MODE_NAMES[id] || id);
+        frag.appendChild(opt);
       });
-
-      modeSelect.onchange = () => {
-        const val = modeSelect.value;
-        if (!MODE_IDS.includes(val)) return;
-        G.selectedMode = val;
-        saveGlobal();
-        currentMode = val;
-        S = loadState(currentMode);
-        refreshModeName();
-        stopTimer('pomodoro'); stopTimer('custom');
-        clockEl.textContent = format(getSessionSecondsFor(S.activeTimer));
-        startBtn.textContent = `Start ${format(getSessionSecondsFor(S.activeTimer))}`;
-        renderLeavesFromState();
-        applyProgress();
-        paintIndicator();
-        renderTotals();
-        reflectLockUI();
-        reflectModeSpecificUI();
-        // Do not create preview when switching; only on start
-        buildGrid();
-      };
+      modeSelectEl.appendChild(frag);
+      modeSelectEl.value = MODE_IDS.includes(prev) ? prev : currentMode;
     }
 
-    // Tabs behavior
-    document.querySelectorAll('.tab').forEach(tab=>{
-      tab.addEventListener('click', ()=>{
-        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-        tab.classList.add('active');
-        const target = tab.getAttribute('data-tab');
-        document.querySelectorAll('.panelCard').forEach(p=>p.style.display='none');
-        document.getElementById(target).style.display='flex';
+    function refreshEditableNameInputs(){
+      const map = {
+        subject1:'subject1Input',
+        subject2:'subject2Input',
+        subject3:'subject3Input',
+        user1:'user1Input',
+        user2:'user2Input',
+        user3:'user3Input',
+        maths: null,
+        cycling: null,
+        exercise: null,
+        quran: null,
+        dhikr: null,
+        digitalDetox: null,
+        bedTime: null
+      };
+      Object.entries(map).forEach(([modeId, inputId])=>{
+        if(!inputId) return;
+        const e = document.getElementById(inputId);
+        if(!e) return;
+        e.value = (NAMES[modeId] && String(NAMES[modeId]).trim()) ? NAMES[modeId] : (DEFAULT_MODE_NAMES[modeId] || modeId);
       });
-    });
+    }
 
-    // Rain effect control
+    function switchMode(nextId){
+      if(!MODE_IDS.includes(nextId)) return;
+      save();
+      currentMode = nextId;
+      G.selectedMode = nextId;
+      saveGlobal();
+      S = loadState(currentMode);
+      refreshModeName();
+      populateModesUI();
+      document.getElementById('modeSelect').value = currentMode;
+      const sec = getSessionSecondsFor(S.activeTimer);
+      S.timers[S.activeTimer].secondsLeft = sec;
+      clockEl.textContent = format(sec);
+      startBtn.textContent = `Start ${format(sec)}`;
+      customTimeRow.style.display = (S.activeTimer==='custom') ? 'flex' : 'none';
+      renderLeavesFromState();
+      applyProgress();
+      paintIndicator();
+      renderTotals();
+      buildGrid();
+      reflectLockUI();
+      reflectModeSpecificUI();
+      showRain(false);
+    }
+    document.getElementById('modeSelect')?.addEventListener('change', (e)=> switchMode(e.target.value));
+
+    function persistNamesFromInputs(){
+      const ids = [
+        ['subject1Input','subject1'],
+        ['subject2Input','subject2'],
+        ['subject3Input','subject3'],
+        ['user1Input','user1'],
+        ['user2Input','user2'],
+        ['user3Input','user3'],
+      ];
+      ids.forEach(([inputId, modeId])=>{
+        const e = document.getElementById(inputId);
+        if(!e) return;
+        const v = String(e.value||'').trim();
+        if(v) NAMES[modeId] = v; else delete NAMES[modeId];
+      });
+      saveNames();
+      refreshModeName();
+      populateModesUI();
+    }
+    document.getElementById('saveNamesBtn')?.addEventListener('click', persistNamesFromInputs);
+
+    // Rain bounded to canvas — moderately denser now
     function showRain(on){
       if(!rainLayer) return;
       if(on){
-        rainLayer.style.display='block';
-        if(!rainLayer.children.length){
-          const N=24;
-          const frag=document.createDocumentFragment();
-          for(let i=0;i<N;i++){
-            const d=document.createElement('div'); d.className='drop' + (i%3===0?' far':'');
-            d.style.left = (Math.random()*100)+'%';
-            d.style.animationDelay = (Math.random()*1.5)+'s';
-            frag.appendChild(d);
-          }
-          rainLayer.appendChild(frag);
+        rainLayer.innerHTML = '';
+        rainLayer.style.display = 'block';
+        const W = rainLayer.clientWidth || 560;
+        const drops = 110; // increased from ~60 to moderately denser [web:60]
+        for(let i=0;i<drops;i++){
+          const d = document.createElement('div');
+          d.className = 'drop' + (Math.random()<0.4 ? ' far':'');
+          d.style.left = Math.round(Math.random()*W) + 'px';
+          d.style.animationDelay = (Math.random()*0.9).toFixed(2)+'s';
+          d.style.top = '-10%';
+          rainLayer.appendChild(d);
         }
       }else{
-        rainLayer.style.display='none';
+        rainLayer.style.display = 'none';
+        rainLayer.innerHTML = '';
       }
     }
 
-    // Grid init
-    buildGrid();
+    // Tabs simple behavior
+    (function tabsInit(){
+      const tabs = Array.from(document.querySelectorAll('.tab'));
+      const cards = {
+        subPanel: document.getElementById('subPanel'),
+        syncPanel: document.getElementById('syncPanel'),
+        modesPanel: document.getElementById('modesPanel')
+      };
+      tabs.forEach(t=>{
+        t.addEventListener('click', ()=>{
+          tabs.forEach(x=>x.classList.remove('active'));
+          t.classList.add('active');
+          Object.values(cards).forEach(c=> c.style.display='none');
+          const id = t.getAttribute('data-tab');
+          if(cards[id]) cards[id].style.display = 'flex';
+        });
+      });
+    })();
 
     // Actions
-    document.getElementById('startBtn').addEventListener('click', startFlow);
-    document.getElementById('resetBtn').addEventListener('click', resetTimer);
+    startBtn.addEventListener('click', startFlow);
+    resetBtn.addEventListener('click', resetTimer);
 
-    // Initial UI setup
-    clockEl.textContent = format(getSessionSecondsFor(S.activeTimer));
-    startBtn.textContent = `Start ${format(getSessionSecondsFor(S.activeTimer))}`;
-    renderLeavesFromState();
-    applyProgress();
-    paintIndicator();
-    renderTotals();
-    reflectLockUI();
-    reflectModeSpecificUI();
-    populateModesUI();
-    refreshModeName();
-    // Ensure no preview at startup
-    // (avoid calling ensureCurrentLeafPreview here to prevent pre-start leaf)
+    // Init
+    (function init(){
+      // Reflect saved country/time zone on load
+      if(countryInput) countryInput.value = G.country || 'India';
+      if(tzLabel) tzLabel.textContent = `TZ: ${G.timeZone || 'Asia/Kolkata'}`;
+
+      rolloverWeekIfNeeded();
+      refreshModeName();
+      populateModesUI();
+      document.getElementById('modeSelect').value = currentMode;
+      refreshEditableNameInputs();
+      renderLeavesFromState();
+      applyProgress();
+      paintIndicator();
+      renderTotals();
+      buildGrid();
+      reflectLockUI();
+      reflectModeSpecificUI();
+      const sec = getSessionSecondsFor(S.activeTimer);
+      S.timers[S.activeTimer].secondsLeft = Math.min(Math.max(1, S.timers[S.activeTimer].secondsLeft|0), 24*3600);
+      clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft || sec);
+      startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft || sec)}`;
+    })();
   </script>
 </body>
 </html>
