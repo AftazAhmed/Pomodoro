@@ -332,11 +332,11 @@
     };
 
     // Global + names
-    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}'); // localStorage persistence [web:8][web:11]
+    const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}'); // localStorage persistence [web:1]
     const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India' }, loadGlobal());
-    const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}'); // [web:8]
-    const saveGlobal = ()=>localStorage.setItem(GLOBAL_KEY, JSON.stringify(G)); // [web:8]
-    const saveNames = ()=>localStorage.setItem(NAMES_KEY, JSON.stringify(NAMES)); // [web:8]
+    const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
+    const saveGlobal = ()=>localStorage.setItem(GLOBAL_KEY, JSON.stringify(G));
+    const saveNames = ()=>localStorage.setItem(NAMES_KEY, JSON.stringify(NAMES));
 
     // Mode state helpers (per-mode isolation by distinct keys)
     const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
@@ -354,12 +354,12 @@
       placedPositions:[]
     };
     function loadState(modeId){
-      const raw = localStorage.getItem(modeKey(modeId)); // [web:8]
+      const raw = localStorage.getItem(modeKey(modeId));
       try{ return Object.assign({}, DEFAULT_STATE, raw? JSON.parse(raw): {}); }
       catch{ return Object.assign({}, DEFAULT_STATE); }
     }
-    function saveState(modeId, S){ localStorage.setItem(modeKey(modeId), JSON.stringify(S)); } // [web:8]
-    function save(){ saveState(currentMode, S); saveGlobal(); } // [web:8]
+    function saveState(modeId, S){ localStorage.setItem(modeKey(modeId), JSON.stringify(S)); }
+    function save(){ saveState(currentMode, S); saveGlobal(); }
 
     let currentMode = G.selectedMode || 'maths';
     let S = loadState(currentMode);
@@ -446,22 +446,19 @@
     }
     function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
 
-    // Robust canopy hit-test with fallbacks (object -> SVGPoint -> DOMPoint)
+    // Robust canopy hit-test: prefer createSVGPoint (Chromium), fallback to DOMPoint
     function pointInsideCanopy(x,y){
       try{
         if(!canopyFillPath) return false;
-        try{ return canopyFillPath.isPointInFill({x,y}); }
-        catch(_e){
-          if (treeSVG && typeof treeSVG.createSVGPoint === 'function') {
-            const pt = treeSVG.createSVGPoint(); pt.x=x; pt.y=y;
-            return canopyFillPath.isPointInFill(pt);
-          }
-          if (typeof DOMPoint === 'function') {
-            const pt = new DOMPoint(x,y);
-            return canopyFillPath.isPointInFill(pt);
-          }
-          return true;
+        if (treeSVG && typeof treeSVG.createSVGPoint === 'function') {
+          const pt = treeSVG.createSVGPoint(); pt.x=x; pt.y=y;
+          return canopyFillPath.isPointInFill(pt);
         }
+        if ('fromPoint' in DOMPoint) {
+          const pt = DOMPoint.fromPoint({x,y});
+          return canopyFillPath.isPointInFill(pt);
+        }
+        return true;
       }catch{ return true; }
     }
 
@@ -578,27 +575,21 @@
       save();
     }
 
-    // Alarm: silent in Bedtime mode; Web Audio for others
+    // Alarm: silent in Bedtime mode; use Web Audio API otherwise
     function playAlarmIfAllowed(){
-      if(currentMode==='bedTime') return; // bedtime silent [web:13][web:16]
+      if(currentMode==='bedTime') return;
       try{
-        const AC = window.AudioContext || window.webkitAudioContext || window.audioContext; // compatibility [web:13]
-        if(!AC) return;
+        const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
         const ctx = new AC();
         const now = ctx.currentTime;
-
-        const master = ctx.createGain();
-        master.gain.setValueAtTime(0.0001, now);
-        master.gain.linearRampToValueAtTime(0.9, now + 0.03);
-        master.gain.setValueAtTime(0.9, now + 2.5);
-        master.gain.linearRampToValueAtTime(0.0001, now + 2.8);
-        master.connect(ctx.destination);
-
-        const oscA = ctx.createOscillator(); oscA.type='square';   oscA.frequency.setValueAtTime(880, now);
+        const master = ctx.createGain(); master.gain.setValueAtTime(0.0001, now); master.gain.linearRampToValueAtTime(0.9, now + 0.03);
+        master.gain.setValueAtTime(0.9, now + 9.7); master.gain.linearRampToValueAtTime(0.0001, now + 10.0); master.connect(ctx.destination);
+        const oscA = ctx.createOscillator(); oscA.type='square'; oscA.frequency.setValueAtTime(880, now);
         const oscB = ctx.createOscillator(); oscB.type='sawtooth'; oscB.frequency.setValueAtTime(440, now);
-        oscA.connect(master); oscB.connect(master);
-        oscA.start(now); oscB.start(now);
-        oscA.stop(now + 2.9); oscB.stop(now + 2.9);
+        const trem = ctx.createOscillator(); trem.type='sine'; trem.frequency.setValueAtTime(6, now);
+        const tremGain = ctx.createGain(); tremGain.gain.setValueAtTime(0.5, now);
+        trem.connect(tremGain); tremGain.connect(master.gain); oscA.connect(master); oscB.connect(master);
+        trem.start(now); oscA.start(now); oscB.start(now); oscA.stop(now + 10.1); oscB.stop(now + 10.1); trem.stop(now + 10.1);
       }catch(e){}
     }
 
@@ -787,23 +778,20 @@
       datalist.appendChild(frag);
     })();
 
-    // Build completed grid (defensive)
+    // Build completed grid
     function buildGrid(){
-      const list = Array.isArray(S.grid) ? S.grid : [];
-      gridCount.textContent = `${list.length} / 52`;
-      treeGrid.innerHTML = '';
-      const frag = document.createDocumentFragment();
-      list.forEach(cell=>{
-        const d = document.createElement('div');
-        d.className = 'cell' + (cell && cell.live ? ' live':'');
-        const wk = cell && typeof cell.week==='number' ? cell.week : 0;
-        d.innerHTML = `<span class="num">${String(wk).padStart(2,'0')}</span><div class="icon">${cell && cell.live ? '🌳':'🌱'}</div>`;
+      gridCount.textContent = `${S.grid.filter(g=>g).length} / 52`;
+      treeGrid.innerHTML='';
+      const frag=document.createDocumentFragment();
+      (S.grid||[]).forEach((cell, idx)=>{
+        const d=document.createElement('div'); d.className='cell' + (cell.live?' live':'');
+        d.innerHTML = `<span class="num">${String(cell.week).padStart(2,'0')}</span><div class="icon">${cell.live?'🌳':'🌱'}</div>`;
         frag.appendChild(d);
       });
       treeGrid.appendChild(frag);
     }
 
-    // Modes UI: names + select
+    // Modes UI population and persistence
     function refreshModeName(){
       const label = (NAMES[currentMode] && String(NAMES[currentMode]).trim())
         ? NAMES[currentMode]
@@ -812,157 +800,106 @@
     }
 
     function populateModesUI(){
-      const modeSelectEl = document.getElementById('modeSelect');
-      if(!modeSelectEl) return;
-      const prev = modeSelectEl.value || currentMode;
-      modeSelectEl.innerHTML = '';
-      const frag = document.createDocumentFragment();
-      MODE_IDS.forEach(id=>{
-        const opt = document.createElement('option');
-        opt.value = id;
-        opt.textContent = (NAMES[id] && String(NAMES[id]).trim()) ? NAMES[id] : (DEFAULT_MODE_NAMES[id] || id);
-        frag.appendChild(opt);
-      });
-      modeSelectEl.appendChild(frag);
-      modeSelectEl.value = MODE_IDS.includes(prev) ? prev : currentMode;
-    }
+      const modeSelect = document.getElementById('modeSelect');
+      if(modeSelect){
+        const prev = modeSelect.value;
+        modeSelect.innerHTML='';
+        const frag=document.createDocumentFragment();
+        MODE_IDS.forEach(id=>{
+          const opt=document.createElement('option');
+          opt.value=id;
+          opt.textContent = (NAMES[id] && String(NAMES[id]).trim()) ? NAMES[id] : (DEFAULT_MODE_NAMES[id] || id);
+          frag.appendChild(opt);
+        });
+        modeSelect.appendChild(frag);
+        modeSelect.value = MODE_IDS.includes(prev) ? prev : (MODE_IDS.includes(currentMode)? currentMode : MODE_IDS[0]);
+      }
+      const editableRow = document.getElementById('editableNamesRow');
+      if(editableRow){ editableRow.style.display = PRESET_MODES.includes(currentMode) ? 'none' : 'flex'; }
 
-    function refreshEditableNameInputs(){
-      const map = {
-        subject1:'subject1Input',
-        subject2:'subject2Input',
-        subject3:'subject3Input',
-        user1:'user1Input',
-        user2:'user2Input',
-        user3:'user3Input',
-        maths: null,
-        cycling: null,
-        exercise: null,
-        quran: null,
-        dhikr: null,
-        digitalDetox: null,
-        bedTime: null
+      [['subject1','subject1Input'],['subject2','subject2Input'],['subject3','subject3Input'],
+       ['user1','user1Input'],['user2','user2Input'],['user3','user3Input']].forEach(([key,id])=>{
+        const inp=document.getElementById(id);
+        if(!inp) return;
+        inp.value = NAMES[key] || '';
+        const persist = ()=>{ NAMES[key]=inp.value; saveNames(); refreshModeName(); populateModesUI(); };
+        inp.oninput = persist; inp.onblur = persist;
+      });
+
+      modeSelect.onchange = () => {
+        const val = modeSelect.value;
+        if (!MODE_IDS.includes(val)) return;
+        G.selectedMode = val;
+        saveGlobal();
+        currentMode = val;
+        S = loadState(currentMode);
+        refreshModeName();
+        stopTimer('pomodoro'); stopTimer('custom');
+        clockEl.textContent = format(getSessionSecondsFor(S.activeTimer));
+        startBtn.textContent = `Start ${format(getSessionSecondsFor(S.activeTimer))}`;
+        renderLeavesFromState();
+        applyProgress();
+        paintIndicator();
+        renderTotals();
+        reflectLockUI();
+        reflectModeSpecificUI();
+        // Do not create preview when switching; only on start
+        buildGrid();
       };
-      Object.entries(map).forEach(([modeId, inputId])=>{
-        if(!inputId) return;
-        const e = document.getElementById(inputId);
-        if(!e) return;
-        e.value = (NAMES[modeId] && String(NAMES[modeId]).trim()) ? NAMES[modeId] : (DEFAULT_MODE_NAMES[modeId] || modeId);
+    }
+
+    // Tabs behavior
+    document.querySelectorAll('.tab').forEach(tab=>{
+      tab.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.getAttribute('data-tab');
+        document.querySelectorAll('.panelCard').forEach(p=>p.style.display='none');
+        document.getElementById(target).style.display='flex';
       });
-    }
+    });
 
-    function switchMode(nextId){
-      if(!MODE_IDS.includes(nextId)) return;
-      save(); // persist current mode first [web:8]
-      currentMode = nextId;
-      G.selectedMode = nextId;
-      saveGlobal(); // [web:8]
-      S = loadState(currentMode);
-      refreshModeName();
-      populateModesUI();
-      document.getElementById('modeSelect').value = currentMode;
-      const sec = getSessionSecondsFor(S.activeTimer);
-      S.timers[S.activeTimer].secondsLeft = sec;
-      clockEl.textContent = format(sec);
-      startBtn.textContent = `Start ${format(sec)}`;
-      customTimeRow.style.display = (S.activeTimer==='custom') ? 'flex' : 'none';
-      renderLeavesFromState();
-      applyProgress();
-      paintIndicator();
-      renderTotals();
-      buildGrid();
-      reflectLockUI();
-      reflectModeSpecificUI();
-      showRain(false);
-    }
-    document.getElementById('modeSelect')?.addEventListener('change', (e)=> switchMode(e.target.value));
-
-    function persistNamesFromInputs(){
-      const ids = [
-        ['subject1Input','subject1'],
-        ['subject2Input','subject2'],
-        ['subject3Input','subject3'],
-        ['user1Input','user1'],
-        ['user2Input','user2'],
-        ['user3Input','user3'],
-      ];
-      ids.forEach(([inputId, modeId])=>{
-        const e = document.getElementById(inputId);
-        if(!e) return;
-        const v = String(e.value||'').trim();
-        if(v) NAMES[modeId] = v; else delete NAMES[modeId];
-      });
-      saveNames(); // [web:8]
-      refreshModeName();
-      populateModesUI();
-    }
-    document.getElementById('saveNamesBtn')?.addEventListener('click', persistNamesFromInputs);
-
-    // Rain bounded to canvas and toggled while running
+    // Rain effect control
     function showRain(on){
       if(!rainLayer) return;
       if(on){
-        rainLayer.innerHTML = '';
-        rainLayer.style.display = 'block';
-        const W = rainLayer.clientWidth || 560;
-        const drops = 60;
-        for(let i=0;i<drops;i++){
-          const d = document.createElement('div');
-          d.className = 'drop' + (Math.random()<0.5 ? ' far':'');
-          d.style.left = Math.round(Math.random()*W) + 'px';
-          d.style.animationDelay = (Math.random()*1.2).toFixed(2)+'s';
-          d.style.top = '-10%';
-          rainLayer.appendChild(d);
+        rainLayer.style.display='block';
+        if(!rainLayer.children.length){
+          const N=24;
+          const frag=document.createDocumentFragment();
+          for(let i=0;i<N;i++){
+            const d=document.createElement('div'); d.className='drop' + (i%3===0?' far':'');
+            d.style.left = (Math.random()*100)+'%';
+            d.style.animationDelay = (Math.random()*1.5)+'s';
+            frag.appendChild(d);
+          }
+          rainLayer.appendChild(frag);
         }
       }else{
-        rainLayer.style.display = 'none';
-        rainLayer.innerHTML = '';
+        rainLayer.style.display='none';
       }
     }
 
-    // Tabs simple behavior
-    (function tabsInit(){
-      const tabs = Array.from(document.querySelectorAll('.tab'));
-      const cards = {
-        subPanel: document.getElementById('subPanel'),
-        syncPanel: document.getElementById('syncPanel'),
-        modesPanel: document.getElementById('modesPanel')
-      };
-      tabs.forEach(t=>{
-        t.addEventListener('click', ()=>{
-          tabs.forEach(x=>x.classList.remove('active'));
-          t.classList.add('active');
-          Object.values(cards).forEach(c=> c.style.display='none');
-          const id = t.getAttribute('data-tab');
-          if(cards[id]) cards[id].style.display = 'flex';
-        });
-      });
-    })();
+    // Grid init
+    buildGrid();
 
     // Actions
-    startBtn.addEventListener('click', startFlow);
-    resetBtn.addEventListener('click', resetTimer);
+    document.getElementById('startBtn').addEventListener('click', startFlow);
+    document.getElementById('resetBtn').addEventListener('click', resetTimer);
 
-    // Init
-    (function init(){
-      rolloverWeekIfNeeded();
-      refreshModeName();
-      populateModesUI();
-      document.getElementById('modeSelect').value = currentMode;
-      refreshEditableNameInputs();
-      renderLeavesFromState();
-      applyProgress();
-      paintIndicator();
-      renderTotals();
-      buildGrid();
-      reflectLockUI();
-      reflectModeSpecificUI();
-      // ensure start button label matches
-      const sec = getSessionSecondsFor(S.activeTimer);
-      S.timers[S.activeTimer].secondsLeft = Math.min(Math.max(1, S.timers[S.activeTimer].secondsLeft|0), 24*3600);
-      clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft || sec);
-      startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft || sec)}`;
-    })();
+    // Initial UI setup
+    clockEl.textContent = format(getSessionSecondsFor(S.activeTimer));
+    startBtn.textContent = `Start ${format(getSessionSecondsFor(S.activeTimer))}`;
+    renderLeavesFromState();
+    applyProgress();
+    paintIndicator();
+    renderTotals();
+    reflectLockUI();
+    reflectModeSpecificUI();
+    populateModesUI();
+    refreshModeName();
+    // Ensure no preview at startup
+    // (avoid calling ensureCurrentLeafPreview here to prevent pre-start leaf)
   </script>
 </body>
 </html>
