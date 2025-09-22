@@ -290,7 +290,7 @@
 
     <section class="gridWrap">
       <div class="gridHead">
-        <div class="chip">Completed Trees</div>
+        <div class="chip">Completed Trees (Week Numbers)</div>
         <div class="chip" id="gridCount">0 / 52</div>
       </div>
       <div class="grid" id="treeGrid"></div>
@@ -403,7 +403,7 @@
       }
     })();
 
-    // Utilities
+    // ISO Week calculation
     function isoWeekYear(date=new Date()){
       const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
       const dayNum = d.getUTCDay()||7;
@@ -426,7 +426,6 @@
         if(remainingMs <= 0){ stopTimer(timerId); onSessionComplete(timerId); }
       };
       setRunning(timerId, true);
-      ensureCurrentLeafPreview();
       intervals[timerId] = setInterval(tick, 250);
       tick();
     }
@@ -462,25 +461,34 @@
       for(let i=0;i<S.placed;i++){ const g=createLeafG(i+1); placeLeaf(g, anchorForIndex(i)); leafLayer.appendChild(g); }
     }
 
-    function ensureCurrentLeafPreview(){
+    // NEW LEAF BEHAVIOR: Only show current leaf when timer is running and blink it
+    function manageCurrentLeaf(){
       const isRunning = S.timers[S.activeTimer].running;
-      if(!isRunning || S.placed >= S.leavesPerTree) {
-        Array.from(leafLayer.children).forEach(node=>node.classList.remove('animate-leaf'));
-        return;
-      }
-
-      const wantIndex = S.placed;
-      const existingLeaves = leafLayer.children.length;
+      const currentLeafIndex = S.placed; // Next leaf to be placed
       
-      if(existingLeaves <= wantIndex) {
-        const g = createLeafG(wantIndex+1);
-        placeLeaf(g, anchorForIndex(wantIndex));
-        leafLayer.appendChild(g);
-      }
-
-      Array.from(leafLayer.children).forEach((node, idx)=>{
-        node.classList.toggle('animate-leaf', idx === wantIndex);
+      // Remove all blinking animations first
+      Array.from(leafLayer.children).forEach(node => {
+        node.classList.remove('animate-leaf');
       });
+
+      // If timer is running and we haven't reached the limit, show and blink the current leaf
+      if(isRunning && currentLeafIndex < S.leavesPerTree) {
+        // Check if current leaf exists, if not create it
+        if(leafLayer.children.length <= currentLeafIndex) {
+          const g = createLeafG(currentLeafIndex + 1);
+          placeLeaf(g, anchorForIndex(currentLeafIndex));
+          leafLayer.appendChild(g);
+        }
+        // Blink only the current leaf (last one)
+        if(leafLayer.children.length > currentLeafIndex) {
+          leafLayer.children[currentLeafIndex].classList.add('animate-leaf');
+        }
+      }
+      // If timer is not running, remove the preview leaf (if it exists beyond placed leaves)
+      else if(!isRunning && leafLayer.children.length > S.placed) {
+        // Remove the last leaf if it's a preview
+        leafLayer.removeChild(leafLayer.lastElementChild);
+      }
     }
 
     const CANOPY_BOTTOM=316, FILL_OVERSCAN=165;
@@ -519,7 +527,7 @@
         startBtn.textContent = on ? 'Running…' : `Start ${format(S.timers[timerId].secondsLeft)}`;
         startBtn.disabled = !!on;
         document.getElementById('canopyOutline')?.classList.toggle('blink-canopy', !!on);
-        if(on) ensureCurrentLeafPreview(); else Array.from(leafLayer.children).forEach(node=>node.classList.remove('animate-leaf'));
+        manageCurrentLeaf(); // Use new leaf management
         showRain(!!on);
       }
       save();
@@ -538,7 +546,7 @@
       if (show) {
         rainLayer.style.display = 'block';
         rainLayer.innerHTML = '';
-        for (let i = 0; i < 80; i++) { // Increased from fewer drops
+        for (let i = 0; i < 80; i++) {
           rainLayer.appendChild(createRainDrop());
         }
       } else {
@@ -593,6 +601,11 @@
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
       S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
 
+      // Make the completed leaf static (remove blinking)
+      Array.from(leafLayer.children).forEach(node => {
+        node.classList.remove('animate-leaf');
+      });
+
       applyProgress();
       paintIndicator();
       renderTotals();
@@ -604,8 +617,6 @@
         if(S.grid.length>52) S.grid.pop();
         buildGrid();
       }
-
-      Array.from(leafLayer.children).forEach(node=>node.classList.remove('animate-leaf'));
 
       S.timers[timerId].secondsLeft = getSessionSecondsFor(timerId);
       clockEl.textContent = format(S.timers[timerId].secondsLeft);
@@ -642,18 +653,21 @@
       stopTimer(S.activeTimer); 
       showRain(false);
       
-      if(S.placed>0 && leafLayer.lastElementChild){
-        leafLayer.removeChild(leafLayer.lastElementChild);
+      // Remove blinking leaf and decrease counters if there was a leaf in progress
+      if(S.placed > 0) {
         S.placed = Math.max(0, S.placed-1);
         S.weeklyLeaves = Math.max(0, S.weeklyLeaves-1);
         S.leavesToday = Math.max(0, S.leavesToday-1);
+        // Re-render leaves from state (this will remove the last leaf)
+        renderLeavesFromState();
       }
       
       S.timers[S.activeTimer].secondsLeft = getSessionSecondsFor(S.activeTimer);
       clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft);
       startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft)}`;
       
-      Array.from(leafLayer.children).forEach(node=>node.classList.remove('animate-leaf'));
+      // Remove any preview leaf and blinking animations
+      manageCurrentLeaf();
       
       applyProgress(); paintIndicator(); renderTotals();
       save();
@@ -661,23 +675,23 @@
       reflectModeSpecificUI();
     }
 
-    // Build grid with numbers 1-52
+    // Build grid with week numbers 1-52
     function buildGrid() {
       if (!treeGrid) return;
       treeGrid.innerHTML = '';
       
-      for (let i = 1; i <= 52; i++) {
+      for (let weekNum = 1; weekNum <= 52; weekNum++) {
         const cell = document.createElement('div');
         cell.className = 'cell';
         
         const num = document.createElement('span');
         num.className = 'num';
-        num.textContent = i;
+        num.textContent = weekNum;
         cell.appendChild(num);
         
-        // Check if this week is completed
-        const completed = S.grid.find(g => g.week === i);
-        if (completed && completed.live) {
+        // Check if this week number is completed
+        const completed = S.grid.find(g => g.week === weekNum && g.live);
+        if (completed) {
           cell.classList.add('live');
           const icon = document.createElement('div');
           icon.className = 'icon';
@@ -754,7 +768,7 @@
       S.timers[S.activeTimer].secondsLeft = sec;
       clockEl.textContent = format(sec);
       startBtn.textContent = `Start ${format(sec)}`;
-      Array.from(leafLayer.children).forEach(node=>node.classList.remove('animate-leaf'));
+      manageCurrentLeaf(); // Update leaf display
       reflectModeSpecificUI();
       save();
     });
@@ -801,6 +815,7 @@
       startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft)}`;
       
       renderLeavesFromState();
+      manageCurrentLeaf();
       applyProgress();
       paintIndicator();
       renderTotals();
@@ -864,6 +879,7 @@
       document.getElementById('user3Input').value = NAMES.user3 || '';
       
       renderLeavesFromState();
+      manageCurrentLeaf();
       applyProgress();
       paintIndicator();
       renderTotals();
