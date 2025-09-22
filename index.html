@@ -325,7 +325,7 @@
       user1:'User 1 mode', user2:'User 2 mode', user3:'User 3 mode'
     };
 
-    // Country to timezone mapping
+    // Comprehensive Country to timezone mapping
     const COUNTRY_TIMEZONES = {
       'Afghanistan': 'Asia/Kabul',
       'Albania': 'Europe/Tirane',
@@ -334,17 +334,41 @@
       'Armenia': 'Asia/Yerevan',
       'Australia': 'Australia/Sydney',
       'Austria': 'Europe/Vienna',
+      'Azerbaijan': 'Asia/Baku',
+      'Bahrain': 'Asia/Bahrain',
       'Bangladesh': 'Asia/Dhaka',
+      'Belarus': 'Europe/Minsk',
       'Belgium': 'Europe/Brussels',
+      'Bolivia': 'America/La_Paz',
+      'Bosnia and Herzegovina': 'Europe/Sarajevo',
       'Brazil': 'America/Sao_Paulo',
+      'Bulgaria': 'Europe/Sofia',
+      'Cambodia': 'Asia/Phnom_Penh',
       'Canada': 'America/Toronto',
+      'Chile': 'America/Santiago',
       'China': 'Asia/Shanghai',
+      'Colombia': 'America/Bogota',
+      'Costa Rica': 'America/Costa_Rica',
+      'Croatia': 'Europe/Zagreb',
+      'Cuba': 'America/Havana',
+      'Cyprus': 'Asia/Nicosia',
+      'Czech Republic': 'Europe/Prague',
       'Denmark': 'Europe/Copenhagen',
+      'Ecuador': 'America/Guayaquil',
       'Egypt': 'Africa/Cairo',
+      'Estonia': 'Europe/Tallinn',
+      'Ethiopia': 'Africa/Addis_Ababa',
       'Finland': 'Europe/Helsinki',
       'France': 'Europe/Paris',
+      'Georgia': 'Asia/Tbilisi',
       'Germany': 'Europe/Berlin',
+      'Ghana': 'Africa/Accra',
       'Greece': 'Europe/Athens',
+      'Guatemala': 'America/Guatemala',
+      'Honduras': 'America/Tegucigalpa',
+      'Hong Kong': 'Asia/Hong_Kong',
+      'Hungary': 'Europe/Budapest',
+      'Iceland': 'Atlantic/Reykjavik',
       'India': 'Asia/Kolkata',
       'Indonesia': 'Asia/Jakarta',
       'Iran': 'Asia/Tehran',
@@ -352,16 +376,30 @@
       'Ireland': 'Europe/Dublin',
       'Israel': 'Asia/Jerusalem',
       'Italy': 'Europe/Rome',
+      'Jamaica': 'America/Jamaica',
       'Japan': 'Asia/Tokyo',
       'Jordan': 'Asia/Amman',
       'Kazakhstan': 'Asia/Almaty',
+      'Kenya': 'Africa/Nairobi',
       'Kuwait': 'Asia/Kuwait',
+      'Latvia': 'Europe/Riga',
+      'Lebanon': 'Asia/Beirut',
+      'Lithuania': 'Europe/Vilnius',
+      'Luxembourg': 'Europe/Luxembourg',
       'Malaysia': 'Asia/Kuala_Lumpur',
       'Mexico': 'America/Mexico_City',
+      'Mongolia': 'Asia/Ulaanbaatar',
+      'Morocco': 'Africa/Casablanca',
+      'Nepal': 'Asia/Kathmandu',
       'Netherlands': 'Europe/Amsterdam',
       'New Zealand': 'Pacific/Auckland',
+      'Nigeria': 'Africa/Lagos',
+      'North Korea': 'Asia/Pyongyang',
       'Norway': 'Europe/Oslo',
+      'Oman': 'Asia/Muscat',
       'Pakistan': 'Asia/Karachi',
+      'Panama': 'America/Panama',
+      'Peru': 'America/Lima',
       'Philippines': 'Asia/Manila',
       'Poland': 'Europe/Warsaw',
       'Portugal': 'Europe/Lisbon',
@@ -369,18 +407,31 @@
       'Romania': 'Europe/Bucharest',
       'Russia': 'Europe/Moscow',
       'Saudi Arabia': 'Asia/Riyadh',
+      'Serbia': 'Europe/Belgrade',
       'Singapore': 'Asia/Singapore',
+      'Slovakia': 'Europe/Bratislava',
+      'Slovenia': 'Europe/Ljubljana',
       'South Africa': 'Africa/Johannesburg',
       'South Korea': 'Asia/Seoul',
       'Spain': 'Europe/Madrid',
+      'Sri Lanka': 'Asia/Colombo',
       'Sweden': 'Europe/Stockholm',
       'Switzerland': 'Europe/Zurich',
+      'Syria': 'Asia/Damascus',
+      'Taiwan': 'Asia/Taipei',
       'Thailand': 'Asia/Bangkok',
+      'Tunisia': 'Africa/Tunis',
       'Turkey': 'Europe/Istanbul',
       'UAE': 'Asia/Dubai',
       'Ukraine': 'Europe/Kiev',
       'United Kingdom': 'Europe/London',
       'United States': 'America/New_York',
+      'USA': 'America/New_York',
+      'US': 'America/New_York',
+      'America': 'America/New_York',
+      'Uruguay': 'America/Montevideo',
+      'Uzbekistan': 'Asia/Tashkent',
+      'Venezuela': 'America/Caracas',
       'Vietnam': 'Asia/Ho_Chi_Minh'
     };
 
@@ -485,14 +536,23 @@
 
     // ISO Week calculation with timezone support
     function isoWeekYear(date=new Date()){
-      // Use the selected timezone for calculations
-      const tzDate = new Date(date.toLocaleString("en-US", {timeZone: G.timeZone}));
-      const d=new Date(Date.UTC(tzDate.getFullYear(),tzDate.getMonth(),tzDate.getDate()));
-      const dayNum = d.getUTCDay()||7;
-      d.setUTCDate(d.getUTCDate()+4-dayNum);
-      const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
-      const week = Math.ceil((((d - yearStart)/86400000)+1)/7);
-      return {week, year:d.getUTCFullYear()};
+      try {
+        const tzDate = new Date(date.toLocaleString("en-US", {timeZone: G.timeZone}));
+        const d=new Date(Date.UTC(tzDate.getFullYear(),tzDate.getMonth(),tzDate.getDate()));
+        const dayNum = d.getUTCDay()||7;
+        d.setUTCDate(d.getUTCDate()+4-dayNum);
+        const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        const week = Math.ceil((((d - yearStart)/86400000)+1)/7);
+        return {week, year:d.getUTCFullYear()};
+      } catch(e) {
+        // Fallback to UTC if timezone fails
+        const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+        const dayNum = d.getUTCDay()||7;
+        d.setUTCDate(d.getUTCDate()+4-dayNum);
+        const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        const week = Math.ceil((((d - yearStart)/86400000)+1)/7);
+        return {week, year:d.getUTCFullYear()};
+      }
     }
 
     function format(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'); const s=String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
@@ -537,31 +597,42 @@
 
     function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
 
+    // FIXED: Render all completed leaves and keep them persistent
     function renderLeavesFromState(){
       if(!leafLayer) return;
       leafLayer.innerHTML='';
-      for(let i=0;i<S.placed;i++){ const g=createLeafG(i+1); placeLeaf(g, anchorForIndex(i)); leafLayer.appendChild(g); }
+      // Render ALL completed leaves (S.placed)
+      for(let i=0;i<S.placed;i++){ 
+        const g=createLeafG(i+1); 
+        placeLeaf(g, anchorForIndex(i)); 
+        leafLayer.appendChild(g); 
+      }
     }
 
-    // NEW LEAF BEHAVIOR: Only show current leaf when timer is running and blink it
+    // FIXED: Manage current leaf behavior - only show when timer is running
     function manageCurrentLeaf(){
       const isRunning = S.timers[S.activeTimer].running;
-      const currentLeafIndex = S.placed;
+      const currentLeafIndex = S.placed; // Next leaf to be placed
       
+      // Remove all blinking animations first
       Array.from(leafLayer.children).forEach(node => {
         node.classList.remove('animate-leaf');
       });
 
+      // If timer is running and we haven't reached the limit, show the next leaf and blink it
       if(isRunning && currentLeafIndex < S.leavesPerTree) {
+        // Check if current preview leaf exists, if not create it
         if(leafLayer.children.length <= currentLeafIndex) {
           const g = createLeafG(currentLeafIndex + 1);
           placeLeaf(g, anchorForIndex(currentLeafIndex));
           leafLayer.appendChild(g);
         }
+        // Blink only the preview leaf (last one)
         if(leafLayer.children.length > currentLeafIndex) {
           leafLayer.children[currentLeafIndex].classList.add('animate-leaf');
         }
       }
+      // If timer is not running, remove the preview leaf (if it exists beyond placed leaves)
       else if(!isRunning && leafLayer.children.length > S.placed) {
         leafLayer.removeChild(leafLayer.lastElementChild);
       }
@@ -578,6 +649,15 @@
 
     function percentFromState(){ const denom=Math.max(1, S.leavesPerTree|0); return (S.placed/denom)*100; }
     function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
+
+    // FIXED: Update all UI elements properly
+    function updateAllUI() {
+      paintIndicator();
+      renderTotals();
+      applyProgress();
+      buildGrid();
+      save();
+    }
 
     function paintIndicator(){
       const total = Math.max(1, Number(S.leavesPerTree)||1);
@@ -649,6 +729,7 @@
       }catch(e){}
     }
 
+    // FIXED: Ensure proper session completion handling
     function onSessionComplete(timerId){
       const {week, year} = isoWeekYear(new Date());
       if(!S.week){ S.week=week; S.year=year; }
@@ -665,6 +746,7 @@
 
       playAlarmIfAllowed();
 
+      // Update time tracking
       if(timerId==='pomodoro'){
         S.timers.pomodoro.weeklySeconds += POMODORO_SECONDS;
         S.timers.pomodoro.totalSeconds  += POMODORO_SECONDS;
@@ -673,26 +755,31 @@
         S.timers.custom.weeklySeconds += used;
         S.timers.custom.totalSeconds  += used;
       }
+
+      // Update focus time and leaf counts
       S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
-      S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
+      S.placed += 1;
+      S.leavesTotal += 1;
+      S.leavesToday += 1;
+      S.weeklyLeaves += 1;
 
+      // Make the completed leaf static (remove blinking)
       Array.from(leafLayer.children).forEach(node => {
         node.classList.remove('animate-leaf');
       });
 
-      applyProgress();
-      paintIndicator();
-      renderTotals();
-      save();
-
-      if(S.placed===S.leavesPerTree){
+      // Check if tree is complete
+      if(S.placed >= S.leavesPerTree){
         S.weeklyComplete=true;
         S.grid.unshift({week:S.week,year:S.year,live:true,ts:Date.now()});
         if(S.grid.length>52) S.grid.pop();
-        buildGrid();
       }
 
+      // FIXED: Ensure all UI updates happen
+      updateAllUI();
+
+      // Reset timer for next session
       S.timers[timerId].secondsLeft = getSessionSecondsFor(timerId);
       clockEl.textContent = format(S.timers[timerId].secondsLeft);
       startBtn.textContent = `Start ${format(S.timers[timerId].secondsLeft)}`;
@@ -728,10 +815,12 @@
       stopTimer(S.activeTimer); 
       showRain(false);
       
+      // Only reduce counts if there are leaves to remove
       if(S.placed > 0) {
         S.placed = Math.max(0, S.placed-1);
         S.weeklyLeaves = Math.max(0, S.weeklyLeaves-1);
         S.leavesToday = Math.max(0, S.leavesToday-1);
+        // Re-render leaves from state
         renderLeavesFromState();
       }
       
@@ -740,9 +829,7 @@
       startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft)}`;
       
       manageCurrentLeaf();
-      
-      applyProgress(); paintIndicator(); renderTotals();
-      save();
+      updateAllUI();
       reflectLockUI();
       reflectModeSpecificUI();
     }
@@ -798,9 +885,8 @@
       S.weeklyTargetSetValue = v;
       S.weeklyTargetLocked = true;
       S.placed = 0; S.weeklyLeaves = 0; leafLayer.innerHTML='';
-      applyProgress(); paintIndicator();
+      updateAllUI();
       lptVal.textContent = String(S.leavesPerTree);
-      save();
       reflectLockUI();
       reflectModeSpecificUI();
     });
@@ -887,10 +973,7 @@
       
       renderLeavesFromState();
       manageCurrentLeaf();
-      applyProgress();
-      paintIndicator();
-      renderTotals();
-      buildGrid();
+      updateAllUI();
       
       reflectLockUI();
       reflectModeSpecificUI();
@@ -956,10 +1039,7 @@
       
       renderLeavesFromState();
       manageCurrentLeaf();
-      applyProgress();
-      paintIndicator();
-      renderTotals();
-      buildGrid();
+      updateAllUI();
       
       reflectLockUI();
       reflectModeSpecificUI();
