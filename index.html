@@ -445,7 +445,8 @@
     // Mode state helpers
     const modeKey = (modeId)=> `${APP_KEY}_mode_${modeId}`;
     const DEFAULT_STATE = {
-      leavesPerTree:9, placed:0,
+      leavesPerTree:9, 
+      completedLeaves:0, // Tracks completed (static) leaves
       timers: {
         pomodoro: { secondsLeft:POMODORO_SECONDS, running:false, weeklySeconds:0, totalSeconds:0 },
         custom:   { secondsLeft:DEFAULT_CUSTOM_MIN*60, running:false, weeklySeconds:0, totalSeconds:0, sessionSeconds:DEFAULT_CUSTOM_MIN*60 }
@@ -597,52 +598,28 @@
 
     function placeLeaf(g,a){ g.setAttribute('transform',`translate(${a.x} ${a.y}) scale(1.05)`); }
 
-    // FIXED: Render all completed leaves only (static leaves that are placed)
-    function renderLeavesFromState(){
+    // FIXED LEAF LOGIC: Perfect implementation as per instructions
+    function updateLeafDisplay(){
       if(!leafLayer) return;
+      
+      // Clear all leaves first
       leafLayer.innerHTML='';
-      // Render ONLY completed/placed leaves (S.placed)
-      for(let i=0;i<S.placed;i++){ 
-        const g=createLeafG(i+1); 
+      
+      // Step 1: Render all completed (static) leaves
+      for(let i=0; i < S.completedLeaves; i++){ 
+        const g = createLeafG(i + 1); 
         placeLeaf(g, anchorForIndex(i)); 
         leafLayer.appendChild(g); 
       }
-    }
-
-    // FIXED: Manage current leaf - only show next leaf when timer is running and make it blink
-    function manageCurrentLeaf(){
-      const isRunning = S.timers[S.activeTimer].running;
       
-      // First, remove all blinking animations from existing leaves
-      Array.from(leafLayer.children).forEach(node => {
-        node.classList.remove('animate-leaf');
-      });
-
-      if(isRunning && S.placed < S.leavesPerTree) {
-        // If timer is running, ensure we have the next leaf for blinking
-        const nextLeafIndex = S.placed; // This is the next leaf to be completed
-        
-        // Ensure we have exactly S.placed + 1 leaves (completed + current blinking)
-        while(leafLayer.children.length < S.placed + 1) {
-          const g = createLeafG(leafLayer.children.length + 1);
-          placeLeaf(g, anchorForIndex(leafLayer.children.length));
-          leafLayer.appendChild(g);
-        }
-        
-        // Remove excess leaves (if any)
-        while(leafLayer.children.length > S.placed + 1) {
-          leafLayer.removeChild(leafLayer.lastElementChild);
-        }
-        
-        // Make the last leaf (current one) blink
-        if(leafLayer.children.length > nextLeafIndex) {
-          leafLayer.children[nextLeafIndex].classList.add('animate-leaf');
-        }
-      } else {
-        // Timer not running - ensure we only have completed leaves (no extra blinking leaf)
-        while(leafLayer.children.length > S.placed) {
-          leafLayer.removeChild(leafLayer.lastElementChild);
-        }
+      // Step 2: If timer is running, show current leaf (next one) and make it blink
+      const isRunning = S.timers[S.activeTimer].running;
+      if(isRunning) {
+        const currentLeafNumber = S.completedLeaves + 1;
+        const g = createLeafG(currentLeafNumber);
+        placeLeaf(g, anchorForIndex(S.completedLeaves));
+        g.classList.add('animate-leaf'); // Make it blink
+        leafLayer.appendChild(g);
       }
     }
 
@@ -655,25 +632,30 @@
       fillRect.setAttribute('y', String(targetY)); fillRect.setAttribute('height', String(targetH));
     }
 
-    function percentFromState(){ const denom=Math.max(1, S.leavesPerTree|0); return (S.placed/denom)*100; }
+    function percentFromState(){ 
+      const denom = Math.max(1, S.leavesPerTree|0); 
+      return (S.completedLeaves / denom) * 100; 
+    }
     function applyProgress(){ const p=S.weeklyComplete?100:percentFromState(); setFillPercent(p); }
 
-    // FIXED: Update all UI elements with proper leaf counts
+    // Update all UI elements with proper leaf counts
     function updateAllUI() {
       paintIndicator();
       renderTotals();
       applyProgress();
       buildGrid();
+      updateLeafDisplay();
       save();
     }
 
-    // FIXED: Paint indicator with week label
+    // Paint indicator with correct completed leaves count
     function paintIndicator(){
       const total = Math.max(1, Number(S.leavesPerTree)||1);
-      const done = Math.max(0, Math.min(S.placed, total));
+      const done = Math.max(0, S.completedLeaves);
       const pct = (done/total)*100;
       indDone.style.width = pct + '%';
       indRem.style.width = (100 - pct) + '%';
+      // Allow x > y display when LPT is exceeded
       xyLabel.textContent = `${done}/${total} leaves (week)`;
     }
 
@@ -692,7 +674,7 @@
         startBtn.textContent = on ? 'Running…' : `Start ${format(S.timers[timerId].secondsLeft)}`;
         startBtn.disabled = !!on;
         document.getElementById('canopyOutline')?.classList.toggle('blink-canopy', !!on);
-        manageCurrentLeaf(); // Update leaf display and blinking
+        updateLeafDisplay(); // Update leaf display based on running state
         showRain(!!on);
       }
       save();
@@ -738,18 +720,19 @@
       }catch(e){}
     }
 
-    // FIXED: Proper session completion with reliable state updates
+    // FIXED: Session completion with proper leaf management
     function onSessionComplete(timerId){
       const {week, year} = isoWeekYear(new Date());
       if(!S.week){ S.week=week; S.year=year; }
       if(S.week!==week || S.year!==year){
+        // New week - reset weekly counters but keep timer functionality
         S.week=week; S.year=year;
         S.weeklyTargetLocked=false;
         S.weeklyLeaves=0;
         S.leavesToday=0;
         S.weeklyFocusSeconds=0;
-        S.placed=0;
-        leafLayer.innerHTML=''; // Clear old leaves for new week
+        S.completedLeaves=0; // Reset completed leaves for new week
+        S.weeklyComplete=false;
       }
       if(!S.weeklyTargetLocked){ S.weeklyTargetLocked=true; S.weeklyTargetSetValue=S.leavesPerTree; }
 
@@ -765,21 +748,18 @@
         S.timers.custom.totalSeconds  += used;
       }
 
-      // FIXED: Increment leaf and time counts properly
+      // Update focus time and leaf counts
       S.weeklyFocusSeconds = (S.weeklyFocusSeconds||0) + LEAF_SECONDS;
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
-      S.placed += 1; // This is the key fix - increment placed leaves
+      
+      // PERFECT LEAF LOGIC: Increment completed leaves (current blinking leaf becomes static)
+      S.completedLeaves += 1;
       S.leavesTotal += 1;
       S.leavesToday += 1;
       S.weeklyLeaves += 1;
 
-      // Remove blinking from all leaves (current leaf becomes static)
-      Array.from(leafLayer.children).forEach(node => {
-        node.classList.remove('animate-leaf');
-      });
-
-      // Check if tree is complete
-      if(S.placed >= S.leavesPerTree){
+      // Check if LPT is complete (but continue allowing timer usage)
+      if(S.completedLeaves >= S.leavesPerTree && !S.weeklyComplete){
         S.weeklyComplete=true;
         S.grid.unshift({week:S.week,year:S.year,live:true,ts:Date.now()});
         if(S.grid.length>52) S.grid.pop();
@@ -808,8 +788,8 @@
         S.weeklyLeaves=0;
         S.leavesToday=0;
         S.weeklyFocusSeconds=0;
-        S.placed=0;
-        leafLayer.innerHTML='';
+        S.completedLeaves=0;
+        S.weeklyComplete=false;
       }
       if(S.timers[S.activeTimer].secondsLeft<=0 || S.timers[S.activeTimer].secondsLeft>24*3600){
         S.timers[S.activeTimer].secondsLeft = getSessionSecondsFor(S.activeTimer);
@@ -820,21 +800,18 @@
       reflectModeSpecificUI();
     }
 
-    // FIXED: Reset should only remove the current (preview/blinking) leaf
+    // FIXED: Reset only removes current blinking leaf (if any), keeps completed leaves
     function resetTimer(){
       stopTimer(S.activeTimer); 
       showRain(false);
       
-      // FIXED: Only remove current blinking leaf, not completed leaves
-      // Reset only removes the preview leaf (if timer was running)
-      // Completed leaves (S.placed) remain untouched
-      
+      // Reset only affects the timer, not completed leaves
       S.timers[S.activeTimer].secondsLeft = getSessionSecondsFor(S.activeTimer);
       clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft);
       startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft)}`;
       
-      // Update leaf display - this will remove any preview leaf and keep completed ones
-      manageCurrentLeaf();
+      // Update leaf display - this will remove current blinking leaf and keep completed ones
+      updateLeafDisplay();
       
       updateAllUI();
       reflectLockUI();
@@ -871,27 +848,28 @@
       gridCount.textContent = `${completedCount} / 52`;
     }
 
-    // LPT input behavior and locking
+    // LPT input behavior and locking (don't alter slider after LPT complete)
     const clamp = (v)=>Math.max(1, Math.min(200, Number(v)||1));
     lptInput.addEventListener('input', ()=>{
+      if(S.weeklyTargetLocked) return; // Don't change if locked
       const v = clamp(lptInput.value);
       lptVal.textContent = String(v);
       weeklyTargetEl.textContent = `Weekly target = ${v*25} mins (as per LPT × 25)`;
-      xyLabel.textContent = `${Math.min(S.placed, v)}/${v} leaves (week)`;
+      xyLabel.textContent = `${S.completedLeaves}/${v} leaves (week)`;
     });
 
     lptSetBtn.addEventListener('click', ()=>{
       const {week, year} = isoWeekYear(new Date());
       if(!S.week){ S.week=week; S.year=year; }
       if(S.week!==week || S.year!==year){
-        S.week=week; S.year=year; S.weeklyTargetLocked=false; S.placed=0; S.weeklyLeaves=0; leafLayer.innerHTML='';
+        S.week=week; S.year=year; S.weeklyTargetLocked=false; S.completedLeaves=0; S.weeklyLeaves=0;
       }
       if(S.weeklyTargetLocked) return;
       const v = clamp(lptInput.value);
       S.leavesPerTree = v;
       S.weeklyTargetSetValue = v;
       S.weeklyTargetLocked = true;
-      S.placed = 0; S.weeklyLeaves = 0; leafLayer.innerHTML='';
+      S.completedLeaves = 0; S.weeklyLeaves = 0; S.weeklyComplete = false;
       updateAllUI();
       lptVal.textContent = String(S.leavesPerTree);
       reflectLockUI();
@@ -904,7 +882,7 @@
       lptSetBtn.disabled = !!S.weeklyTargetLocked;
       lptInput.value = S.leavesPerTree;
       lptVal.textContent = String(S.leavesPerTree);
-      xyLabel.textContent = `${Math.min(S.placed, S.leavesPerTree)}/${S.leavesPerTree} leaves (week)`;
+      xyLabel.textContent = `${S.completedLeaves}/${S.leavesPerTree} leaves (week)`;
       weeklyTargetEl.textContent = `Weekly target = ${S.leavesPerTree*25} mins (as per LPT × 25)`;
     }
 
@@ -932,7 +910,7 @@
       S.timers[S.activeTimer].secondsLeft = sec;
       clockEl.textContent = format(sec);
       startBtn.textContent = `Start ${format(sec)}`;
-      manageCurrentLeaf();
+      updateLeafDisplay();
       reflectModeSpecificUI();
       save();
     });
@@ -978,8 +956,6 @@
       clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft);
       startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft)}`;
       
-      renderLeavesFromState();
-      manageCurrentLeaf();
       updateAllUI();
       
       reflectLockUI();
@@ -1044,10 +1020,7 @@
       document.getElementById('user2Input').value = NAMES.user2 || '';
       document.getElementById('user3Input').value = NAMES.user3 || '';
       
-      renderLeavesFromState();
-      manageCurrentLeaf();
       updateAllUI();
-      
       reflectLockUI();
       reflectModeSpecificUI();
     }
