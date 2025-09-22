@@ -96,10 +96,10 @@
 
     .rain{ position:absolute; top:0; right:0; bottom:0; left:0; pointer-events:none; display:none; z-index:4; }
     .rain .drop{
-      position:absolute; left:0; width:4px; height:18px; background:rgba(14,42,112,.7); border-radius:2px;
+      position:absolute; left:0; width:2px; height:16px; background:rgba(14,42,112,.6); border-radius:1px;
       top:-10%; animation:rainTop 0.8s linear infinite;
     }
-    .rain .drop.far{ opacity:.8; transform:scale(1.1); animation-duration:1.2s; }
+    .rain .drop.far{ opacity:.7; transform:scale(0.9); animation-duration:1.2s; }
     @keyframes rainTop{ 0%{ top:-10%; } 100%{ top:110%; } }
 
     .tzBar{ gap:10px; padding:10px 12px; border-radius:14px; background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); justify-content:space-between; flex-wrap:wrap; margin-top:12px; }
@@ -240,13 +240,13 @@
     <div class="tzBar">
       <div class="countryWrap">
         <label for="countryInput" class="miniNote">Country</label>
-        <input id="countryInput" list="countryList" placeholder="Type country (e.g., India)" />
+        <input id="countryInput" list="countryList" placeholder="Type country name (e.g., India)" />
         <datalist id="countryList"></datalist>
         <span id="tzLabel" class="miniNote">TZ: Asia/Kolkata</span>
       </div>
       <div class="stats">
-        <div class="chip" id="todayChip"><strong>Pomodoro hrs (week)</strong>: 0 hrs 0 mins</div>
-        <div class="chip" id="totalTimeChip"><strong>Pomodoro hrs (overall)</strong>: 0 hrs 0 mins</div>
+        <div class="chip" id="todayChip"><strong>Total hrs (week)</strong>: 0 hrs 0 mins</div>
+        <div class="chip" id="totalTimeChip"><strong>Total hrs (overall)</strong>: 0 hrs 0 mins</div>
       </div>
     </div>
 
@@ -325,6 +325,65 @@
       user1:'User 1 mode', user2:'User 2 mode', user3:'User 3 mode'
     };
 
+    // Country to timezone mapping
+    const COUNTRY_TIMEZONES = {
+      'Afghanistan': 'Asia/Kabul',
+      'Albania': 'Europe/Tirane',
+      'Algeria': 'Africa/Algiers',
+      'Argentina': 'America/Argentina/Buenos_Aires',
+      'Armenia': 'Asia/Yerevan',
+      'Australia': 'Australia/Sydney',
+      'Austria': 'Europe/Vienna',
+      'Bangladesh': 'Asia/Dhaka',
+      'Belgium': 'Europe/Brussels',
+      'Brazil': 'America/Sao_Paulo',
+      'Canada': 'America/Toronto',
+      'China': 'Asia/Shanghai',
+      'Denmark': 'Europe/Copenhagen',
+      'Egypt': 'Africa/Cairo',
+      'Finland': 'Europe/Helsinki',
+      'France': 'Europe/Paris',
+      'Germany': 'Europe/Berlin',
+      'Greece': 'Europe/Athens',
+      'India': 'Asia/Kolkata',
+      'Indonesia': 'Asia/Jakarta',
+      'Iran': 'Asia/Tehran',
+      'Iraq': 'Asia/Baghdad',
+      'Ireland': 'Europe/Dublin',
+      'Israel': 'Asia/Jerusalem',
+      'Italy': 'Europe/Rome',
+      'Japan': 'Asia/Tokyo',
+      'Jordan': 'Asia/Amman',
+      'Kazakhstan': 'Asia/Almaty',
+      'Kuwait': 'Asia/Kuwait',
+      'Malaysia': 'Asia/Kuala_Lumpur',
+      'Mexico': 'America/Mexico_City',
+      'Netherlands': 'Europe/Amsterdam',
+      'New Zealand': 'Pacific/Auckland',
+      'Norway': 'Europe/Oslo',
+      'Pakistan': 'Asia/Karachi',
+      'Philippines': 'Asia/Manila',
+      'Poland': 'Europe/Warsaw',
+      'Portugal': 'Europe/Lisbon',
+      'Qatar': 'Asia/Qatar',
+      'Romania': 'Europe/Bucharest',
+      'Russia': 'Europe/Moscow',
+      'Saudi Arabia': 'Asia/Riyadh',
+      'Singapore': 'Asia/Singapore',
+      'South Africa': 'Africa/Johannesburg',
+      'South Korea': 'Asia/Seoul',
+      'Spain': 'Europe/Madrid',
+      'Sweden': 'Europe/Stockholm',
+      'Switzerland': 'Europe/Zurich',
+      'Thailand': 'Asia/Bangkok',
+      'Turkey': 'Europe/Istanbul',
+      'UAE': 'Asia/Dubai',
+      'Ukraine': 'Europe/Kiev',
+      'United Kingdom': 'Europe/London',
+      'United States': 'America/New_York',
+      'Vietnam': 'Asia/Ho_Chi_Minh'
+    };
+
     // Global + names
     const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}');
     const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India' }, loadGlobal());
@@ -370,7 +429,7 @@
     const todayChip=el('todayChip'), totalTimeChip=el('totalTimeChip');
     const xyLabel=el('xyLabel'), rainLayer=el('rainLayer'), treeGrid=el('treeGrid'), gridCount=el('gridCount');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), todaySky=el('todaySky'), modeNameEl=document.getElementById('modeName');
-    const modeSelect=el('modeSelect');
+    const modeSelect=el('modeSelect'), countryInput=el('countryInput'), countryList=el('countryList'), tzLabel=el('tzLabel');
 
     // Build saplings once
     (function buildSaplings(){
@@ -403,9 +462,32 @@
       }
     })();
 
-    // ISO Week calculation
+    // Populate country list
+    function populateCountryList() {
+      countryList.innerHTML = '';
+      Object.keys(COUNTRY_TIMEZONES).forEach(country => {
+        const option = document.createElement('option');
+        option.value = country;
+        countryList.appendChild(option);
+      });
+    }
+
+    // Country selection handler
+    countryInput.addEventListener('input', () => {
+      const selectedCountry = countryInput.value;
+      if (COUNTRY_TIMEZONES[selectedCountry]) {
+        G.country = selectedCountry;
+        G.timeZone = COUNTRY_TIMEZONES[selectedCountry];
+        tzLabel.textContent = `TZ: ${G.timeZone}`;
+        saveGlobal();
+      }
+    });
+
+    // ISO Week calculation with timezone support
     function isoWeekYear(date=new Date()){
-      const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+      // Use the selected timezone for calculations
+      const tzDate = new Date(date.toLocaleString("en-US", {timeZone: G.timeZone}));
+      const d=new Date(Date.UTC(tzDate.getFullYear(),tzDate.getMonth(),tzDate.getDate()));
       const dayNum = d.getUTCDay()||7;
       d.setUTCDate(d.getUTCDate()+4-dayNum);
       const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
@@ -464,29 +546,23 @@
     // NEW LEAF BEHAVIOR: Only show current leaf when timer is running and blink it
     function manageCurrentLeaf(){
       const isRunning = S.timers[S.activeTimer].running;
-      const currentLeafIndex = S.placed; // Next leaf to be placed
+      const currentLeafIndex = S.placed;
       
-      // Remove all blinking animations first
       Array.from(leafLayer.children).forEach(node => {
         node.classList.remove('animate-leaf');
       });
 
-      // If timer is running and we haven't reached the limit, show and blink the current leaf
       if(isRunning && currentLeafIndex < S.leavesPerTree) {
-        // Check if current leaf exists, if not create it
         if(leafLayer.children.length <= currentLeafIndex) {
           const g = createLeafG(currentLeafIndex + 1);
           placeLeaf(g, anchorForIndex(currentLeafIndex));
           leafLayer.appendChild(g);
         }
-        // Blink only the current leaf (last one)
         if(leafLayer.children.length > currentLeafIndex) {
           leafLayer.children[currentLeafIndex].classList.add('animate-leaf');
         }
       }
-      // If timer is not running, remove the preview leaf (if it exists beyond placed leaves)
       else if(!isRunning && leafLayer.children.length > S.placed) {
-        // Remove the last leaf if it's a preview
         leafLayer.removeChild(leafLayer.lastElementChild);
       }
     }
@@ -516,8 +592,8 @@
 
     function renderTotals(){
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
-      todayChip.innerHTML = `<strong>Pomodoro hrs (week)</strong>: ${w.h} hrs ${w.m} mins`;
-      totalTimeChip.innerHTML = `<strong>Pomodoro hrs (overall)</strong>: ${o.h} hrs ${o.m} mins`;
+      todayChip.innerHTML = `<strong>Total hrs (week)</strong>: ${w.h} hrs ${w.m} mins`;
+      totalTimeChip.innerHTML = `<strong>Total hrs (overall)</strong>: ${o.h} hrs ${o.m} mins`;
       todaySky.textContent = `Today: ${S.leavesToday||0} leaves`;
     }
 
@@ -527,13 +603,13 @@
         startBtn.textContent = on ? 'Running…' : `Start ${format(S.timers[timerId].secondsLeft)}`;
         startBtn.disabled = !!on;
         document.getElementById('canopyOutline')?.classList.toggle('blink-canopy', !!on);
-        manageCurrentLeaf(); // Use new leaf management
+        manageCurrentLeaf();
         showRain(!!on);
       }
       save();
     }
 
-    // Rain functions with increased intensity
+    // Rain functions with decreased thickness
     function createRainDrop() {
       const drop = document.createElement('div');
       drop.className = 'drop' + (Math.random() > 0.5 ? ' far' : '');
@@ -601,7 +677,6 @@
       S.totalFocusSeconds  = (S.totalFocusSeconds||0)  + LEAF_SECONDS;
       S.placed+=1; S.leavesTotal+=1; S.leavesToday+=1; S.weeklyLeaves+=1;
 
-      // Make the completed leaf static (remove blinking)
       Array.from(leafLayer.children).forEach(node => {
         node.classList.remove('animate-leaf');
       });
@@ -653,12 +728,10 @@
       stopTimer(S.activeTimer); 
       showRain(false);
       
-      // Remove blinking leaf and decrease counters if there was a leaf in progress
       if(S.placed > 0) {
         S.placed = Math.max(0, S.placed-1);
         S.weeklyLeaves = Math.max(0, S.weeklyLeaves-1);
         S.leavesToday = Math.max(0, S.leavesToday-1);
-        // Re-render leaves from state (this will remove the last leaf)
         renderLeavesFromState();
       }
       
@@ -666,7 +739,6 @@
       clockEl.textContent = format(S.timers[S.activeTimer].secondsLeft);
       startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft)}`;
       
-      // Remove any preview leaf and blinking animations
       manageCurrentLeaf();
       
       applyProgress(); paintIndicator(); renderTotals();
@@ -689,7 +761,6 @@
         num.textContent = weekNum;
         cell.appendChild(num);
         
-        // Check if this week number is completed
         const completed = S.grid.find(g => g.week === weekNum && g.live);
         if (completed) {
           cell.classList.add('live');
@@ -768,7 +839,7 @@
       S.timers[S.activeTimer].secondsLeft = sec;
       clockEl.textContent = format(sec);
       startBtn.textContent = `Start ${format(sec)}`;
-      manageCurrentLeaf(); // Update leaf display
+      manageCurrentLeaf();
       reflectModeSpecificUI();
       save();
     });
@@ -859,8 +930,13 @@
 
     // Initialize app
     function initApp() {
+      populateCountryList();
       populateModeSelect();
       modeNameEl.textContent = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
+      
+      // Set up timezone UI
+      countryInput.value = G.country || 'India';
+      tzLabel.textContent = `TZ: ${G.timeZone}`;
       
       timerTypeSel.value = S.activeTimer;
       customTimeRow.style.display = (S.activeTimer==='custom') ? 'flex' : 'none';
