@@ -247,7 +247,6 @@
       <div class="stats">
         <div class="chip" id="todayChip"><strong>Total hrs (week)</strong>: 0 hrs 0 mins</div>
         <div class="chip" id="totalTimeChip"><strong>Total hrs (overall)</strong>: 0 hrs 0 mins</div>
-        <div class="chip" id="leavesOverallChip"><strong>Leaves overall</strong>: 0</div>
       </div>
     </div>
 
@@ -316,13 +315,13 @@
     const DEFAULT_CUSTOM_MIN = 20;
     const MAX_CUSTOM_MIN = 180;
 
-    const PRESET_MODES = ['cycling','exercise','quran','dhikr','digitalDetox','bedTime','masterSkill'];
+    const PRESET_MODES = ['cycling','exercise','quran','dhikr','digitalDetox','bedTime'];
     const MODE_IDS = [...PRESET_MODES, 'maths','subject1','subject2','subject3','user1','user2','user3'];
 
     const DEFAULT_MODE_NAMES = {
       cycling:'Cycling mode', exercise:'Exercise mode', quran:'Quran mode', dhikr:'Dhikr mode',
-      digitalDetox:'Digital detox mode', bedTime:'Bedtime mode', masterSkill:'Master a skill',
-      maths:'Maths mode', subject1:'Subject 1 mode', subject2:'Subject 2 mode', subject3:'Subject 3 mode',
+      digitalDetox:'Digital detox mode', bedTime:'Bedtime mode', maths:'Maths mode',
+      subject1:'Subject 1 mode', subject2:'Subject 2 mode', subject3:'Subject 3 mode',
       user1:'User 1 mode', user2:'User 2 mode', user3:'User 3 mode'
     };
 
@@ -438,7 +437,7 @@
 
     // Global + names
     const loadGlobal = () => JSON.parse(localStorage.getItem(GLOBAL_KEY) || '{}');
-    const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India', completedTreesSequence:0 }, loadGlobal());
+    const G = Object.assign({ timeZone:'Asia/Kolkata', selectedMode:'maths', country:'India' }, loadGlobal());
     const NAMES = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
     const saveGlobal = ()=>localStorage.setItem(GLOBAL_KEY, JSON.stringify(G));
     const saveNames = ()=>localStorage.setItem(NAMES_KEY, JSON.stringify(NAMES));
@@ -456,8 +455,7 @@
       weeklyLeaves:0, leavesToday:0, leavesTotal:0,
       weeklyFocusSeconds:0, totalFocusSeconds:0,
       grid:[], week:undefined, year:undefined, weeklyComplete:false,
-      weeklyTargetLocked:false, weeklyTargetSetValue:9,
-      weeklyTargetAchieved:false // NEW: Track if weekly target was achieved
+      weeklyTargetLocked:false, weeklyTargetSetValue:9
     };
 
     function loadState(modeId){
@@ -480,7 +478,7 @@
     const lptInput=el('lptInput'), lptSetBtn=el('lptSetBtn'), lptVal=el('lptVal'), lockHint=el('lockHint');
     const weeklyTargetEl=el('weeklyTarget'), customWeekTotalEl=el('customWeekTotal');
     const indDone=el('indDone'), indRem=el('indRem');
-    const todayChip=el('todayChip'), totalTimeChip=el('totalTimeChip'), leavesOverallChip=el('leavesOverallChip');
+    const todayChip=el('todayChip'), totalTimeChip=el('totalTimeChip');
     const xyLabel=el('xyLabel'), rainLayer=el('rainLayer'), treeGrid=el('treeGrid'), gridCount=el('gridCount');
     const leafLayer=document.querySelector('#treeSVG #leafLayer'), fillRect=document.getElementById('fillRect'), todaySky=el('todaySky'), modeNameEl=document.getElementById('modeName');
     const modeSelect=el('modeSelect'), countryInput=el('countryInput'), countryList=el('countryList'), tzLabel=el('tzLabel');
@@ -650,27 +648,13 @@
       save();
     }
 
-    // UPDATED: Paint indicator with green staying locked once target is achieved
+    // Paint indicator with correct completed leaves count
     function paintIndicator(){
       const total = Math.max(1, Number(S.leavesPerTree)||1);
       const done = Math.max(0, S.completedLeaves);
-      
-      // Check if weekly target was achieved (completed leaves >= target)
-      if(done >= total && !S.weeklyTargetAchieved) {
-        S.weeklyTargetAchieved = true;
-      }
-      
-      // If weekly target was achieved, keep slider green (100%) throughout the week
-      let pct;
-      if(S.weeklyTargetAchieved) {
-        pct = 100;
-      } else {
-        pct = (done/total)*100;
-      }
-      
+      const pct = (done/total)*100;
       indDone.style.width = pct + '%';
       indRem.style.width = (100 - pct) + '%';
-      
       // Allow x > y display when LPT is exceeded
       xyLabel.textContent = `${done}/${total} leaves (week)`;
     }
@@ -681,7 +665,6 @@
       const w=formatTimeHM(S.weeklyFocusSeconds||0), o=formatTimeHM(S.totalFocusSeconds||0);
       todayChip.innerHTML = `<strong>Total hrs (week)</strong>: ${w.h} hrs ${w.m} mins`;
       totalTimeChip.innerHTML = `<strong>Total hrs (overall)</strong>: ${o.h} hrs ${o.m} mins`;
-      leavesOverallChip.innerHTML = `<strong>Leaves overall</strong>: ${S.leavesTotal||0}`;
       todaySky.textContent = `Today: ${S.leavesToday||0} leaves`;
     }
 
@@ -737,7 +720,7 @@
       }catch(e){}
     }
 
-    // UPDATED: Session completion with proper leaf management and sequential tree filling
+    // FIXED: Session completion with proper leaf management
     function onSessionComplete(timerId){
       const {week, year} = isoWeekYear(new Date());
       if(!S.week){ S.week=week; S.year=year; }
@@ -750,7 +733,6 @@
         S.weeklyFocusSeconds=0;
         S.completedLeaves=0; // Reset completed leaves for new week
         S.weeklyComplete=false;
-        S.weeklyTargetAchieved=false; // Reset target achievement for new week
       }
       if(!S.weeklyTargetLocked){ S.weeklyTargetLocked=true; S.weeklyTargetSetValue=S.leavesPerTree; }
 
@@ -779,13 +761,8 @@
       // Check if LPT is complete (but continue allowing timer usage)
       if(S.completedLeaves >= S.leavesPerTree && !S.weeklyComplete){
         S.weeklyComplete=true;
-        // Increment global sequence counter and add to next available slot
-        G.completedTreesSequence += 1;
-        const nextSlot = G.completedTreesSequence;
-        S.grid.push({week:nextSlot, year:year, live:true, ts:Date.now()});
-        // Keep only the most recent 52 completed trees
-        if(S.grid.length>52) S.grid.shift();
-        saveGlobal(); // Save the updated sequence counter
+        S.grid.unshift({week:S.week,year:S.year,live:true,ts:Date.now()});
+        if(S.grid.length>52) S.grid.pop();
       }
 
       // Update all UI elements
@@ -813,7 +790,6 @@
         S.weeklyFocusSeconds=0;
         S.completedLeaves=0;
         S.weeklyComplete=false;
-        S.weeklyTargetAchieved=false; // Reset for new week
       }
       if(S.timers[S.activeTimer].secondsLeft<=0 || S.timers[S.activeTimer].secondsLeft>24*3600){
         S.timers[S.activeTimer].secondsLeft = getSessionSecondsFor(S.activeTimer);
@@ -842,7 +818,7 @@
       reflectModeSpecificUI();
     }
 
-    // Build grid with week numbers 1-52, filling from 1 onwards
+    // Build grid with week numbers 1-52
     function buildGrid() {
       if (!treeGrid) return;
       treeGrid.innerHTML = '';
@@ -856,7 +832,6 @@
         num.textContent = weekNum;
         cell.appendChild(num);
         
-        // Check if this slot is filled by looking at grid entries
         const completed = S.grid.find(g => g.week === weekNum && g.live);
         if (completed) {
           cell.classList.add('live');
@@ -887,14 +862,14 @@
       const {week, year} = isoWeekYear(new Date());
       if(!S.week){ S.week=week; S.year=year; }
       if(S.week!==week || S.year!==year){
-        S.week=week; S.year=year; S.weeklyTargetLocked=false; S.completedLeaves=0; S.weeklyLeaves=0; S.weeklyTargetAchieved=false;
+        S.week=week; S.year=year; S.weeklyTargetLocked=false; S.completedLeaves=0; S.weeklyLeaves=0;
       }
       if(S.weeklyTargetLocked) return;
       const v = clamp(lptInput.value);
       S.leavesPerTree = v;
       S.weeklyTargetSetValue = v;
       S.weeklyTargetLocked = true;
-      S.completedLeaves = 0; S.weeklyLeaves = 0; S.weeklyComplete = false; S.weeklyTargetAchieved = false;
+      S.completedLeaves = 0; S.weeklyLeaves = 0; S.weeklyComplete = false;
       updateAllUI();
       lptVal.textContent = String(S.leavesPerTree);
       reflectLockUI();
@@ -958,10 +933,7 @@
       MODE_IDS.forEach(id => {
         const option = document.createElement('option');
         option.value = id;
-        const modeName = NAMES[id] || DEFAULT_MODE_NAMES[id] || id;
-        // Add (no alarm) for bedtime mode
-        const displayName = id === 'bedTime' ? `${modeName} (no alarm)` : modeName;
-        option.textContent = displayName;
+        option.textContent = NAMES[id] || DEFAULT_MODE_NAMES[id] || id;
         modeSelect.appendChild(option);
       });
       modeSelect.value = currentMode;
@@ -976,9 +948,7 @@
       G.selectedMode = currentMode;
       S = loadState(currentMode);
       
-      const baseName = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
-      const displayName = currentMode === 'bedTime' ? `${baseName} (no alarm)` : baseName;
-      modeNameEl.textContent = displayName;
+      modeNameEl.textContent = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
       
       timerTypeSel.value = S.activeTimer;
       customTimeRow.style.display = (S.activeTimer==='custom') ? 'flex' : 'none';
@@ -1004,9 +974,7 @@
       
       saveNames();
       populateModeSelect();
-      const baseName = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
-      const displayName = currentMode === 'bedTime' ? `${baseName} (no alarm)` : baseName;
-      modeNameEl.textContent = displayName;
+      modeNameEl.textContent = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
     });
 
     // Tab switching
@@ -1030,9 +998,7 @@
     function initApp() {
       populateCountryList();
       populateModeSelect();
-      const baseName = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
-      const displayName = currentMode === 'bedTime' ? `${baseName} (no alarm)` : baseName;
-      modeNameEl.textContent = displayName;
+      modeNameEl.textContent = NAMES[currentMode] || DEFAULT_MODE_NAMES[currentMode] || currentMode;
       
       // Set up timezone UI
       countryInput.value = G.country || 'India';
@@ -1048,7 +1014,7 @@
       startBtn.textContent = `Start ${format(S.timers[S.activeTimer].secondsLeft)}`;
       
       document.getElementById('subject1Input').value = NAMES.subject1 || '';
-      document.getElementById('subject2Input').value = NAMES.subject 2 || '';
+      document.getElementById('subject2Input').value = NAMES.subject2 || '';
       document.getElementById('subject3Input').value = NAMES.subject3 || '';
       document.getElementById('user1Input').value = NAMES.user1 || '';
       document.getElementById('user2Input').value = NAMES.user2 || '';
